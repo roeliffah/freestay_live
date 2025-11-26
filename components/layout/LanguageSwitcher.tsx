@@ -17,6 +17,9 @@ export function LanguageSwitcher() {
   const pathname = usePathname();
 
   const handleChange = (newLocale: string) => {
+    // Save user's preference in cookie
+    document.cookie = `NEXT_LOCALE=${newLocale}; max-age=${60 * 60 * 24 * 365}; path=/`;
+    
     // Remove current locale from pathname
     const segments = pathname.split('/');
     segments[1] = newLocale;

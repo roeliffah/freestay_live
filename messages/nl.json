@@ -111,6 +111,9 @@
     "viewDetails": "Bekijk details",
     "freeCancellation": "Gratis annuleren",
     "noResults": "Geen hotels gevonden die aan uw criteria voldoen.",
+    "noResultsFromApi": "Geen hotels gevonden die aan uw criteria voldoen.",
+    "checkFeaturedHotels": "Bekijk onze aanbevolen hotels",
+    "featuredHotelsInfo": "Hieronder ziet u onze aanbevolen hotels.",
     "allStars": "Alle Sterren",
     "tryAgain": "Probeer opnieuw",
     "loading": "Hotels laden...",
@@ -128,6 +131,9 @@
     }
   },
   "hotel": {
+    "deal": "Aanbieding!",
+    "startingPrice": "Vanaf prijs per nacht",
+    "viewDetails": "Bekijk details",
     "about": "Over het hotel",
     "facilities": "Faciliteiten",
     "roomOptions": "Kameropties",

@@ -111,6 +111,9 @@
     "viewDetails": "Voir les détails",
     "freeCancellation": "Annulation gratuite",
     "noResults": "Aucun hôtel trouvé.",
+    "noResultsFromApi": "Aucun hôtel trouvé selon vos critères.",
+    "checkFeaturedHotels": "Consultez nos hôtels recommandés",
+    "featuredHotelsInfo": "Vous pouvez voir ci-dessous nos hôtels recommandés.",
     "allStars": "Toutes les Étoiles",
     "tryAgain": "Réessayer",
     "loading": "Chargement des hôtels...",
@@ -128,6 +131,9 @@
     }
   },
   "hotel": {
+    "deal": "Offre spéciale!",
+    "startingPrice": "Prix à partir de par nuit",
+    "viewDetails": "Voir les détails",
     "about": "À propos de l'hôtel",
     "facilities": "Installations",
     "roomOptions": "Options de chambres",

@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Star, MapPin, Wifi, Coffee, Dumbbell, Waves, UtensilsCrossed } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +25,7 @@ const facilityIcons: Record<string, any> = {
 };
 
 export function HotelCard({ hotel }: HotelCardProps) {
+  const t = useTranslations('hotel');
   const params = useParams();
   const searchParams = useSearchParams();
   const locale = params.locale as string;
@@ -49,7 +51,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
           />
           {hotel.minPrice && hotel.minPrice < 2000 && (
             <Badge className="absolute top-3 left-3 bg-red-500">
-              Fırsat!
+              {t('deal')}
             </Badge>
           )}
         </div>
@@ -103,21 +105,21 @@ export function HotelCard({ hotel }: HotelCardProps) {
           {/* Fiyat ve CTA */}
           <div className="mt-4 pt-4 border-t flex items-end justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Gecelik başlangıç fiyatı</p>
+              <p className="text-sm text-muted-foreground">{t('startingPrice')}</p>
               <p className="text-3xl font-bold text-primary">
-                ₺{hotel.minPrice?.toLocaleString('tr-TR') || '0'}
+                ₺{hotel.minPrice?.toLocaleString(locale) || '0'}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Vergiler dahil</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('taxIncluded')}</p>
             </div>
             
             <div className="space-y-2">
               <Link href={hotelUrl}>
                 <Button className="w-full min-w-[150px]">
-                  Detayları Gör
+                  {t('viewDetails')}
                 </Button>
               </Link>
               <p className="text-xs text-green-600 text-center">
-                ✓ Ücretsiz iptal
+                ✓ {t('freeCancellation')}
               </p>
             </div>
           </div>

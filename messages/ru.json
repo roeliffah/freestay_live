@@ -111,6 +111,9 @@
     "viewDetails": "Подробности",
     "freeCancellation": "Бесплатная отмена",
     "noResults": "Отели не найдены.",
+    "noResultsFromApi": "Не найдено отелей по вашим критериям.",
+    "checkFeaturedHotels": "Посмотрите наши рекомендуемые отели",
+    "featuredHotelsInfo": "Ниже вы можете увидеть наши рекомендуемые отели.",
     "allStars": "Все Звёзды",
     "tryAgain": "Попробовать снова",
     "loading": "Загрузка отелей...",
@@ -128,6 +131,9 @@
     }
   },
   "hotel": {
+    "deal": "Спецпредложение!",
+    "startingPrice": "Цена за ночь от",
+    "viewDetails": "Подробности",
     "about": "Об отеле",
     "facilities": "Удобства",
     "roomOptions": "Варианты номеров",

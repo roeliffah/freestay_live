@@ -111,6 +111,9 @@
     "viewDetails": "View Details",
     "freeCancellation": "Free cancellation",
     "noResults": "No hotels found matching your criteria.",
+    "noResultsFromApi": "No hotels found matching your criteria.",
+    "checkFeaturedHotels": "Check out our featured hotels",
+    "featuredHotelsInfo": "Below you can see our recommended hotels.",
     "allStars": "All Stars",
     "tryAgain": "Try Again",
     "loading": "Loading hotels...",
@@ -128,6 +131,9 @@
     }
   },
   "hotel": {
+    "deal": "Deal!",
+    "startingPrice": "Starting price per night",
+    "viewDetails": "View Details",
     "about": "About Hotel",
     "facilities": "Facilities",
     "roomOptions": "Room Options",

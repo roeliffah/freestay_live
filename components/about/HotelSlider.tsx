@@ -2,94 +2,46 @@
 
 import { Card } from '@/components/ui/card';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useLocale } from 'next-intl';
+import Link from 'next/link';
+import hotelsData from '@/data/featured-hotels.json';
 
-interface HotelSlide {
-  id: string;
-  name: string;
-  city: string;
-  image: string;
-  rating: number;
-}
-
-const turkeyHotels: HotelSlide[] = [
-  {
-    id: '1',
-    name: 'Mardan Palace',
-    city: 'Antalya',
-    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800',
-    rating: 4.9,
-  },
-  {
-    id: '2',
-    name: 'Regnum Carya',
-    city: 'Belek',
-    image: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800',
-    rating: 4.8,
-  },
-  {
-    id: '3',
-    name: 'Four Seasons Bosphorus',
-    city: 'İstanbul',
-    image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800',
-    rating: 4.9,
-  },
-  {
-    id: '4',
-    name: 'Hillside Beach Club',
-    city: 'Fethiye',
-    image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800',
-    rating: 4.7,
-  },
-  {
-    id: '5',
-    name: 'Çırağan Palace Kempinski',
-    city: 'İstanbul',
-    image: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800',
-    rating: 4.9,
-  },
-  {
-    id: '6',
-    name: 'Maxx Royal Belek',
-    city: 'Belek',
-    image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800',
-    rating: 4.8,
-  },
-  {
-    id: '7',
-    name: 'D-Hotel Maris',
-    city: 'Marmaris',
-    image: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800',
-    rating: 4.7,
-  },
-  {
-    id: '8',
-    name: 'Titanic Deluxe',
-    city: 'Belek',
-    image: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800',
-    rating: 4.6,
-  },
-  {
-    id: '9',
-    name: 'Mandarin Oriental',
-    city: 'Bodrum',
-    image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
-    rating: 4.9,
-  },
-  {
-    id: '10',
-    name: 'Gloria Serenity Resort',
-    city: 'Belek',
-    image: 'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800',
-    rating: 4.7,
-  },
-];
+// Get 12 featured hotels from Turkey
+const turkeyHotels = hotelsData
+  .filter(hotel => hotel.country === 'Turkey')
+  .slice(0, 12)
+  .map(hotel => ({
+    id: hotel.hotelId,
+    name: hotel.hotelName,
+    city: hotel.destinationName,
+    image: hotel.images[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
+    rating: hotel.category,
+  }));
 
 export function HotelSlider() {
+  const locale = useLocale();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const slidesToShow = 4;
+  const [slidesToShow, setSlidesToShow] = useState(4);
+
+  // Responsive slides based on screen size
+  useEffect(() => {
+    const updateSlidesToShow = () => {
+      if (window.innerWidth < 768) {
+        setSlidesToShow(1);
+      } else if (window.innerWidth < 1024) {
+        setSlidesToShow(2);
+      } else {
+        setSlidesToShow(4);
+      }
+    };
+
+    updateSlidesToShow();
+    window.addEventListener('resize', updateSlidesToShow);
+    return () => window.removeEventListener('resize', updateSlidesToShow);
+  }, []);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => 
@@ -122,29 +74,34 @@ export function HotelSlider() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 flex-1">
           {visibleHotels.map((hotel, index) => (
-            <Card
+            <Link 
               key={`${hotel.id}-${index}`}
-              className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all"
+              href={`/${locale}/hotel/${hotel.id}`}
             >
-              <div className="relative h-48 overflow-hidden">
-                <Image
-                  src={hotel.image}
-                  alt={hotel.name}
-                  fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-3 left-3 text-white">
-                  <h4 className="font-bold text-sm mb-1">{hotel.name}</h4>
-                  <p className="text-xs opacity-90">{hotel.city}</p>
-                  <div className="flex items-center mt-1">
-                    <span className="text-xs bg-yellow-400 text-black px-2 py-0.5 rounded font-semibold">
-                      ⭐ {hotel.rating}
+              <Card
+                className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <Image
+                    src={hotel.image}
+                    alt={hotel.name}
+                    fill
+                    className="object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute top-3 right-3">
+                    <span className="text-xs bg-white text-black px-2 py-1 rounded font-semibold flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      {hotel.rating}
                     </span>
                   </div>
+                  <div className="absolute bottom-3 left-3 text-white">
+                    <h4 className="font-bold text-sm mb-1">{hotel.name}</h4>
+                    <p className="text-xs opacity-90">{hotel.city}, Turkey</p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           ))}
         </div>
 

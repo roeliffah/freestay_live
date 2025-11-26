@@ -131,6 +131,9 @@
     }
   },
   "hotel": {
+    "deal": "Fırsat!",
+    "startingPrice": "Gecelik başlangıç fiyatı",
+    "viewDetails": "Detayları Gör",
     "about": "Otel Hakkında",
     "facilities": "Olanaklar",
     "roomOptions": "Oda Seçenekleri",
@@ -138,7 +141,7 @@
     "book": "Rezervasyon Yap",
     "quickBooking": "Hızlı Rezervasyon",
     "lowestPrice": "En düşük fiyat",
-    "taxIncluded": "Gecelik, vergiler dahil",
+    "taxIncluded": "Vergiler dahil",
     "freeCancellation": "Ücretsiz iptal",
     "noPayment": "Ön ödeme yok",
     "instantConfirm": "Anında onay",
