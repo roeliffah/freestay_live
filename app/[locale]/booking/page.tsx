@@ -80,6 +80,7 @@ function BookingContent() {
               guests={guests}
               totalPrice={price}
               currency={currency}
+              locale={locale}
             />
           )}
         </div>

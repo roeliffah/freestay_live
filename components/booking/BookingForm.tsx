@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ interface BookingFormProps {
   guests: number;
   totalPrice: number;
   currency: string;
+  locale?: string;
 }
 
 export function BookingForm({
@@ -39,10 +39,9 @@ export function BookingForm({
   guests,
   totalPrice,
   currency,
+  locale = 'tr',
 }: BookingFormProps) {
   const t = useTranslations('booking');
-  const params = useParams();
-  const locale = params.locale as string;
   
   const [formData, setFormData] = useState({
     // Misafir Bilgileri

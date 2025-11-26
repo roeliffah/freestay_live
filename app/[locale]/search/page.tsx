@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { sunHotelsClient } from '@/lib/sunhotels/client';
@@ -20,7 +20,7 @@ interface Filters {
   sortOrder?: 'asc' | 'desc';
 }
 
-export default function SearchPage() {
+function SearchPage() {
   const searchParams = useSearchParams();
   const params = useParams();
   const locale = params.locale as string;
@@ -338,3 +338,22 @@ export default function SearchPage() {
     </div>
   );
 }
+
+function SearchPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-muted/30">
+        <div className="container mx-auto px-4 py-8">
+          <Card className="p-6">
+            <Skeleton className="h-8 w-48 mb-4" />
+            <Skeleton className="h-48 w-full" />
+          </Card>
+        </div>
+      </div>
+    }>
+      <SearchPage />
+    </Suspense>
+  );
+}
+
+export default SearchPageWrapper;
