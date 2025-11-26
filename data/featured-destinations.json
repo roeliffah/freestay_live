@@ -1,0 +1,363 @@
+{
+  "countries": [
+    {
+      "code": "TR",
+      "name": "Turkey",
+      "flag": "🇹🇷",
+      "cities": [
+        {
+          "id": "228",
+          "code": "AYT",
+          "name": "Antalya",
+          "country": "Turkey",
+          "countryCode": "TR"
+        },
+        {
+          "id": "92",
+          "code": "SAW",
+          "name": "Istanbul",
+          "country": "Turkey",
+          "countryCode": "TR"
+        },
+        {
+          "id": "418",
+          "code": "BXN",
+          "name": "Bodrum",
+          "country": "Turkey",
+          "countryCode": "TR"
+        },
+        {
+          "id": "203",
+          "code": "AYT",
+          "name": "Alanya",
+          "country": "Turkey",
+          "countryCode": "TR"
+        },
+        {
+          "id": "127",
+          "code": "AYT",
+          "name": "Side",
+          "country": "Turkey",
+          "countryCode": "TR"
+        },
+        {
+          "id": "243",
+          "code": "AYT",
+          "name": "Belek",
+          "country": "Turkey",
+          "countryCode": "TR"
+        }
+      ]
+    },
+    {
+      "code": "ES",
+      "name": "Spain",
+      "flag": "🇪🇸",
+      "cities": [
+        {
+          "id": "695",
+          "code": "BCN",
+          "name": "Barcelona",
+          "country": "Spain",
+          "countryCode": "ES"
+        },
+        {
+          "id": "72",
+          "code": "MAD",
+          "name": "Madrid",
+          "country": "Spain",
+          "countryCode": "ES"
+        },
+        {
+          "id": "4",
+          "code": "PMI",
+          "name": "Mallorca",
+          "country": "Spain",
+          "countryCode": "ES"
+        },
+        {
+          "id": "11",
+          "code": "IBZ",
+          "name": "Ibiza",
+          "country": "Spain",
+          "countryCode": "ES"
+        }
+      ]
+    },
+    {
+      "code": "IT",
+      "name": "Italy",
+      "flag": "🇮🇹",
+      "cities": [
+        {
+          "id": "74",
+          "code": "ROM",
+          "name": "Rome",
+          "country": "Italy",
+          "countryCode": "IT"
+        },
+        {
+          "id": "108",
+          "code": "VCE",
+          "name": "Venice",
+          "country": "Italy",
+          "countryCode": "IT"
+        },
+        {
+          "id": "132",
+          "code": "NAP",
+          "name": "Naples",
+          "country": "Italy",
+          "countryCode": "IT"
+        },
+        {
+          "id": "134",
+          "code": "RRO",
+          "name": "Sorrento",
+          "country": "Italy",
+          "countryCode": "IT"
+        }
+      ]
+    },
+    {
+      "code": "GR",
+      "name": "Greece",
+      "flag": "🇬🇷",
+      "cities": [
+        {
+          "id": "102",
+          "code": "ATH",
+          "name": "Athens",
+          "country": "Greece",
+          "countryCode": "GR"
+        },
+        {
+          "id": "529",
+          "code": "JTR",
+          "name": "Santorini",
+          "country": "Greece",
+          "countryCode": "GR"
+        },
+        {
+          "id": "324",
+          "code": "JMK",
+          "name": "Mykonos",
+          "country": "Greece",
+          "countryCode": "GR"
+        },
+        {
+          "id": "29",
+          "code": "HER",
+          "name": "Crete",
+          "country": "Greece",
+          "countryCode": "GR"
+        },
+        {
+          "id": "24",
+          "code": "RHO",
+          "name": "Rhodes",
+          "country": "Greece",
+          "countryCode": "GR"
+        },
+        {
+          "id": "33",
+          "code": "CFU",
+          "name": "Corfu",
+          "country": "Greece",
+          "countryCode": "GR"
+        }
+      ]
+    },
+    {
+      "code": "AE",
+      "name": "UAE",
+      "flag": "🇦🇪",
+      "cities": [
+        {
+          "id": "175",
+          "code": "DXB",
+          "name": "Dubai",
+          "country": "United Arab Emirates",
+          "countryCode": "AE"
+        },
+        {
+          "id": "304",
+          "code": "AUH",
+          "name": "Abu Dhabi",
+          "country": "United Arab Emirates",
+          "countryCode": "AE"
+        },
+        {
+          "id": "15791",
+          "code": "SHJ",
+          "name": "Sharjah",
+          "country": "United Arab Emirates",
+          "countryCode": "AE"
+        }
+      ]
+    }
+  ],
+  "all": [
+    {
+      "id": "228",
+      "code": "AYT",
+      "name": "Antalya",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "92",
+      "code": "SAW",
+      "name": "Istanbul",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "418",
+      "code": "BXN",
+      "name": "Bodrum",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "203",
+      "code": "AYT",
+      "name": "Alanya",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "127",
+      "code": "AYT",
+      "name": "Side",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "243",
+      "code": "AYT",
+      "name": "Belek",
+      "country": "Turkey",
+      "countryCode": "TR"
+    },
+    {
+      "id": "695",
+      "code": "BCN",
+      "name": "Barcelona",
+      "country": "Spain",
+      "countryCode": "ES"
+    },
+    {
+      "id": "72",
+      "code": "MAD",
+      "name": "Madrid",
+      "country": "Spain",
+      "countryCode": "ES"
+    },
+    {
+      "id": "4",
+      "code": "PMI",
+      "name": "Mallorca",
+      "country": "Spain",
+      "countryCode": "ES"
+    },
+    {
+      "id": "11",
+      "code": "IBZ",
+      "name": "Ibiza",
+      "country": "Spain",
+      "countryCode": "ES"
+    },
+    {
+      "id": "74",
+      "code": "ROM",
+      "name": "Rome",
+      "country": "Italy",
+      "countryCode": "IT"
+    },
+    {
+      "id": "108",
+      "code": "VCE",
+      "name": "Venice",
+      "country": "Italy",
+      "countryCode": "IT"
+    },
+    {
+      "id": "132",
+      "code": "NAP",
+      "name": "Naples",
+      "country": "Italy",
+      "countryCode": "IT"
+    },
+    {
+      "id": "134",
+      "code": "RRO",
+      "name": "Sorrento",
+      "country": "Italy",
+      "countryCode": "IT"
+    },
+    {
+      "id": "102",
+      "code": "ATH",
+      "name": "Athens",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "529",
+      "code": "JTR",
+      "name": "Santorini",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "324",
+      "code": "JMK",
+      "name": "Mykonos",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "29",
+      "code": "HER",
+      "name": "Crete",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "24",
+      "code": "RHO",
+      "name": "Rhodes",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "33",
+      "code": "CFU",
+      "name": "Corfu",
+      "country": "Greece",
+      "countryCode": "GR"
+    },
+    {
+      "id": "175",
+      "code": "DXB",
+      "name": "Dubai",
+      "country": "United Arab Emirates",
+      "countryCode": "AE"
+    },
+    {
+      "id": "304",
+      "code": "AUH",
+      "name": "Abu Dhabi",
+      "country": "United Arab Emirates",
+      "countryCode": "AE"
+    },
+    {
+      "id": "15791",
+      "code": "SHJ",
+      "name": "Sharjah",
+      "country": "United Arab Emirates",
+      "countryCode": "AE"
+    }
+  ]
+}

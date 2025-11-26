@@ -1,0 +1,29 @@
+🏨 Fetching hotels from popular destinations...
+
+📍 Selected 10 popular destinations:
+  - Antalya, Turkey (ID: 228)
+  - Athens, Greece (ID: 102)
+  - Bali, Indonesia (ID: 437)
+  - Balige, Indonesia (ID: 20797)
+  - Balikesir, Turkey (ID: 21480)
+  - Balikpapan, Indonesia (ID: 7588)
+  - Baling, Malaysia (ID: 12160)
+  - Balingen, Germany (ID: 23072)
+  - Bangkok, Thailand (ID: 64)
+  - Barcelona, Spain (ID: 695)
+
+  ✅ Antalya: 0 hotels
+  ✅ Athens: 0 hotels
+  ✅ Bali: 0 hotels
+  ✅ Balige: 0 hotels
+  ✅ Balikesir: 0 hotels
+  ✅ Balikpapan: 0 hotels
+  ✅ Baling: 0 hotels
+  ✅ Balingen: 0 hotels
+  ✅ Bangkok: 0 hotels
+  ✅ Barcelona: 0 hotels
+
+📊 Total hotels fetched: 0
+💾 Saved to: /Users/halityilmaz/Programlar/Web/freestays/data/hotels.json
+
+✨ Done! You can now use these hotels in your app.

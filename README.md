@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FreeStays - Vacation Booking Platform 🏖️
 
-## Getting Started
+Modern tatil rezervasyon platformu. SunHotels API entegrasyonu ile 9 dilde hizmet veren, tatilsepeti.com tarzında tasarlanmış Next.js 14 uygulaması.
 
-First, run the development server:
+## 🌟 Özellikler
+
+- ✅ **9 Dil Desteği**: TR, EN, DE, NL, IT, EL, RU, ES, FR
+- ✅ **SunHotels API Entegrasyonu**: Canlı otel verisi (fallback: mock data)
+- ✅ **Modern Tasarım**: Tatilsepeti/Jollytur/Etstur tarzı arayüz
+- ✅ **Room Type Seçimi**: Otel, Tatil Köyü, Apart Otel, Villa
+- ✅ **Gelişmiş Filtreleme**: Fiyat, yıldız, sıralama
+- ✅ **Responsive Design**: Mobil, tablet ve desktop uyumlu
+- ✅ **XML Parser**: Fast-xml-parser ile SOAP yanıtları
+
+## 🚀 Başlangıç
 
 ```bash
+# Bağımlılıkları yükle
+npm install
+
+# Environment dosyasını oluştur
+cp .env.local.example .env.local
+
+# Development server'ı başlat
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🔧 API Konfigürasyonu
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`.env.local` dosyasını oluşturun ve SunHotels API bilgilerinizi ekleyin:
 
-## Learn More
+```env
+NEXT_PUBLIC_SUNHOTELS_API_URL=http://xml.sunhotels.net/15/PostGet/NonStaticXMLAPI.asmx
+NEXT_PUBLIC_SUNHOTELS_USERNAME=your_username
+NEXT_PUBLIC_SUNHOTELS_PASSWORD=your_password
+```
 
-To learn more about Next.js, take a look at the following resources:
+**Not**: Test hesabı ile API bağlantı hatası durumunda otomatik olarak mock data kullanılır.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌐 API Entegrasyonu
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Sistem otomatik olarak:
+1. **Canlı API**'ye istek atar
+2. Başarısız olursa **XML parse** dener  
+3. Her durumda **mock data** fallback kullanır
 
-## Deploy on Vercel
+Console logları:
+- 🔍 Request bilgisi
+- 📥 Response durumu
+- ✅ Başarılı parse (LIVE API)
+- 📦 Mock data kullanımı (demo mode)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Proje Yapısı
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+freestays/
+├── app/[locale]/          # Locale bazlı routing (9 dil)
+│   ├── page.tsx           # Ana sayfa
+│   ├── search/            # Arama sayfası (API entegre)
+│   ├── about/             # Hakkımızda
+│   └── contact/           # İletişim
+├── components/
+│   ├── hotel/             # Otel bileşenleri
+│   └── ui/                # shadcn/ui bileşenleri
+├── lib/sunhotels/         # SunHotels API client
+│   ├── client.ts          # API + XML parser
+│   └── types.ts           # TypeScript tipleri
+└── messages/              # Çeviri dosyaları (9 dil)
+```
+
+## 🎨 Teknolojiler
+
+- **Framework**: Next.js 14 (App Router)
+- **UI**: shadcn/ui + Tailwind CSS
+- **i18n**: next-intl
+- **XML Parser**: fast-xml-parser
+- **Icons**: Lucide React
+- **Fonts**: Inter (Variable)
+
+## 🌍 Desteklenen Diller
+
+🇹🇷 Türkçe • 🇬🇧 English • 🇩🇪 Deutsch • 🇳🇱 Nederlands • 🇮🇹 Italiano  
+🇬🇷 Ελληνικά • 🇷🇺 Русский • 🇪🇸 Español • 🇫🇷 Français
+
+## 📱 Sayfalar
+
+- ✅ Ana Sayfa (Room type selection)
+- ✅ Arama Sayfası (Canlı API + Filters)
+- ✅ Hakkımızda (9 dil)
+- ✅ İletişim (9 dil)
+- 🔜 Otel Detay
+- 🔜 Rezervasyon
+
+## 🧪 Test
+
+```bash
+# API testi
+node scripts/test_sunhotels_api.js
+
+# Build testi
+npm run build
+npm start
+```
+
+## 📦 Production
+
+```bash
+npm run build
+npm start
+```
+
+Environment variables'ı production ortamınızda (Vercel, etc.) ayarlayın.
+
+## 📝 Not
+
+Bu demo bir projedir. Gerçek API bağlantısı için production credentials gereklidir. Şu anda mock data ile çalışmaktadır.
+
+---
+
+Built with ❤️ using Next.js 14

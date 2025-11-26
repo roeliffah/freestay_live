@@ -1,0 +1,455 @@
+{
+  "header": {
+    "hotels": "Hotel",
+    "about": "Chi siamo",
+    "contact": "Contatti",
+    "myBookings": "Le mie prenotazioni"
+  },
+  "home": {
+    "hero": {
+      "title": "Trova la tua vacanza da sogno",
+      "subtitle": "Scopri l'alloggio perfetto tra migliaia di hotel in tutto il mondo"
+    },
+    "search": {
+      "where": "Dove?",
+      "wherePlaceholder": "Città, hotel o regione",
+      "checkIn": "Check-in",
+      "checkOut": "Check-out",
+      "guests": "Ospiti",
+      "searchButton": "Cerca hotel",
+      "selectDate": "Seleziona data"
+    },
+    "features": {
+      "title": "Perché FreeStays?",
+      "bestPrice": "Garanzia miglior prezzo",
+      "bestPriceDesc": "Offriamo i prezzi più competitivi",
+      "secure": "Prenotazione sicura",
+      "secureDesc": "Sistema di pagamento sicuro SSL",
+      "support": "Supporto 24/7",
+      "supportDesc": "Siamo sempre qui per te",
+      "hotels": "Migliaia di hotel",
+      "hotelsDesc": "Opzioni da tutto il mondo"
+    },
+    "destinations": {
+      "title": "Destinazioni popolari",
+      "hotels": "Hotel",
+      "antalya": {
+        "title": "Antalya",
+        "subtitle": "Perla del Mediterraneo",
+        "hotelsCount": "250+ Hotel",
+        "description": "Concetto all-inclusive",
+        "discount": "Sconto del 30%",
+        "button": "Vedi Hotel"
+      },
+      "istanbul": {
+        "title": "Istanbul",
+        "hotelsCount": "450+ Hotel"
+      },
+      "bodrum": {
+        "title": "Bodrum",
+        "hotelsCount": "180+ Hotel"
+      },
+      "cesme": {
+        "title": "Cesme",
+        "hotelsCount": "120+ Hotel"
+      },
+      "fethiye": {
+        "title": "Fethiye",
+        "hotelsCount": "200+ Hotel"
+      },
+      "marmaris": {
+        "title": "Marmaris",
+        "hotelsCount": "150+ Hotel"
+      }
+    },
+    "cta": {
+      "title": "Prenota ora",
+      "subtitle": "I migliori prezzi e offerte speciali ti aspettano",
+      "search": "Cerca hotel",
+      "learnMore": "Scopri di più"
+    },
+    "roomTypes": {
+      "title": "Scegli il tipo di alloggio",
+      "hotel": {
+        "title": "Hotel",
+        "description": "Soggiorno confortevole"
+      },
+      "resort": {
+        "title": "Resort",
+        "description": "All-inclusive"
+      },
+      "apart": {
+        "title": "Aparthotel",
+        "description": "Soggiorno lungo"
+      },
+      "villa": {
+        "title": "Villa",
+        "description": "Alloggio privato"
+      }
+    },
+    "campaign": {
+      "title": "Offerte Early Booking",
+      "subtitle": "Prenota ora per le vacanze estive e risparmia fino al 40%",
+      "badge": "Fino al 40% di sconto",
+      "button": "Vedi Campagne"
+    }
+  },
+  "search": {
+    "title": "Risultati ricerca",
+    "hotelsFound": "hotel trovati",
+    "filters": "Filtri",
+    "sortBy": "Ordina per",
+    "price": "Prezzo",
+    "rating": "Valutazione",
+    "name": "Nome",
+    "stars": "Stelle",
+    "priceRange": "Fascia di prezzo",
+    "all": "Tutti",
+    "clearFilters": "Cancella filtri",
+    "perNight": "Prezzo a partire da per notte",
+    "taxIncluded": "Tasse incluse",
+    "viewDetails": "Vedi dettagli",
+    "freeCancellation": "Cancellazione gratuita",
+    "noResults": "Nessun hotel trovato.",
+    "allStars": "Tutte le Stelle",
+    "tryAgain": "Riprova",
+    "loading": "Caricamento hotel...",
+    "sortOptions": {
+      "priceAsc": "Prezzo (Dal più basso)",
+      "priceDesc": "Prezzo (Dal più alto)",
+      "ratingDesc": "Valutazione (Dal più alto)",
+      "nameAsc": "Nome (A-Z)"
+    },
+    "priceRanges": {
+      "budget": "0-1000 ₺",
+      "mid": "1000-2000 ₺",
+      "high": "2000-5000 ₺",
+      "luxury": "5000+ ₺"
+    }
+  },
+  "hotel": {
+    "about": "Informazioni hotel",
+    "facilities": "Servizi",
+    "roomOptions": "Opzioni camera",
+    "perNight": "Per notte",
+    "book": "Prenota ora",
+    "quickBooking": "Prenotazione rapida",
+    "lowestPrice": "Prezzo più basso",
+    "taxIncluded": "Per notte, tasse incluse",
+    "freeCancellation": "Cancellazione gratuita",
+    "noPayment": "Nessun pagamento anticipato",
+    "instantConfirm": "Conferma istantanea",
+    "location": "Posizione"
+  },
+  "about": {
+    "hero": {
+      "badge": "Chi Siamo",
+      "title": "Trasformiamo i Vostri Sogni di Vacanza in Realtà",
+      "description": "Come FreeStays, miriamo a fornire ai nostri clienti la migliore esperienza di alloggio collaborando con migliaia di hotel in tutto il mondo. Con la tecnologia moderna e il nostro approccio orientato al cliente, rendiamo più facile la pianificazione della vostra vacanza."
+    },
+    "values": {
+      "title": "I Nostri Valori",
+      "satisfaction": {
+        "title": "Soddisfazione del Cliente",
+        "description": "La felicità dei nostri clienti è la nostra priorità"
+      },
+      "reliability": {
+        "title": "Affidabilità",
+        "description": "Approccio al servizio trasparente e sicuro"
+      },
+      "innovation": {
+        "title": "Innovazione",
+        "description": "Sviluppo continuo con tecnologia moderna"
+      },
+      "quality": {
+        "title": "Qualità",
+        "description": "Ricerca dell'eccellenza in ogni dettaglio"
+      }
+    },
+    "story": {
+      "title": "La Nostra Storia",
+      "paragraph1": "FreeStays è stata fondata nel 2020 con la visione di semplificare il processo di pianificazione delle vacanze. Stiamo costantemente espandendo la nostra rete alberghiera globale per offrire ai nostri clienti le migliori opzioni di alloggio.",
+      "paragraph2": "Oggi lavoriamo con migliaia di partner alberghieri in tutto il mondo e serviamo milioni di ospiti felici. Il nostro obiettivo è fornire esperienze di alloggio affidabili e di qualità adatte a ogni budget.",
+      "paragraph3": "Con la nostra infrastruttura tecnologica e il team esperto, rendiamo il vostro processo di prenotazione senza problemi dall'inizio alla fine. Il nostro supporto clienti 24/7 è sempre qui per voi."
+    },
+    "stats": {
+      "title": "FreeStays in Numeri",
+      "countries": "Paesi",
+      "hotels": "Hotel",
+      "guests": "Ospiti Felici",
+      "satisfaction": "Soddisfazione"
+    },
+    "hotels": {
+      "title": "I Migliori Hotel della Turchia",
+      "description": "Scopri le strutture ricettive più prestigiose e confortevoli del nostro paese"
+    },
+    "cta": {
+      "title": "Scopri la Tua Vacanza da Sogno",
+      "description": "Trova l'opzione più adatta tra migliaia di scelte di hotel e vivi una vacanza indimenticabile",
+      "button": "Inizia la Ricerca Hotel"
+    }
+  },
+  "contact": {
+    "hero": {
+      "badge": "Contatto",
+      "title": "Come Possiamo Aiutarti?",
+      "description": "Contattaci per le tue domande, suggerimenti o richieste di supporto"
+    },
+    "info": {
+      "phone": {
+        "title": "Telefono",
+        "number": "+90 242 XXX XX XX",
+        "hours": "Lun-Ven: 09:00-18:00"
+      },
+      "email": {
+        "title": "Email",
+        "address": "info@freestays.com",
+        "response": "Tempo di risposta 24/7"
+      },
+      "address": {
+        "title": "Indirizzo",
+        "line1": "Lara, Antalya",
+        "line2": "Turchia"
+      }
+    },
+    "form": {
+      "title": "Scrivici",
+      "name": {
+        "label": "Nome Completo",
+        "placeholder": "Il tuo nome e cognome"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "esempio@email.com"
+      },
+      "subject": {
+        "label": "Oggetto",
+        "placeholder": "Oggetto del tuo messaggio"
+      },
+      "message": {
+        "label": "Il Tuo Messaggio",
+        "placeholder": "Scrivi qui il tuo messaggio..."
+      },
+      "submit": "Invia Messaggio",
+      "successMessage": "Il tuo messaggio è stato inviato! Ti risponderemo il prima possibile."
+    },
+    "map": {
+      "title": "La Nostra Sede",
+      "coordinates": "Coordinate: 36.8685° N, 30.7153° E"
+    },
+    "hours": {
+      "title": "Orari di Apertura",
+      "weekdays": "Lunedì - Venerdì",
+      "weekdaysTime": "09:00 - 18:00",
+      "saturday": "Sabato",
+      "saturdayTime": "10:00 - 16:00",
+      "sunday": "Domenica",
+      "sundayTime": "Chiuso",
+      "emergency": {
+        "title": "Linea di Emergenza:",
+        "time": "Aperto 24/7",
+        "description": "Puoi sempre raggiungerci per prenotazioni ed emergenze."
+      }
+    },
+    "faq": {
+      "title": "Domande Frequenti",
+      "description": "Le domande più frequenti e le risposte",
+      "items": [
+        {
+          "question": "Come posso cancellare la mia prenotazione?",
+          "answer": "Per cancellare la tua prenotazione, puoi selezionare la prenotazione pertinente dalla pagina \"Le Mie Prenotazioni\" e fare clic sul pulsante di cancellazione. Le condizioni di cancellazione variano a seconda dell'hotel e del tipo di prenotazione."
+        },
+        {
+          "question": "Quali sono le opzioni di pagamento?",
+          "answer": "Offriamo carta di credito (Visa, Mastercard, American Express), bonifico bancario e pagamento all'arrivo. Il metodo di pagamento può variare a seconda dell'hotel."
+        },
+        {
+          "question": "Posso apportare modifiche alla mia prenotazione?",
+          "answer": "Sì, puoi modificare i dettagli della tua prenotazione. Tuttavia, le modifiche sono soggette alla disponibilità dell'hotel e alle condizioni di cancellazione/modifica. Consigliamo di contattare il nostro servizio clienti."
+        },
+        {
+          "question": "Cos'è la garanzia del miglior prezzo?",
+          "answer": "Se trovi lo stesso hotel più economico su un altro sito per le stesse date e condizioni, rimborseremo la differenza. Basta avvisarci entro 24 ore."
+        },
+        {
+          "question": "Ci sono sconti per i bambini?",
+          "answer": "La maggior parte dei nostri hotel offre sconti o alloggio gratuito per bambini in determinate fasce d'età. I dettagli sono specificati nella pagina dell'hotel."
+        },
+        {
+          "question": "Come vengono calcolate le valutazioni degli hotel?",
+          "answer": "Le valutazioni degli hotel sono calcolate in base a criteri quali le recensioni dei nostri ospiti, pulizia, posizione e qualità del servizio. Tutte le recensioni appartengono ai nostri ospiti verificati."
+        },
+        {
+          "question": "Posso fare il check-in anticipato o il check-out tardivo?",
+          "answer": "Le richieste di check-in anticipato e check-out tardivo vengono valutate in base alla disponibilità dell'hotel. Potrebbero essere applicate tariffe aggiuntive. Consigliamo di contattare l'hotel direttamente dopo la prenotazione."
+        },
+        {
+          "question": "Come ricevo la conferma della mia prenotazione?",
+          "answer": "Dopo aver effettuato una prenotazione, verrà inviata un'email di conferma al tuo indirizzo email. Puoi anche visualizzare i dettagli della tua prenotazione nella sezione \"Le Mie Prenotazioni\"."
+        }
+      ]
+    },
+    "help": {
+      "title": "Hai bisogno di più aiuto?",
+      "description": "Nel nostro centro assistenza puoi trovare guide dettagliate e altre domande e risposte",
+      "button": "Vai al Centro Assistenza"
+    }
+  },
+  "footer": {
+    "description": "Scopri i migliori hotel del mondo. Esperienze di vacanza indimenticabili.",
+    "quickLinks": "Link rapidi",
+    "home": "Home",
+    "about": "Chi siamo",
+    "faq": "FAQ",
+    "terms": "Termini",
+    "support": "Supporto",
+    "contact": "Contatti",
+    "help": "Centro assistenza",
+    "cancellation": "Politica di cancellazione",
+    "privacy": "Privacy",
+    "contactInfo": "Contatti",
+    "rights": "Tutti i diritti riservati."
+  },
+  "room": {
+    "adults": "Adulti",
+    "children": "Bambini",
+    "room": "Camera",
+    "addRoom": "Aggiungi camera",
+    "remove": "Rimuovi",
+    "ok": "OK"
+  },
+  "days": {
+    "monday": "Lunedì",
+    "tuesday": "Martedì",
+    "wednesday": "Mercoledì",
+    "thursday": "Giovedì",
+    "friday": "Venerdì",
+    "saturday": "Sabato",
+    "sunday": "Domenica",
+    "weekdays": "Lunedì - Venerdì",
+    "closed": "Chiuso"
+  },
+  "hotelDetail": {
+    "backToSearch": "Torna alla ricerca",
+    "aboutHotel": "Informazioni sull'hotel",
+    "facilities": "Servizi",
+    "roomOptions": "Opzioni camera",
+    "maxGuests": "Massimo {count} ospiti",
+    "bedsInfo": "{beds} letti, {extrabeds} letti extra disponibili",
+    "roomsAvailable": "{count} camere disponibili",
+    "fewRoomsLeft": "Solo poche camere rimaste",
+    "totalPrice": "Prezzo totale",
+    "makeReservation": "Prenota",
+    "noRoomsAvailable": "Nessuna camera disponibile per le date selezionate",
+    "quickReservation": "Prenotazione rapida",
+    "lowestPrice": "Prezzo più basso",
+    "perNight": "A notte",
+    "totalWithTax": "Prezzo totale, tasse incluse",
+    "instantConfirmation": "Conferma istantanea",
+    "secureReservation": "Prenotazione sicura",
+    "support247": "Assistenza clienti 24/7",
+    "location": "Posizione",
+    "loading": "Caricamento...",
+    "hotelNotFound": "Hotel non trovato"
+  },
+  "booking": {
+    "title": "Prenotazione",
+    "backToHotel": "Torna all'hotel",
+    "completeYourReservation": "Inserisci le tue informazioni per completare la prenotazione",
+    "secureReservationBadge": "Prenotazione sicura",
+    "sslEncrypted": "Crittografato SSL",
+    "reservationSummary": "Riepilogo prenotazione",
+    "hotel": "Hotel",
+    "roomType": "Tipo di camera",
+    "boardType": "Trattamento",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Ospiti",
+    "person": "persona",
+    "nights": "notti",
+    "guestInformation": "Informazioni ospite",
+    "firstName": "Nome",
+    "firstNamePlaceholder": "Il tuo nome",
+    "firstNameRequired": "Nome richiesto",
+    "lastName": "Cognome",
+    "lastNamePlaceholder": "Il tuo cognome",
+    "lastNameRequired": "Cognome richiesto",
+    "email": "Email",
+    "emailPlaceholder": "esempio@email.com",
+    "emailRequired": "Email richiesta",
+    "emailInvalid": "Inserisci un'email valida",
+    "phone": "Telefono",
+    "phonePlaceholder": "+39 333 123 45 67",
+    "phoneRequired": "Telefono richiesto",
+    "country": "Paese",
+    "city": "Città",
+    "cityPlaceholder": "Roma",
+    "paymentInformation": "Informazioni di pagamento",
+    "paymentNote": "Questo modulo è solo a scopo dimostrativo. L'elaborazione del pagamento reale non è ancora attiva.",
+    "cardNumber": "Numero carta",
+    "cardNumberPlaceholder": "1234 5678 9012 3456",
+    "cardNumberRequired": "Numero carta richiesto",
+    "cardName": "Nome sulla carta",
+    "cardNamePlaceholder": "MARIO ROSSI",
+    "cardNameRequired": "Nome sulla carta richiesto",
+    "expiryMonth": "Mese",
+    "expiryMonthPlaceholder": "MM",
+    "expiryMonthRequired": "Mese richiesto",
+    "expiryYear": "Anno",
+    "expiryYearPlaceholder": "AA",
+    "expiryYearRequired": "Anno richiesto",
+    "cvv": "CVV",
+    "cvvPlaceholder": "123",
+    "cvvRequired": "CVV richiesto",
+    "specialRequests": "Richieste speciali (facoltativo)",
+    "specialRequestsPlaceholder": "Puoi scrivere le tue richieste speciali qui...",
+    "termsAccept": "Ho letto e accetto i termini di utilizzo e l'informativa sulla privacy.",
+    "termsRequired": "Devi accettare i termini",
+    "marketingAccept": "Voglio essere informato su campagne e opportunità.",
+    "completeReservation": "Completa prenotazione",
+    "reservationInfoMissing": "Informazioni di prenotazione mancanti",
+    "backToSearch": "Torna alla ricerca",
+    "trustBadges": {
+      "securePayment": "Pagamento sicuro",
+      "sslCertified": "Certificato SSL",
+      "instantConfirmation": "Conferma istantanea",
+      "emailConfirmation": "Conferma via email",
+      "support247": "Supporto 24/7",
+      "customerService": "Servizio clienti",
+      "flexiblePayment": "Pagamento flessibile",
+      "installmentOptions": "Opzioni di rateizzazione"
+    }
+  },
+  "oldBooking": {
+    "title": "Completa la prenotazione",
+    "hotelDetails": "Dettagli dell'hotel",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "nights": "Notti",
+    "rooms": "Camere",
+    "guests": "Ospiti",
+    "guestInfo": "Informazioni ospite",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "email": "Email",
+    "phone": "Telefono",
+    "specialRequests": "Richieste speciali",
+    "specialRequestsPlaceholder": "Se hai richieste speciali, puoi scriverle qui...",
+    "paymentInfo": "Informazioni di pagamento",
+    "cardNumber": "Numero carta",
+    "cardName": "Nome sulla carta",
+    "expiryDate": "Data di scadenza",
+    "cvv": "CVV",
+    "bookingSummary": "Riepilogo prenotazione",
+    "roomType": "Tipo di camera",
+    "pricePerNight": "Prezzo per notte",
+    "totalNights": "Totale notti",
+    "subtotal": "Subtotale",
+    "taxes": "Tasse e commissioni",
+    "total": "Totale",
+    "completeBooking": "Completa la prenotazione",
+    "termsAgree": "Accetto i termini e le condizioni e la politica di cancellazione",
+    "securePayment": "Pagamento sicuro",
+    "securePaymentDesc": "Le tue informazioni di pagamento sono protette dalla crittografia SSL"
+  }
+}

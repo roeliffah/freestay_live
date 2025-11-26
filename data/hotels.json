@@ -1,0 +1,4158 @@
+[
+  {
+    "hotelId": "203001",
+    "hotelName": "Luxury Alanya Retreat",
+    "hotelCode": "203001",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "203",
+    "destinationName": "Alanya",
+    "regionId": "203",
+    "regionName": "Alanya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Luxury Alanya Retreat, Alanya",
+    "location": {
+      "latitude": 0.07282193452991464,
+      "longitude": -0.11315328011217718
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Spa",
+      "Air Conditioning",
+      "Free WiFi",
+      "Bar",
+      "Parking",
+      "Laundry",
+      "Concierge"
+    ],
+    "description": "Luxury Alanya Retreat is a 3-star property located in the heart of Alanya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 174,
+    "maxPrice": 435,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "203002",
+    "hotelName": "Blue Alanya Beach Club",
+    "hotelCode": "203002",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "203",
+    "destinationName": "Alanya",
+    "regionId": "203",
+    "regionName": "Alanya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Blue Alanya Beach Club, Alanya",
+    "location": {
+      "latitude": -0.08879832834424295,
+      "longitude": -0.2156476984339351
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Bar",
+      "Spa",
+      "Swimming Pool",
+      "Tennis Court",
+      "Beach Access",
+      "Air Conditioning",
+      "Kids Club",
+      "Fitness Center",
+      "Parking",
+      "Free WiFi",
+      "Room Service"
+    ],
+    "description": "Blue Alanya Beach Club is a 5-star property located in the heart of Alanya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 251,
+    "maxPrice": 627,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "203003",
+    "hotelName": "Diamond Alanya Beach Club",
+    "hotelCode": "203003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "203",
+    "destinationName": "Alanya",
+    "regionId": "203",
+    "regionName": "Alanya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Diamond Alanya Beach Club, Alanya",
+    "location": {
+      "latitude": -0.10441684746211222,
+      "longitude": -0.20148030709412634
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Airport Shuttle",
+      "Swimming Pool",
+      "Kids Club",
+      "Spa",
+      "Bar",
+      "Tennis Court",
+      "Laundry",
+      "Beach Access",
+      "Room Service",
+      "Free WiFi"
+    ],
+    "description": "Diamond Alanya Beach Club is a 3-star property located in the heart of Alanya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 185,
+    "maxPrice": 462,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "203004",
+    "hotelName": "Grand Alanya Suites",
+    "hotelCode": "203004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "203",
+    "destinationName": "Alanya",
+    "regionId": "203",
+    "regionName": "Alanya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Grand Alanya Suites, Alanya",
+    "location": {
+      "latitude": -0.08933700974981806,
+      "longitude": 0.19154154428616127
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Bar",
+      "Room Service",
+      "Concierge",
+      "Beach Access",
+      "Spa",
+      "Parking",
+      "Airport Shuttle",
+      "Kids Club",
+      "Swimming Pool"
+    ],
+    "description": "Grand Alanya Suites is a 4-star property located in the heart of Alanya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 280,
+    "maxPrice": 700,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "203005",
+    "hotelName": "Beach Alanya Resort",
+    "hotelCode": "203005",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "203",
+    "destinationName": "Alanya",
+    "regionId": "203",
+    "regionName": "Alanya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Beach Alanya Resort, Alanya",
+    "location": {
+      "latitude": -0.12018893352062976,
+      "longitude": -0.07415730519689029
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Parking",
+      "Air Conditioning",
+      "Laundry",
+      "Room Service",
+      "Bar",
+      "Free WiFi",
+      "Beach Access"
+    ],
+    "description": "Beach Alanya Resort is a 4-star property located in the heart of Alanya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 235,
+    "maxPrice": 587,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "228001",
+    "hotelName": "Blue Antalya Beach Club",
+    "hotelCode": "228001",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "228",
+    "destinationName": "Antalya",
+    "regionId": "228",
+    "regionName": "Antalya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Blue Antalya Beach Club, Antalya",
+    "location": {
+      "latitude": 36.756838871921374,
+      "longitude": 30.602399167998442
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Airport Shuttle",
+      "Parking",
+      "Air Conditioning",
+      "Laundry",
+      "Bar",
+      "Free WiFi",
+      "Swimming Pool",
+      "Room Service",
+      "Spa",
+      "Concierge"
+    ],
+    "description": "Blue Antalya Beach Club is a 5-star property located in the heart of Antalya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 339,
+    "maxPrice": 847,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "228002",
+    "hotelName": "Elite Antalya Collection",
+    "hotelCode": "228002",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "228",
+    "destinationName": "Antalya",
+    "regionId": "228",
+    "regionName": "Antalya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Elite Antalya Collection, Antalya",
+    "location": {
+      "latitude": 36.6445520433127,
+      "longitude": 30.480146719566694
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Airport Shuttle",
+      "Air Conditioning",
+      "Bar",
+      "Swimming Pool",
+      "Laundry",
+      "Tennis Court",
+      "Kids Club",
+      "Parking",
+      "Concierge",
+      "Room Service"
+    ],
+    "description": "Elite Antalya Collection is a 3-star property located in the heart of Antalya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 166,
+    "maxPrice": 415,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "228003",
+    "hotelName": "Elite Antalya Collection",
+    "hotelCode": "228003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "228",
+    "destinationName": "Antalya",
+    "regionId": "228",
+    "regionName": "Antalya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Elite Antalya Collection, Antalya",
+    "location": {
+      "latitude": 36.938144668520614,
+      "longitude": 30.61239358143181
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Air Conditioning",
+      "Kids Club",
+      "Free WiFi",
+      "Concierge",
+      "Tennis Court",
+      "Bar",
+      "Laundry",
+      "Room Service"
+    ],
+    "description": "Elite Antalya Collection is a 5-star property located in the heart of Antalya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 281,
+    "maxPrice": 702,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "228004",
+    "hotelName": "Pearl Antalya Beach Club",
+    "hotelCode": "228004",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "228",
+    "destinationName": "Antalya",
+    "regionId": "228",
+    "regionName": "Antalya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Pearl Antalya Beach Club, Antalya",
+    "location": {
+      "latitude": 36.7511387630841,
+      "longitude": 30.63267630431063
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Swimming Pool",
+      "Free WiFi",
+      "Laundry",
+      "Bar",
+      "Air Conditioning",
+      "Room Service",
+      "Tennis Court",
+      "Kids Club",
+      "Airport Shuttle",
+      "Spa"
+    ],
+    "description": "Pearl Antalya Beach Club is a 5-star property located in the heart of Antalya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 309,
+    "maxPrice": 772,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "228005",
+    "hotelName": "Luxury Antalya Collection",
+    "hotelCode": "228005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "228",
+    "destinationName": "Antalya",
+    "regionId": "228",
+    "regionName": "Antalya",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Luxury Antalya Collection, Antalya",
+    "location": {
+      "latitude": 36.83028195067099,
+      "longitude": 30.54578796634131
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Bar",
+      "Free WiFi",
+      "Parking",
+      "Room Service",
+      "Tennis Court",
+      "Air Conditioning",
+      "Beach Access",
+      "Laundry"
+    ],
+    "description": "Luxury Antalya Collection is a 3-star property located in the heart of Antalya, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 231,
+    "maxPrice": 577,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "102001",
+    "hotelName": "Paradise Athens Resort",
+    "hotelCode": "102001",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "102",
+    "destinationName": "Athens",
+    "regionId": "102",
+    "regionName": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "address": "Paradise Athens Resort, Athens",
+    "location": {
+      "latitude": 37.77400910078212,
+      "longitude": 23.620983659256325
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Tennis Court",
+      "Laundry",
+      "Restaurant",
+      "Swimming Pool",
+      "Spa",
+      "Air Conditioning",
+      "Beach Access",
+      "Airport Shuttle"
+    ],
+    "description": "Paradise Athens Resort is a 3-star property located in the heart of Athens, Greece. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 177,
+    "maxPrice": 442,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "102002",
+    "hotelName": "Crystal Athens Hotel",
+    "hotelCode": "102002",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "102",
+    "destinationName": "Athens",
+    "regionId": "102",
+    "regionName": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "address": "Crystal Athens Hotel, Athens",
+    "location": {
+      "latitude": 38.021932900785906,
+      "longitude": 23.860729175548062
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Tennis Court",
+      "Beach Access",
+      "Swimming Pool",
+      "Air Conditioning",
+      "Free WiFi",
+      "Kids Club",
+      "Laundry",
+      "Fitness Center"
+    ],
+    "description": "Crystal Athens Hotel is a 5-star property located in the heart of Athens, Greece. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 304,
+    "maxPrice": 760,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "102003",
+    "hotelName": "Paradise Athens Beach Club",
+    "hotelCode": "102003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "102",
+    "destinationName": "Athens",
+    "regionId": "102",
+    "regionName": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "address": "Paradise Athens Beach Club, Athens",
+    "location": {
+      "latitude": 38.09648714348069,
+      "longitude": 23.772136598357786
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Swimming Pool",
+      "Kids Club",
+      "Parking",
+      "Concierge",
+      "Tennis Court",
+      "Laundry",
+      "Airport Shuttle"
+    ],
+    "description": "Paradise Athens Beach Club is a 5-star property located in the heart of Athens, Greece. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 323,
+    "maxPrice": 807,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "102004",
+    "hotelName": "Sunset Athens Beach Club",
+    "hotelCode": "102004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "102",
+    "destinationName": "Athens",
+    "regionId": "102",
+    "regionName": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "address": "Sunset Athens Beach Club, Athens",
+    "location": {
+      "latitude": 37.88048036202272,
+      "longitude": 23.533353799289774
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Laundry",
+      "Bar",
+      "Beach Access",
+      "Tennis Court",
+      "Air Conditioning",
+      "Spa",
+      "Concierge"
+    ],
+    "description": "Sunset Athens Beach Club is a 4-star property located in the heart of Athens, Greece. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 288,
+    "maxPrice": 720,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "102005",
+    "hotelName": "Elite Athens Hotel",
+    "hotelCode": "102005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "102",
+    "destinationName": "Athens",
+    "regionId": "102",
+    "regionName": "Athens",
+    "country": "Greece",
+    "countryCode": "GR",
+    "address": "Elite Athens Hotel, Athens",
+    "location": {
+      "latitude": 37.97031873933947,
+      "longitude": 23.737762967354698
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Room Service",
+      "Bar",
+      "Free WiFi",
+      "Kids Club",
+      "Fitness Center",
+      "Spa",
+      "Swimming Pool"
+    ],
+    "description": "Elite Athens Hotel is a 3-star property located in the heart of Athens, Greece. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 157,
+    "maxPrice": 392,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "437001",
+    "hotelName": "Grand Bali Palace",
+    "hotelCode": "437001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "437",
+    "destinationName": "Bali",
+    "regionId": "437",
+    "regionName": "Bali",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "address": "Grand Bali Palace, Bali",
+    "location": {
+      "latitude": -8.517591729889805,
+      "longitude": 115.3343452901209
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Tennis Court",
+      "Spa",
+      "Fitness Center",
+      "Restaurant",
+      "Bar",
+      "Beach Access",
+      "Concierge",
+      "Parking",
+      "Swimming Pool",
+      "Air Conditioning"
+    ],
+    "description": "Grand Bali Palace is a 4-star property located in the heart of Bali, Indonesia. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 245,
+    "maxPrice": 612,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "437002",
+    "hotelName": "Golden Bali Retreat",
+    "hotelCode": "437002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "437",
+    "destinationName": "Bali",
+    "regionId": "437",
+    "regionName": "Bali",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "address": "Golden Bali Retreat, Bali",
+    "location": {
+      "latitude": -8.211205425530942,
+      "longitude": 114.89549845344955
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Bar",
+      "Restaurant",
+      "Air Conditioning",
+      "Laundry",
+      "Fitness Center",
+      "Free WiFi",
+      "Room Service",
+      "Spa",
+      "Swimming Pool"
+    ],
+    "description": "Golden Bali Retreat is a 4-star property located in the heart of Bali, Indonesia. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 283,
+    "maxPrice": 707,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "437003",
+    "hotelName": "Blue Bali Spa",
+    "hotelCode": "437003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "437",
+    "destinationName": "Bali",
+    "regionId": "437",
+    "regionName": "Bali",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "address": "Blue Bali Spa, Bali",
+    "location": {
+      "latitude": -8.35764858187857,
+      "longitude": 114.84674311359643
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Tennis Court",
+      "Kids Club",
+      "Restaurant",
+      "Bar",
+      "Beach Access",
+      "Fitness Center",
+      "Concierge",
+      "Air Conditioning"
+    ],
+    "description": "Blue Bali Spa is a 5-star property located in the heart of Bali, Indonesia. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 317,
+    "maxPrice": 792,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "437004",
+    "hotelName": "Resort Bali Hotel",
+    "hotelCode": "437004",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "437",
+    "destinationName": "Bali",
+    "regionId": "437",
+    "regionName": "Bali",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "address": "Resort Bali Hotel, Bali",
+    "location": {
+      "latitude": -8.406748939205498,
+      "longitude": 115.21257040163839
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Spa",
+      "Beach Access",
+      "Bar",
+      "Fitness Center",
+      "Concierge",
+      "Airport Shuttle",
+      "Swimming Pool",
+      "Parking",
+      "Tennis Court",
+      "Room Service"
+    ],
+    "description": "Resort Bali Hotel is a 5-star property located in the heart of Bali, Indonesia. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 332,
+    "maxPrice": 830,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "437005",
+    "hotelName": "Pearl Bali Spa",
+    "hotelCode": "437005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "437",
+    "destinationName": "Bali",
+    "regionId": "437",
+    "regionName": "Bali",
+    "country": "Indonesia",
+    "countryCode": "ID",
+    "address": "Pearl Bali Spa, Bali",
+    "location": {
+      "latitude": -8.24989900371804,
+      "longitude": 115.27273660442935
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Bar",
+      "Spa",
+      "Kids Club",
+      "Laundry",
+      "Tennis Court",
+      "Fitness Center",
+      "Parking",
+      "Restaurant"
+    ],
+    "description": "Pearl Bali Spa is a 3-star property located in the heart of Bali, Indonesia. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 217,
+    "maxPrice": 542,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "64001",
+    "hotelName": "Blue Bangkok Beach Club",
+    "hotelCode": "64001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "64",
+    "destinationName": "Bangkok",
+    "regionId": "64",
+    "regionName": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Blue Bangkok Beach Club, Bangkok",
+    "location": {
+      "latitude": 13.95234371644741,
+      "longitude": 100.75248436874476
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Laundry",
+      "Restaurant",
+      "Kids Club",
+      "Bar",
+      "Parking",
+      "Free WiFi",
+      "Room Service",
+      "Spa"
+    ],
+    "description": "Blue Bangkok Beach Club is a 4-star property located in the heart of Bangkok, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 245,
+    "maxPrice": 612,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "64002",
+    "hotelName": "Sunset Bangkok Retreat",
+    "hotelCode": "64002",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "64",
+    "destinationName": "Bangkok",
+    "regionId": "64",
+    "regionName": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Sunset Bangkok Retreat, Bangkok",
+    "location": {
+      "latitude": 13.633000454712928,
+      "longitude": 100.45190776651219
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Free WiFi",
+      "Fitness Center",
+      "Parking",
+      "Bar",
+      "Kids Club",
+      "Swimming Pool",
+      "Tennis Court",
+      "Air Conditioning"
+    ],
+    "description": "Sunset Bangkok Retreat is a 5-star property located in the heart of Bangkok, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 305,
+    "maxPrice": 762,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "64003",
+    "hotelName": "Grand Bangkok Collection",
+    "hotelCode": "64003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "64",
+    "destinationName": "Bangkok",
+    "regionId": "64",
+    "regionName": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Grand Bangkok Collection, Bangkok",
+    "location": {
+      "latitude": 13.794331187523662,
+      "longitude": 100.44509767225435
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Beach Access",
+      "Free WiFi",
+      "Laundry",
+      "Air Conditioning",
+      "Room Service",
+      "Kids Club",
+      "Bar"
+    ],
+    "description": "Grand Bangkok Collection is a 5-star property located in the heart of Bangkok, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 338,
+    "maxPrice": 845,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "64004",
+    "hotelName": "Resort Bangkok Palace",
+    "hotelCode": "64004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "64",
+    "destinationName": "Bangkok",
+    "regionId": "64",
+    "regionName": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Resort Bangkok Palace, Bangkok",
+    "location": {
+      "latitude": 13.945160805907408,
+      "longitude": 100.60486325528312
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Room Service",
+      "Beach Access",
+      "Air Conditioning",
+      "Swimming Pool",
+      "Parking",
+      "Airport Shuttle",
+      "Concierge",
+      "Tennis Court",
+      "Bar",
+      "Laundry"
+    ],
+    "description": "Resort Bangkok Palace is a 4-star property located in the heart of Bangkok, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 253,
+    "maxPrice": 632,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "64005",
+    "hotelName": "Pearl Bangkok Hotel",
+    "hotelCode": "64005",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "64",
+    "destinationName": "Bangkok",
+    "regionId": "64",
+    "regionName": "Bangkok",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Pearl Bangkok Hotel, Bangkok",
+    "location": {
+      "latitude": 13.856854447927569,
+      "longitude": 100.74215156382917
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Tennis Court",
+      "Beach Access",
+      "Laundry",
+      "Room Service",
+      "Fitness Center",
+      "Bar",
+      "Swimming Pool"
+    ],
+    "description": "Pearl Bangkok Hotel is a 4-star property located in the heart of Bangkok, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 220,
+    "maxPrice": 550,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "695001",
+    "hotelName": "Golden Barcelona Beach Club",
+    "hotelCode": "695001",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "695",
+    "destinationName": "Barcelona",
+    "regionId": "695",
+    "regionName": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "address": "Golden Barcelona Beach Club, Barcelona",
+    "location": {
+      "latitude": 41.13518796100929,
+      "longitude": 1.9571562319939315
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Laundry",
+      "Air Conditioning",
+      "Tennis Court",
+      "Concierge",
+      "Spa",
+      "Room Service",
+      "Free WiFi",
+      "Parking",
+      "Restaurant"
+    ],
+    "description": "Golden Barcelona Beach Club is a 3-star property located in the heart of Barcelona, Spain. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 162,
+    "maxPrice": 405,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "695002",
+    "hotelName": "Crystal Barcelona Hotel",
+    "hotelCode": "695002",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "695",
+    "destinationName": "Barcelona",
+    "regionId": "695",
+    "regionName": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "address": "Crystal Barcelona Hotel, Barcelona",
+    "location": {
+      "latitude": 41.61639440767247,
+      "longitude": 2.2611856099106684
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Parking",
+      "Beach Access",
+      "Restaurant",
+      "Kids Club",
+      "Tennis Court",
+      "Spa",
+      "Bar"
+    ],
+    "description": "Crystal Barcelona Hotel is a 5-star property located in the heart of Barcelona, Spain. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 346,
+    "maxPrice": 865,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "695003",
+    "hotelName": "Premium Barcelona Spa",
+    "hotelCode": "695003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "695",
+    "destinationName": "Barcelona",
+    "regionId": "695",
+    "regionName": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "address": "Premium Barcelona Spa, Barcelona",
+    "location": {
+      "latitude": 41.2963517200959,
+      "longitude": 2.2744771844600256
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Room Service",
+      "Bar",
+      "Free WiFi",
+      "Beach Access",
+      "Fitness Center",
+      "Concierge",
+      "Restaurant",
+      "Spa"
+    ],
+    "description": "Premium Barcelona Spa is a 5-star property located in the heart of Barcelona, Spain. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 315,
+    "maxPrice": 787,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "695004",
+    "hotelName": "Paradise Barcelona Beach Club",
+    "hotelCode": "695004",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "695",
+    "destinationName": "Barcelona",
+    "regionId": "695",
+    "regionName": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "address": "Paradise Barcelona Beach Club, Barcelona",
+    "location": {
+      "latitude": 41.426013760670976,
+      "longitude": 2.3975742064086685
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Bar",
+      "Fitness Center",
+      "Airport Shuttle",
+      "Swimming Pool",
+      "Restaurant",
+      "Parking",
+      "Laundry",
+      "Free WiFi",
+      "Kids Club",
+      "Tennis Court"
+    ],
+    "description": "Paradise Barcelona Beach Club is a 5-star property located in the heart of Barcelona, Spain. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 316,
+    "maxPrice": 790,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "695005",
+    "hotelName": "Elite Barcelona Suites",
+    "hotelCode": "695005",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "695",
+    "destinationName": "Barcelona",
+    "regionId": "695",
+    "regionName": "Barcelona",
+    "country": "Spain",
+    "countryCode": "ES",
+    "address": "Elite Barcelona Suites, Barcelona",
+    "location": {
+      "latitude": 41.576048611508774,
+      "longitude": 2.0014747428577397
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Parking",
+      "Airport Shuttle",
+      "Free WiFi",
+      "Spa",
+      "Bar",
+      "Fitness Center",
+      "Beach Access"
+    ],
+    "description": "Elite Barcelona Suites is a 4-star property located in the heart of Barcelona, Spain. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 263,
+    "maxPrice": 657,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "418001",
+    "hotelName": "Paradise Bodrum Hotel",
+    "hotelCode": "418001",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "418",
+    "destinationName": "Bodrum",
+    "regionId": "418",
+    "regionName": "Bodrum",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Paradise Bodrum Hotel, Bodrum",
+    "location": {
+      "latitude": -0.21694995562009178,
+      "longitude": 0.19682325603706147
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Restaurant",
+      "Parking",
+      "Beach Access",
+      "Airport Shuttle",
+      "Tennis Court",
+      "Free WiFi",
+      "Spa",
+      "Bar",
+      "Air Conditioning"
+    ],
+    "description": "Paradise Bodrum Hotel is a 5-star property located in the heart of Bodrum, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 337,
+    "maxPrice": 842,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "418002",
+    "hotelName": "Luxury Bodrum Collection",
+    "hotelCode": "418002",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "418",
+    "destinationName": "Bodrum",
+    "regionId": "418",
+    "regionName": "Bodrum",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Luxury Bodrum Collection, Bodrum",
+    "location": {
+      "latitude": -0.006533285584443493,
+      "longitude": -0.21905276473076735
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Parking",
+      "Tennis Court",
+      "Bar",
+      "Room Service",
+      "Beach Access",
+      "Free WiFi",
+      "Kids Club",
+      "Concierge"
+    ],
+    "description": "Luxury Bodrum Collection is a 3-star property located in the heart of Bodrum, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 211,
+    "maxPrice": 527,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "418003",
+    "hotelName": "Crystal Bodrum Retreat",
+    "hotelCode": "418003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "418",
+    "destinationName": "Bodrum",
+    "regionId": "418",
+    "regionName": "Bodrum",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Crystal Bodrum Retreat, Bodrum",
+    "location": {
+      "latitude": 0.0389808095762485,
+      "longitude": -0.04954528988040258
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Tennis Court",
+      "Parking",
+      "Bar",
+      "Room Service",
+      "Spa",
+      "Beach Access",
+      "Laundry",
+      "Restaurant",
+      "Airport Shuttle",
+      "Kids Club"
+    ],
+    "description": "Crystal Bodrum Retreat is a 3-star property located in the heart of Bodrum, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 233,
+    "maxPrice": 582,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "418004",
+    "hotelName": "Blue Bodrum Spa",
+    "hotelCode": "418004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "418",
+    "destinationName": "Bodrum",
+    "regionId": "418",
+    "regionName": "Bodrum",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Blue Bodrum Spa, Bodrum",
+    "location": {
+      "latitude": -0.20358616003791258,
+      "longitude": -0.12382542911542682
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Air Conditioning",
+      "Airport Shuttle",
+      "Bar",
+      "Concierge",
+      "Restaurant",
+      "Parking",
+      "Free WiFi",
+      "Swimming Pool",
+      "Tennis Court",
+      "Laundry",
+      "Fitness Center"
+    ],
+    "description": "Blue Bodrum Spa is a 4-star property located in the heart of Bodrum, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 277,
+    "maxPrice": 692,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "418005",
+    "hotelName": "Resort Bodrum Hotel",
+    "hotelCode": "418005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "418",
+    "destinationName": "Bodrum",
+    "regionId": "418",
+    "regionName": "Bodrum",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Resort Bodrum Hotel, Bodrum",
+    "location": {
+      "latitude": 0.03637299593287274,
+      "longitude": -0.11162115583478327
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Air Conditioning",
+      "Beach Access",
+      "Airport Shuttle",
+      "Swimming Pool",
+      "Concierge",
+      "Laundry",
+      "Spa",
+      "Tennis Court",
+      "Room Service"
+    ],
+    "description": "Resort Bodrum Hotel is a 3-star property located in the heart of Bodrum, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 176,
+    "maxPrice": 440,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "44001",
+    "hotelName": "Sunset Cancun Retreat",
+    "hotelCode": "44001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "44",
+    "destinationName": "Cancun",
+    "regionId": "44",
+    "regionName": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "address": "Sunset Cancun Retreat, Cancun",
+    "location": {
+      "latitude": 20.91029943801872,
+      "longitude": -86.88316997552094
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Spa",
+      "Beach Access",
+      "Swimming Pool",
+      "Bar",
+      "Laundry",
+      "Restaurant",
+      "Air Conditioning",
+      "Concierge"
+    ],
+    "description": "Sunset Cancun Retreat is a 4-star property located in the heart of Cancun, Mexico. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 234,
+    "maxPrice": 585,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "44002",
+    "hotelName": "Premium Cancun Hotel",
+    "hotelCode": "44002",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "44",
+    "destinationName": "Cancun",
+    "regionId": "44",
+    "regionName": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "address": "Premium Cancun Hotel, Cancun",
+    "location": {
+      "latitude": 21.028619150977814,
+      "longitude": -87.08448991376014
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Spa",
+      "Beach Access",
+      "Parking",
+      "Swimming Pool",
+      "Room Service",
+      "Kids Club",
+      "Free WiFi"
+    ],
+    "description": "Premium Cancun Hotel is a 3-star property located in the heart of Cancun, Mexico. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 221,
+    "maxPrice": 552,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "44003",
+    "hotelName": "Diamond Cancun Hotel",
+    "hotelCode": "44003",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "44",
+    "destinationName": "Cancun",
+    "regionId": "44",
+    "regionName": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "address": "Diamond Cancun Hotel, Cancun",
+    "location": {
+      "latitude": 21.364273989175125,
+      "longitude": -86.915269261445
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Swimming Pool",
+      "Room Service",
+      "Parking",
+      "Beach Access",
+      "Concierge",
+      "Air Conditioning",
+      "Kids Club",
+      "Bar"
+    ],
+    "description": "Diamond Cancun Hotel is a 4-star property located in the heart of Cancun, Mexico. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 262,
+    "maxPrice": 655,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "44004",
+    "hotelName": "Paradise Cancun Beach Club",
+    "hotelCode": "44004",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "44",
+    "destinationName": "Cancun",
+    "regionId": "44",
+    "regionName": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "address": "Paradise Cancun Beach Club, Cancun",
+    "location": {
+      "latitude": 21.27469758172284,
+      "longitude": -86.60345544338865
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Air Conditioning",
+      "Spa",
+      "Restaurant",
+      "Free WiFi",
+      "Beach Access",
+      "Bar",
+      "Laundry",
+      "Parking",
+      "Concierge",
+      "Fitness Center",
+      "Kids Club"
+    ],
+    "description": "Paradise Cancun Beach Club is a 3-star property located in the heart of Cancun, Mexico. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 177,
+    "maxPrice": 442,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "44005",
+    "hotelName": "Diamond Cancun Beach Club",
+    "hotelCode": "44005",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "44",
+    "destinationName": "Cancun",
+    "regionId": "44",
+    "regionName": "Cancun",
+    "country": "Mexico",
+    "countryCode": "MX",
+    "address": "Diamond Cancun Beach Club, Cancun",
+    "location": {
+      "latitude": 21.059657035951844,
+      "longitude": -86.78650839074645
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Bar",
+      "Beach Access",
+      "Swimming Pool",
+      "Kids Club",
+      "Free WiFi",
+      "Room Service",
+      "Restaurant",
+      "Spa",
+      "Parking",
+      "Fitness Center"
+    ],
+    "description": "Diamond Cancun Beach Club is a 5-star property located in the heart of Cancun, Mexico. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 309,
+    "maxPrice": 772,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "175001",
+    "hotelName": "Royal Dubai Resort",
+    "hotelCode": "175001",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "175",
+    "destinationName": "Dubai",
+    "regionId": "175",
+    "regionName": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "address": "Royal Dubai Resort, Dubai",
+    "location": {
+      "latitude": 25.01031687495174,
+      "longitude": 55.07618277455183
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Free WiFi",
+      "Concierge",
+      "Restaurant",
+      "Fitness Center",
+      "Swimming Pool",
+      "Kids Club",
+      "Room Service",
+      "Spa"
+    ],
+    "description": "Royal Dubai Resort is a 3-star property located in the heart of Dubai, United Arab Emirates. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 154,
+    "maxPrice": 385,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "175002",
+    "hotelName": "Paradise Dubai Resort",
+    "hotelCode": "175002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "175",
+    "destinationName": "Dubai",
+    "regionId": "175",
+    "regionName": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "address": "Paradise Dubai Resort, Dubai",
+    "location": {
+      "latitude": 25.128478118317933,
+      "longitude": 55.39141295704528
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Free WiFi",
+      "Kids Club",
+      "Room Service",
+      "Concierge",
+      "Fitness Center",
+      "Parking",
+      "Bar",
+      "Spa",
+      "Laundry",
+      "Swimming Pool"
+    ],
+    "description": "Paradise Dubai Resort is a 4-star property located in the heart of Dubai, United Arab Emirates. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 252,
+    "maxPrice": 630,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "175003",
+    "hotelName": "Elite Dubai Retreat",
+    "hotelCode": "175003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "175",
+    "destinationName": "Dubai",
+    "regionId": "175",
+    "regionName": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "address": "Elite Dubai Retreat, Dubai",
+    "location": {
+      "latitude": 24.954124994800473,
+      "longitude": 55.32769106888936
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Room Service",
+      "Parking",
+      "Restaurant",
+      "Laundry",
+      "Spa",
+      "Tennis Court",
+      "Beach Access",
+      "Swimming Pool",
+      "Concierge"
+    ],
+    "description": "Elite Dubai Retreat is a 3-star property located in the heart of Dubai, United Arab Emirates. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 169,
+    "maxPrice": 422,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "175004",
+    "hotelName": "Luxury Dubai Spa",
+    "hotelCode": "175004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "175",
+    "destinationName": "Dubai",
+    "regionId": "175",
+    "regionName": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "address": "Luxury Dubai Spa, Dubai",
+    "location": {
+      "latitude": 25.395926105969057,
+      "longitude": 55.02949310406801
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Restaurant",
+      "Parking",
+      "Kids Club",
+      "Spa",
+      "Free WiFi",
+      "Airport Shuttle",
+      "Swimming Pool",
+      "Room Service",
+      "Air Conditioning",
+      "Tennis Court"
+    ],
+    "description": "Luxury Dubai Spa is a 4-star property located in the heart of Dubai, United Arab Emirates. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 225,
+    "maxPrice": 562,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "175005",
+    "hotelName": "Resort Dubai Palace",
+    "hotelCode": "175005",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "175",
+    "destinationName": "Dubai",
+    "regionId": "175",
+    "regionName": "Dubai",
+    "country": "United Arab Emirates",
+    "countryCode": "AE",
+    "address": "Resort Dubai Palace, Dubai",
+    "location": {
+      "latitude": 25.430004515545342,
+      "longitude": 55.06863357796739
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Fitness Center",
+      "Beach Access",
+      "Free WiFi",
+      "Airport Shuttle",
+      "Parking",
+      "Swimming Pool",
+      "Restaurant",
+      "Spa",
+      "Tennis Court"
+    ],
+    "description": "Resort Dubai Palace is a 5-star property located in the heart of Dubai, United Arab Emirates. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 291,
+    "maxPrice": 727,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "92001",
+    "hotelName": "Beach Istanbul Hotel",
+    "hotelCode": "92001",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "92",
+    "destinationName": "Istanbul",
+    "regionId": "92",
+    "regionName": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Beach Istanbul Hotel, Istanbul",
+    "location": {
+      "latitude": 41.12210217533207,
+      "longitude": 28.86054508895954
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Swimming Pool",
+      "Air Conditioning",
+      "Restaurant",
+      "Beach Access",
+      "Fitness Center",
+      "Airport Shuttle",
+      "Parking",
+      "Spa",
+      "Kids Club"
+    ],
+    "description": "Beach Istanbul Hotel is a 5-star property located in the heart of Istanbul, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 323,
+    "maxPrice": 807,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "92002",
+    "hotelName": "Ocean Istanbul Collection",
+    "hotelCode": "92002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "92",
+    "destinationName": "Istanbul",
+    "regionId": "92",
+    "regionName": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Ocean Istanbul Collection, Istanbul",
+    "location": {
+      "latitude": 40.83221875432584,
+      "longitude": 29.068578990596915
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Concierge",
+      "Fitness Center",
+      "Bar",
+      "Laundry",
+      "Kids Club",
+      "Free WiFi",
+      "Tennis Court",
+      "Parking",
+      "Restaurant"
+    ],
+    "description": "Ocean Istanbul Collection is a 4-star property located in the heart of Istanbul, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 264,
+    "maxPrice": 660,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "92003",
+    "hotelName": "Royal Istanbul Retreat",
+    "hotelCode": "92003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "92",
+    "destinationName": "Istanbul",
+    "regionId": "92",
+    "regionName": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Royal Istanbul Retreat, Istanbul",
+    "location": {
+      "latitude": 40.955563926565766,
+      "longitude": 29.167827239401912
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Concierge",
+      "Laundry",
+      "Airport Shuttle",
+      "Beach Access",
+      "Free WiFi",
+      "Kids Club",
+      "Fitness Center",
+      "Parking",
+      "Spa",
+      "Tennis Court"
+    ],
+    "description": "Royal Istanbul Retreat is a 5-star property located in the heart of Istanbul, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 267,
+    "maxPrice": 667,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "92004",
+    "hotelName": "Premium Istanbul Spa",
+    "hotelCode": "92004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "92",
+    "destinationName": "Istanbul",
+    "regionId": "92",
+    "regionName": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Premium Istanbul Spa, Istanbul",
+    "location": {
+      "latitude": 40.85274287388556,
+      "longitude": 29.082471521571232
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Swimming Pool",
+      "Free WiFi",
+      "Tennis Court",
+      "Parking",
+      "Beach Access",
+      "Bar",
+      "Airport Shuttle",
+      "Fitness Center",
+      "Concierge",
+      "Kids Club",
+      "Room Service"
+    ],
+    "description": "Premium Istanbul Spa is a 4-star property located in the heart of Istanbul, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 264,
+    "maxPrice": 660,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "92005",
+    "hotelName": "Royal Istanbul Resort",
+    "hotelCode": "92005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "92",
+    "destinationName": "Istanbul",
+    "regionId": "92",
+    "regionName": "Istanbul",
+    "country": "Turkey",
+    "countryCode": "TR",
+    "address": "Royal Istanbul Resort, Istanbul",
+    "location": {
+      "latitude": 40.81732608692911,
+      "longitude": 28.844159002435465
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Concierge",
+      "Fitness Center",
+      "Swimming Pool",
+      "Kids Club",
+      "Spa",
+      "Free WiFi",
+      "Tennis Court",
+      "Parking"
+    ],
+    "description": "Royal Istanbul Resort is a 3-star property located in the heart of Istanbul, Turkey. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 235,
+    "maxPrice": 587,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "54001",
+    "hotelName": "Ocean London Hotel",
+    "hotelCode": "54001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "54",
+    "destinationName": "London",
+    "regionId": "54",
+    "regionName": "London",
+    "country": "England",
+    "countryCode": "GB",
+    "address": "Ocean London Hotel, London",
+    "location": {
+      "latitude": 51.40811764730618,
+      "longitude": -0.1744594792170428
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Tennis Court",
+      "Airport Shuttle",
+      "Concierge",
+      "Free WiFi",
+      "Spa",
+      "Swimming Pool",
+      "Air Conditioning",
+      "Fitness Center",
+      "Bar"
+    ],
+    "description": "Ocean London Hotel is a 4-star property located in the heart of London, England. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 265,
+    "maxPrice": 662,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "54002",
+    "hotelName": "Grand London Retreat",
+    "hotelCode": "54002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "54",
+    "destinationName": "London",
+    "regionId": "54",
+    "regionName": "London",
+    "country": "England",
+    "countryCode": "GB",
+    "address": "Grand London Retreat, London",
+    "location": {
+      "latitude": 51.43722557643412,
+      "longitude": 0.04139595500154325
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Laundry",
+      "Swimming Pool",
+      "Bar",
+      "Restaurant",
+      "Tennis Court",
+      "Room Service",
+      "Air Conditioning",
+      "Parking"
+    ],
+    "description": "Grand London Retreat is a 4-star property located in the heart of London, England. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 269,
+    "maxPrice": 672,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "54003",
+    "hotelName": "Resort London Resort",
+    "hotelCode": "54003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "54",
+    "destinationName": "London",
+    "regionId": "54",
+    "regionName": "London",
+    "country": "England",
+    "countryCode": "GB",
+    "address": "Resort London Resort, London",
+    "location": {
+      "latitude": 51.56475030558098,
+      "longitude": 0.0317852011790426
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Laundry",
+      "Bar",
+      "Spa",
+      "Concierge",
+      "Free WiFi",
+      "Fitness Center",
+      "Swimming Pool",
+      "Beach Access"
+    ],
+    "description": "Resort London Resort is a 3-star property located in the heart of London, England. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 191,
+    "maxPrice": 477,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "54004",
+    "hotelName": "Golden London Resort",
+    "hotelCode": "54004",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "54",
+    "destinationName": "London",
+    "regionId": "54",
+    "regionName": "London",
+    "country": "England",
+    "countryCode": "GB",
+    "address": "Golden London Resort, London",
+    "location": {
+      "latitude": 51.64884629664473,
+      "longitude": -0.13981443649543812
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Laundry",
+      "Airport Shuttle",
+      "Parking",
+      "Kids Club",
+      "Concierge",
+      "Bar",
+      "Beach Access",
+      "Free WiFi",
+      "Swimming Pool"
+    ],
+    "description": "Golden London Resort is a 5-star property located in the heart of London, England. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 302,
+    "maxPrice": 755,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "54005",
+    "hotelName": "Diamond London Hotel",
+    "hotelCode": "54005",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "54",
+    "destinationName": "London",
+    "regionId": "54",
+    "regionName": "London",
+    "country": "England",
+    "countryCode": "GB",
+    "address": "Diamond London Hotel, London",
+    "location": {
+      "latitude": 51.396045738380124,
+      "longitude": 0.009236000738459094
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Free WiFi",
+      "Beach Access",
+      "Tennis Court",
+      "Fitness Center",
+      "Parking",
+      "Room Service",
+      "Bar",
+      "Airport Shuttle",
+      "Spa",
+      "Air Conditioning",
+      "Concierge"
+    ],
+    "description": "Diamond London Hotel is a 5-star property located in the heart of London, England. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 266,
+    "maxPrice": 665,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "716001",
+    "hotelName": "Paradise Maldives Resort",
+    "hotelCode": "716001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "716",
+    "destinationName": "Maldives",
+    "regionId": "716",
+    "regionName": "Maldives",
+    "country": "Maldives",
+    "countryCode": "MV",
+    "address": "Paradise Maldives Resort, Maldives",
+    "location": {
+      "latitude": 3.1707295960499295,
+      "longitude": 73.14640932830771
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Airport Shuttle",
+      "Fitness Center",
+      "Tennis Court",
+      "Parking",
+      "Air Conditioning",
+      "Restaurant",
+      "Swimming Pool"
+    ],
+    "description": "Paradise Maldives Resort is a 4-star property located in the heart of Maldives, Maldives. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 208,
+    "maxPrice": 520,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "716002",
+    "hotelName": "Crystal Maldives Resort",
+    "hotelCode": "716002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "716",
+    "destinationName": "Maldives",
+    "regionId": "716",
+    "regionName": "Maldives",
+    "country": "Maldives",
+    "countryCode": "MV",
+    "address": "Crystal Maldives Resort, Maldives",
+    "location": {
+      "latitude": 2.9726130771717365,
+      "longitude": 73.39510560517091
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Laundry",
+      "Tennis Court",
+      "Spa",
+      "Parking",
+      "Room Service",
+      "Concierge",
+      "Fitness Center",
+      "Air Conditioning",
+      "Restaurant",
+      "Bar"
+    ],
+    "description": "Crystal Maldives Resort is a 4-star property located in the heart of Maldives, Maldives. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 260,
+    "maxPrice": 650,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "716003",
+    "hotelName": "Resort Maldives Beach Club",
+    "hotelCode": "716003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "716",
+    "destinationName": "Maldives",
+    "regionId": "716",
+    "regionName": "Maldives",
+    "country": "Maldives",
+    "countryCode": "MV",
+    "address": "Resort Maldives Beach Club, Maldives",
+    "location": {
+      "latitude": 3.177998555981352,
+      "longitude": 73.04862696317291
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Concierge",
+      "Kids Club",
+      "Spa",
+      "Tennis Court",
+      "Air Conditioning",
+      "Free WiFi",
+      "Room Service",
+      "Fitness Center"
+    ],
+    "description": "Resort Maldives Beach Club is a 5-star property located in the heart of Maldives, Maldives. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 313,
+    "maxPrice": 782,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "716004",
+    "hotelName": "Grand Maldives Spa",
+    "hotelCode": "716004",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "716",
+    "destinationName": "Maldives",
+    "regionId": "716",
+    "regionName": "Maldives",
+    "country": "Maldives",
+    "countryCode": "MV",
+    "address": "Grand Maldives Spa, Maldives",
+    "location": {
+      "latitude": 3.378404062422228,
+      "longitude": 73.45922960925573
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Fitness Center",
+      "Air Conditioning",
+      "Free WiFi",
+      "Kids Club",
+      "Swimming Pool",
+      "Tennis Court",
+      "Restaurant"
+    ],
+    "description": "Grand Maldives Spa is a 5-star property located in the heart of Maldives, Maldives. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 250,
+    "maxPrice": 625,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "716005",
+    "hotelName": "Pearl Maldives Suites",
+    "hotelCode": "716005",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "716",
+    "destinationName": "Maldives",
+    "regionId": "716",
+    "regionName": "Maldives",
+    "country": "Maldives",
+    "countryCode": "MV",
+    "address": "Pearl Maldives Suites, Maldives",
+    "location": {
+      "latitude": 3.375221209317099,
+      "longitude": 73.2805136282163
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Fitness Center",
+      "Spa",
+      "Kids Club",
+      "Beach Access",
+      "Restaurant",
+      "Room Service",
+      "Air Conditioning",
+      "Free WiFi",
+      "Laundry"
+    ],
+    "description": "Pearl Maldives Suites is a 5-star property located in the heart of Maldives, Maldives. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 343,
+    "maxPrice": 857,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "43001",
+    "hotelName": "Pearl Paris Palace",
+    "hotelCode": "43001",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "43",
+    "destinationName": "Paris",
+    "regionId": "43",
+    "regionName": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "address": "Pearl Paris Palace, Paris",
+    "location": {
+      "latitude": 48.701050014844725,
+      "longitude": 2.3185098982808316
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Air Conditioning",
+      "Beach Access",
+      "Fitness Center",
+      "Laundry",
+      "Free WiFi",
+      "Spa",
+      "Kids Club",
+      "Airport Shuttle",
+      "Concierge"
+    ],
+    "description": "Pearl Paris Palace is a 4-star property located in the heart of Paris, France. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 209,
+    "maxPrice": 522,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "43002",
+    "hotelName": "Sunset Paris Hotel",
+    "hotelCode": "43002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "43",
+    "destinationName": "Paris",
+    "regionId": "43",
+    "regionName": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "address": "Sunset Paris Hotel, Paris",
+    "location": {
+      "latitude": 48.75744487217726,
+      "longitude": 2.2027952597681133
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Air Conditioning",
+      "Bar",
+      "Fitness Center",
+      "Parking",
+      "Kids Club",
+      "Tennis Court",
+      "Free WiFi",
+      "Airport Shuttle",
+      "Laundry"
+    ],
+    "description": "Sunset Paris Hotel is a 4-star property located in the heart of Paris, France. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 261,
+    "maxPrice": 652,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "43003",
+    "hotelName": "Premium Paris Suites",
+    "hotelCode": "43003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "43",
+    "destinationName": "Paris",
+    "regionId": "43",
+    "regionName": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "address": "Premium Paris Suites, Paris",
+    "location": {
+      "latitude": 48.93878029364694,
+      "longitude": 2.3779022469774342
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Bar",
+      "Spa",
+      "Swimming Pool",
+      "Concierge",
+      "Fitness Center",
+      "Parking",
+      "Beach Access",
+      "Free WiFi"
+    ],
+    "description": "Premium Paris Suites is a 3-star property located in the heart of Paris, France. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 204,
+    "maxPrice": 510,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "43004",
+    "hotelName": "Paradise Paris Spa",
+    "hotelCode": "43004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "43",
+    "destinationName": "Paris",
+    "regionId": "43",
+    "regionName": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "address": "Paradise Paris Spa, Paris",
+    "location": {
+      "latitude": 49.060996094037144,
+      "longitude": 2.541550096872568
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Tennis Court",
+      "Free WiFi",
+      "Parking",
+      "Kids Club",
+      "Fitness Center",
+      "Beach Access",
+      "Airport Shuttle"
+    ],
+    "description": "Paradise Paris Spa is a 4-star property located in the heart of Paris, France. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 230,
+    "maxPrice": 575,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "43005",
+    "hotelName": "Royal Paris Retreat",
+    "hotelCode": "43005",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "43",
+    "destinationName": "Paris",
+    "regionId": "43",
+    "regionName": "Paris",
+    "country": "France",
+    "countryCode": "FR",
+    "address": "Royal Paris Retreat, Paris",
+    "location": {
+      "latitude": 48.70070823019038,
+      "longitude": 2.3265514787953716
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Bar",
+      "Kids Club",
+      "Swimming Pool",
+      "Air Conditioning",
+      "Concierge",
+      "Airport Shuttle",
+      "Laundry",
+      "Parking",
+      "Free WiFi"
+    ],
+    "description": "Royal Paris Retreat is a 4-star property located in the heart of Paris, France. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 229,
+    "maxPrice": 572,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "65001",
+    "hotelName": "Beach Phuket Palace",
+    "hotelCode": "65001",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "65",
+    "destinationName": "Phuket",
+    "regionId": "65",
+    "regionName": "Phuket",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Beach Phuket Palace, Phuket",
+    "location": {
+      "latitude": 7.726848889645017,
+      "longitude": 98.52687277300596
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Swimming Pool",
+      "Airport Shuttle",
+      "Fitness Center",
+      "Kids Club",
+      "Tennis Court",
+      "Free WiFi",
+      "Concierge",
+      "Laundry",
+      "Air Conditioning",
+      "Spa"
+    ],
+    "description": "Beach Phuket Palace is a 5-star property located in the heart of Phuket, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 336,
+    "maxPrice": 840,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "65002",
+    "hotelName": "Pearl Phuket Retreat",
+    "hotelCode": "65002",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "65",
+    "destinationName": "Phuket",
+    "regionId": "65",
+    "regionName": "Phuket",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Pearl Phuket Retreat, Phuket",
+    "location": {
+      "latitude": 7.672862502206468,
+      "longitude": 98.60638676336902
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Restaurant",
+      "Swimming Pool",
+      "Kids Club",
+      "Spa",
+      "Beach Access",
+      "Tennis Court",
+      "Airport Shuttle",
+      "Free WiFi",
+      "Fitness Center",
+      "Room Service",
+      "Air Conditioning"
+    ],
+    "description": "Pearl Phuket Retreat is a 4-star property located in the heart of Phuket, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 203,
+    "maxPrice": 507,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "65003",
+    "hotelName": "Grand Phuket Resort",
+    "hotelCode": "65003",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "65",
+    "destinationName": "Phuket",
+    "regionId": "65",
+    "regionName": "Phuket",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Grand Phuket Resort, Phuket",
+    "location": {
+      "latitude": 7.903134709107015,
+      "longitude": 98.58673453634347
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Airport Shuttle",
+      "Spa",
+      "Parking",
+      "Restaurant",
+      "Room Service",
+      "Swimming Pool",
+      "Kids Club",
+      "Tennis Court",
+      "Bar",
+      "Free WiFi"
+    ],
+    "description": "Grand Phuket Resort is a 5-star property located in the heart of Phuket, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 252,
+    "maxPrice": 630,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "65004",
+    "hotelName": "Beach Phuket Collection",
+    "hotelCode": "65004",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "65",
+    "destinationName": "Phuket",
+    "regionId": "65",
+    "regionName": "Phuket",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Beach Phuket Collection, Phuket",
+    "location": {
+      "latitude": 7.950969164892921,
+      "longitude": 98.63220819033765
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Parking",
+      "Free WiFi",
+      "Spa",
+      "Airport Shuttle",
+      "Restaurant",
+      "Room Service",
+      "Kids Club",
+      "Air Conditioning",
+      "Laundry"
+    ],
+    "description": "Beach Phuket Collection is a 4-star property located in the heart of Phuket, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 276,
+    "maxPrice": 690,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "65005",
+    "hotelName": "Luxury Phuket Beach Club",
+    "hotelCode": "65005",
+    "category": 4,
+    "categoryName": "4 Star",
+    "destinationId": "65",
+    "destinationName": "Phuket",
+    "regionId": "65",
+    "regionName": "Phuket",
+    "country": "Thailand",
+    "countryCode": "TH",
+    "address": "Luxury Phuket Beach Club, Phuket",
+    "location": {
+      "latitude": 7.9945824881569525,
+      "longitude": 98.56979713380514
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Swimming Pool",
+      "Parking",
+      "Tennis Court",
+      "Beach Access",
+      "Spa",
+      "Airport Shuttle",
+      "Concierge",
+      "Air Conditioning"
+    ],
+    "description": "Luxury Phuket Beach Club is a 4-star property located in the heart of Phuket, Thailand. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 296,
+    "maxPrice": 740,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "74001",
+    "hotelName": "Luxury Rome Resort",
+    "hotelCode": "74001",
+    "category": 5,
+    "categoryName": "5 Star",
+    "destinationId": "74",
+    "destinationName": "Rome",
+    "regionId": "74",
+    "regionName": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "address": "Luxury Rome Resort, Rome",
+    "location": {
+      "latitude": 42.093096901644024,
+      "longitude": 12.658512742006405
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Restaurant",
+      "Kids Club",
+      "Tennis Court",
+      "Room Service",
+      "Free WiFi",
+      "Fitness Center",
+      "Spa"
+    ],
+    "description": "Luxury Rome Resort is a 5-star property located in the heart of Rome, Italy. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 285,
+    "maxPrice": 712,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "74002",
+    "hotelName": "Premium Rome Resort",
+    "hotelCode": "74002",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "74",
+    "destinationName": "Rome",
+    "regionId": "74",
+    "regionName": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "address": "Premium Rome Resort, Rome",
+    "location": {
+      "latitude": 42.0801762513465,
+      "longitude": 12.656180623265605
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Spa",
+      "Tennis Court",
+      "Bar",
+      "Air Conditioning",
+      "Kids Club",
+      "Parking",
+      "Fitness Center",
+      "Airport Shuttle",
+      "Restaurant",
+      "Room Service",
+      "Swimming Pool"
+    ],
+    "description": "Premium Rome Resort is a 3-star property located in the heart of Rome, Italy. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 194,
+    "maxPrice": 485,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "74003",
+    "hotelName": "Pearl Rome Resort",
+    "hotelCode": "74003",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "74",
+    "destinationName": "Rome",
+    "regionId": "74",
+    "regionName": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "address": "Pearl Rome Resort, Rome",
+    "location": {
+      "latitude": 41.791461508570535,
+      "longitude": 12.698679238567054
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Kids Club",
+      "Air Conditioning",
+      "Parking",
+      "Swimming Pool",
+      "Beach Access",
+      "Bar",
+      "Room Service",
+      "Concierge",
+      "Airport Shuttle",
+      "Tennis Court",
+      "Free WiFi"
+    ],
+    "description": "Pearl Rome Resort is a 3-star property located in the heart of Rome, Italy. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 201,
+    "maxPrice": 502,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "74004",
+    "hotelName": "Premium Rome Collection",
+    "hotelCode": "74004",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "74",
+    "destinationName": "Rome",
+    "regionId": "74",
+    "regionName": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "address": "Premium Rome Collection, Rome",
+    "location": {
+      "latitude": 42.02611277330237,
+      "longitude": 12.259297069117695
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Beach Access",
+      "Kids Club",
+      "Air Conditioning",
+      "Bar",
+      "Airport Shuttle",
+      "Room Service",
+      "Swimming Pool",
+      "Spa"
+    ],
+    "description": "Premium Rome Collection is a 3-star property located in the heart of Rome, Italy. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 205,
+    "maxPrice": 512,
+    "currency": "EUR"
+  },
+  {
+    "hotelId": "74005",
+    "hotelName": "Diamond Rome Resort",
+    "hotelCode": "74005",
+    "category": 3,
+    "categoryName": "3 Star",
+    "destinationId": "74",
+    "destinationName": "Rome",
+    "regionId": "74",
+    "regionName": "Rome",
+    "country": "Italy",
+    "countryCode": "IT",
+    "address": "Diamond Rome Resort, Rome",
+    "location": {
+      "latitude": 41.75760797046027,
+      "longitude": 12.344491965455358
+    },
+    "images": [
+      {
+        "url": "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800",
+        "order": 1
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800",
+        "order": 2
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800",
+        "order": 3
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800",
+        "order": 4
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800",
+        "order": 5
+      }
+    ],
+    "facilities": [
+      "Room Service",
+      "Restaurant",
+      "Swimming Pool",
+      "Airport Shuttle",
+      "Fitness Center",
+      "Bar",
+      "Free WiFi",
+      "Tennis Court",
+      "Air Conditioning",
+      "Spa",
+      "Concierge"
+    ],
+    "description": "Diamond Rome Resort is a 3-star property located in the heart of Rome, Italy. Enjoy world-class amenities and exceptional service.",
+    "minPrice": 156,
+    "maxPrice": 390,
+    "currency": "EUR"
+  }
+]

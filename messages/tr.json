@@ -1,0 +1,458 @@
+{
+  "header": {
+    "hotels": "Oteller",
+    "about": "Hakkımızda",
+    "contact": "İletişim",
+    "myBookings": "Rezervasyonlarım"
+  },
+  "home": {
+    "hero": {
+      "title": "Rüya Tatilinizi Bulun",
+      "subtitle": "Dünya genelinde binlerce otel arasından size en uygun seçeneği keşfedin"
+    },
+    "search": {
+      "where": "Nereye?",
+      "wherePlaceholder": "Şehir, otel veya bölge",
+      "checkIn": "Giriş Tarihi",
+      "checkOut": "Çıkış Tarihi",
+      "guests": "Misafirler",
+      "searchButton": "Otel Ara",
+      "selectDate": "Tarih seçin"
+    },
+    "features": {
+      "title": "Neden FreeStays?",
+      "bestPrice": "En İyi Fiyat Garantisi",
+      "bestPriceDesc": "Piyasadaki en uygun fiyatları sunuyoruz",
+      "secure": "Güvenli Rezervasyon",
+      "secureDesc": "SSL şifrelemeli güvenli ödeme sistemi",
+      "support": "7/24 Destek",
+      "supportDesc": "Her zaman yanınızdayız",
+      "hotels": "Binlerce Otel",
+      "hotelsDesc": "Dünyanın her yerinden seçenekler"
+    },
+    "roomTypes": {
+      "title": "Konaklama Türünü Seçin",
+      "hotel": {
+        "title": "Otel",
+        "description": "Konforlu konaklama"
+      },
+      "resort": {
+        "title": "Tatil Köyü",
+        "description": "Her şey dahil"
+      },
+      "apart": {
+        "title": "Apart Otel",
+        "description": "Uzun süreli"
+      },
+      "villa": {
+        "title": "Villa",
+        "description": "Özel konaklama"
+      }
+    },
+    "destinations": {
+      "title": "Popüler Destinasyonlar",
+      "hotels": "Otel",
+      "antalya": {
+        "title": "Antalya",
+        "subtitle": "Akdeniz'in İncisi",
+        "hotelsCount": "250+ Otel",
+        "description": "Her şey dahil konsept",
+        "discount": "%30 İndirim",
+        "button": "Otelleri Gör"
+      },
+      "istanbul": {
+        "title": "İstanbul",
+        "hotelsCount": "450+ Otel"
+      },
+      "bodrum": {
+        "title": "Bodrum",
+        "hotelsCount": "180+ Otel"
+      },
+      "cesme": {
+        "title": "Çeşme",
+        "hotelsCount": "120+ Otel"
+      },
+      "fethiye": {
+        "title": "Fethiye",
+        "hotelsCount": "200+ Otel"
+      },
+      "marmaris": {
+        "title": "Marmaris",
+        "hotelsCount": "150+ Otel"
+      }
+    },
+    "campaign": {
+      "title": "Erken Rezervasyon Fırsatları",
+      "subtitle": "Yaz tatili için şimdi rezervasyon yapın, %40'a varan indirimlerden yararlanın",
+      "badge": "%40'a Varan",
+      "button": "Kampanyaları İncele"
+    },
+    "cta": {
+      "title": "Hemen Rezervasyon Yapın",
+      "subtitle": "En iyi fiyatlar ve özel fırsatlar sizi bekliyor",
+      "search": "Otel Ara",
+      "learnMore": "Daha Fazla Bilgi"
+    }
+  },
+  "search": {
+    "title": "Arama Sonuçları",
+    "hotelsFound": "otel bulundu",
+    "filters": "Filtreler",
+    "sortBy": "Sıralama",
+    "price": "Fiyat",
+    "rating": "Değerlendirme",
+    "name": "İsim",
+    "stars": "Yıldız Sayısı",
+    "priceRange": "Fiyat Aralığı",
+    "all": "Tümü",
+    "allStars": "Tüm Yıldızlar",
+    "clearFilters": "Filtreleri Temizle",
+    "perNight": "Gecelik başlangıç fiyatı",
+    "taxIncluded": "Vergiler dahil",
+    "viewDetails": "Detayları Gör",
+    "freeCancellation": "Ücretsiz iptal",
+    "noResults": "Arama kriterlerinize uygun otel bulunamadı.",
+    "noResultsFromApi": "Aradığınız kriterlere göre otel bulunamadı.",
+    "checkFeaturedHotels": "Favori otellerimize göz gezdirin",
+    "featuredHotelsInfo": "Aşağıda önerilen otellerimizi görebilirsiniz.",
+    "tryAgain": "Tekrar Dene",
+    "loading": "Oteller yükleniyor...",
+    "sortOptions": {
+      "priceAsc": "Fiyat (Düşükten Yükseğe)",
+      "priceDesc": "Fiyat (Yüksekten Düşüğe)",
+      "ratingDesc": "Puan (Yüksekten Düşüğe)",
+      "nameAsc": "İsim (A-Z)"
+    },
+    "priceRanges": {
+      "budget": "0-1000 ₺",
+      "mid": "1000-2000 ₺",
+      "high": "2000-5000 ₺",
+      "luxury": "5000+ ₺"
+    }
+  },
+  "hotel": {
+    "about": "Otel Hakkında",
+    "facilities": "Olanaklar",
+    "roomOptions": "Oda Seçenekleri",
+    "perNight": "Gecelik",
+    "book": "Rezervasyon Yap",
+    "quickBooking": "Hızlı Rezervasyon",
+    "lowestPrice": "En düşük fiyat",
+    "taxIncluded": "Gecelik, vergiler dahil",
+    "freeCancellation": "Ücretsiz iptal",
+    "noPayment": "Ön ödeme yok",
+    "instantConfirm": "Anında onay",
+    "location": "Konum"
+  },
+  "about": {
+    "hero": {
+      "badge": "Hakkımızda",
+      "title": "Tatil Hayallerinizi Gerçeğe Dönüştürüyoruz",
+      "description": "FreeStays olarak, dünya genelinde binlerce otelle çalışarak müşterilerimize en iyi konaklama deneyimini sunmayı hedefliyoruz. Modern teknoloji ve müşteri odaklı yaklaşımımızla, tatil planlamanızı kolaylaştırıyoruz."
+    },
+    "values": {
+      "title": "Değerlerimiz",
+      "satisfaction": {
+        "title": "Müşteri Memnuniyeti",
+        "description": "Müşterilerimizin mutluluğu bizim önceliğimiz"
+      },
+      "reliability": {
+        "title": "Güvenilirlik",
+        "description": "Şeffaf ve güvenli hizmet anlayışı"
+      },
+      "innovation": {
+        "title": "Yenilikçilik",
+        "description": "Modern teknoloji ile sürekli gelişim"
+      },
+      "quality": {
+        "title": "Kalite",
+        "description": "Her detayda mükemmellik arayışı"
+      }
+    },
+    "story": {
+      "title": "Hikayemiz",
+      "paragraph1": "FreeStays, 2020 yılında tatil planlama sürecini kolaylaştırma vizyonu ile kuruldu. Müşterilerimize en iyi konaklama seçeneklerini sunmak için global otel ağımızı sürekli genişletiyoruz.",
+      "paragraph2": "Bugün, dünya çapında binlerce otel partneri ile çalışıyor ve milyonlarca mutlu misafire hizmet veriyoruz. Amacımız, her bütçeye uygun, güvenilir ve kaliteli konaklama deneyimleri sunmaktır.",
+      "paragraph3": "Teknoloji altyapımız ve deneyimli ekibimizle, rezervasyon sürecinizi baştan sona sorunsuz hale getiriyoruz. 7/24 müşteri desteğimiz, her zaman yanınızdadır."
+    },
+    "stats": {
+      "title": "Rakamlarla FreeStays",
+      "countries": "Ülke",
+      "hotels": "Otel",
+      "guests": "Mutlu Misafir",
+      "satisfaction": "Memnuniyet"
+    },
+    "hotels": {
+      "title": "Türkiye'nin En İyi Otelleri",
+      "description": "Ülkemizin en prestijli ve konforlu konaklama tesislerini keşfedin"
+    },
+    "cta": {
+      "title": "Hayalinizdeki Tatili Keşfedin",
+      "description": "Binlerce otel seçeneği arasından size en uygun olanı bulun ve unutulmaz bir tatil deneyimi yaşayın",
+      "button": "Otel Aramaya Başla"
+    }
+  },
+  "contact": {
+    "hero": {
+      "badge": "İletişim",
+      "title": "Size Nasıl Yardımcı Olabiliriz?",
+      "description": "Sorularınız, önerileriniz veya destek talepleriniz için bizimle iletişime geçin"
+    },
+    "info": {
+      "phone": {
+        "title": "Telefon",
+        "number": "+90 242 XXX XX XX",
+        "hours": "Pzt-Cum: 09:00-18:00"
+      },
+      "email": {
+        "title": "E-posta",
+        "address": "info@freestays.com",
+        "response": "7/24 yanıt süresi"
+      },
+      "address": {
+        "title": "Adres",
+        "line1": "Lara, Antalya",
+        "line2": "Türkiye"
+      }
+    },
+    "form": {
+      "title": "Bize Yazın",
+      "name": {
+        "label": "Ad Soyad",
+        "placeholder": "Adınız ve soyadınız"
+      },
+      "email": {
+        "label": "E-posta",
+        "placeholder": "ornek@email.com"
+      },
+      "subject": {
+        "label": "Konu",
+        "placeholder": "Mesajınızın konusu"
+      },
+      "message": {
+        "label": "Mesajınız",
+        "placeholder": "Mesajınızı buraya yazın..."
+      },
+      "submit": "Mesajı Gönder",
+      "successMessage": "Mesajınız gönderildi! En kısa sürede size dönüş yapacağız."
+    },
+    "map": {
+      "title": "Ofis Lokasyonumuz",
+      "coordinates": "Koordinatlar: 36.8685° K, 30.7153° D"
+    },
+    "hours": {
+      "title": "Çalışma Saatlerimiz",
+      "weekdays": "Pazartesi - Cuma",
+      "weekdaysTime": "09:00 - 18:00",
+      "saturday": "Cumartesi",
+      "saturdayTime": "10:00 - 16:00",
+      "sunday": "Pazar",
+      "sundayTime": "Kapalı",
+      "emergency": {
+        "title": "Acil Durum Hattı:",
+        "time": "7/24 açık",
+        "description": "Rezervasyon ve acil durumlar için her zaman ulaşabilirsiniz."
+      }
+    },
+    "faq": {
+      "title": "Sıkça Sorulan Sorular",
+      "description": "En çok merak edilen sorular ve cevapları",
+      "items": [
+        {
+          "question": "Rezervasyonumu nasıl iptal edebilirim?",
+          "answer": "Rezervasyonunuzu iptal etmek için \"Rezervasyonlarım\" sayfasından ilgili rezervasyonu seçip iptal butonuna tıklayabilirsiniz. İptal koşulları otele ve rezervasyon tipine göre değişiklik gösterir."
+        },
+        {
+          "question": "Ödeme seçenekleri nelerdir?",
+          "answer": "Kredi kartı (Visa, Mastercard, American Express), banka havalesi ve kapıda ödeme seçeneklerini sunuyoruz. Ödeme yöntemi otele göre değişiklik gösterebilir."
+        },
+        {
+          "question": "Rezervasyonumda değişiklik yapabilir miyim?",
+          "answer": "Evet, rezervasyon detaylarınızı değiştirebilirsiniz. Ancak değişiklik, otelin müsaitlik durumuna ve iptal/değişiklik koşullarına tabidir. Müşteri hizmetlerimizle iletişime geçmenizi öneririz."
+        },
+        {
+          "question": "En iyi fiyat garantisi nedir?",
+          "answer": "Aynı oteli, aynı tarihler ve aynı koşullar için başka bir sitede daha ucuza bulursanız, fark iadesi yapıyoruz. 24 saat içinde bize bildirmeniz yeterli."
+        },
+        {
+          "question": "Çocuklar için indirim var mı?",
+          "answer": "Çoğu otelimizde belirli yaş grubundaki çocuklar için indirim veya ücretsiz konaklama imkanı bulunmaktadır. Detaylar otel sayfasında belirtilmiştir."
+        },
+        {
+          "question": "Otel puanlamaları nasıl hesaplanıyor?",
+          "answer": "Otel puanlamaları, misafirlerimizin değerlendirmeleri, temizlik, lokasyon, hizmet kalitesi gibi kriterlere göre hesaplanmaktadır. Tüm yorumlar doğrulanmış misafirlerimize aittir."
+        },
+        {
+          "question": "Erken check-in veya geç check-out yapabilir miyim?",
+          "answer": "Erken check-in ve geç check-out talepleri otelin müsaitlik durumuna göre değerlendirilir. Ek ücret uygulanabilir. Rezervasyon sonrası otel ile direkt iletişime geçmenizi öneririz."
+        },
+        {
+          "question": "Rezervasyonumun onayını nasıl alırım?",
+          "answer": "Rezervasyon yaptıktan sonra e-posta adresinize onay maili gönderilir. Ayrıca \"Rezervasyonlarım\" bölümünden rezervasyon detaylarınızı görüntüleyebilirsiniz."
+        }
+      ]
+    },
+    "help": {
+      "title": "Daha fazla yardıma mı ihtiyacınız var?",
+      "description": "Yardım merkezimizde detaylı rehberler ve daha fazla soru-cevap bulabilirsiniz",
+      "button": "Yardım Merkezine Git"
+    }
+  },
+  "footer": {
+    "description": "Dünyanın en iyi otellerini keşfedin. Her bütçeye uygun konaklama seçenekleri ile unutulmaz tatil deneyimleri.",
+    "quickLinks": "Hızlı Linkler",
+    "home": "Ana Sayfa",
+    "about": "Hakkımızda",
+    "faq": "Sıkça Sorulan Sorular",
+    "terms": "Kullanım Koşulları",
+    "support": "Destek",
+    "contact": "İletişim",
+    "help": "Yardım Merkezi",
+    "cancellation": "İptal Politikası",
+    "privacy": "Gizlilik Politikası",
+    "contactInfo": "İletişim",
+    "rights": "Tüm hakları saklıdır."
+  },
+  "room": {
+    "adults": "Yetişkin",
+    "children": "Çocuk",
+    "room": "Oda",
+    "addRoom": "Oda Ekle",
+    "remove": "Kaldır",
+    "ok": "Tamam"
+  },
+  "days": {
+    "monday": "Pazartesi",
+    "tuesday": "Salı",
+    "wednesday": "Çarşamba",
+    "thursday": "Perşembe",
+    "friday": "Cuma",
+    "saturday": "Cumartesi",
+    "sunday": "Pazar",
+    "weekdays": "Pazartesi - Cuma",
+    "closed": "Kapalı"
+  },
+  "hotelDetail": {
+    "backToSearch": "Aramaya Dön",
+    "aboutHotel": "Otel Hakkında",
+    "facilities": "Olanaklar",
+    "roomOptions": "Oda Seçenekleri",
+    "maxGuests": "Maksimum {count} kişi",
+    "bedsInfo": "{beds} yatak, {extrabeds} ekstra yatak mevcut",
+    "roomsAvailable": "{count} oda mevcut",
+    "fewRoomsLeft": "Son birkaç oda",
+    "totalPrice": "Toplam Fiyat",
+    "makeReservation": "Rezervasyon Yap",
+    "noRoomsAvailable": "Bu tarihler için uygun oda bulunamadı",
+    "quickReservation": "Hızlı Rezervasyon",
+    "lowestPrice": "En düşük fiyat",
+    "perNight": "Gecelik",
+    "totalWithTax": "Toplam fiyat, vergiler dahil",
+    "instantConfirmation": "Anında onay",
+    "secureReservation": "Güvenli rezervasyon",
+    "support247": "24/7 müşteri desteği",
+    "location": "Konum",
+    "loading": "Yükleniyor...",
+    "hotelNotFound": "Otel bulunamadı"
+  },
+  "booking": {
+    "title": "Rezervasyon",
+    "backToHotel": "Otele Dön",
+    "completeYourReservation": "Rezervasyonunuzu tamamlamak için bilgilerinizi girin",
+    "secureReservationBadge": "Güvenli Rezervasyon",
+    "sslEncrypted": "SSL Şifreli",
+    "reservationSummary": "Rezervasyon Özeti",
+    "hotel": "Otel",
+    "roomType": "Oda Tipi",
+    "boardType": "Pansiyon",
+    "checkIn": "Giriş",
+    "checkOut": "Çıkış",
+    "guests": "Misafir",
+    "person": "kişi",
+    "nights": "gece",
+    "guestInformation": "Misafir Bilgileri",
+    "firstName": "Ad",
+    "firstNamePlaceholder": "Adınız",
+    "firstNameRequired": "Ad gerekli",
+    "lastName": "Soyad",
+    "lastNamePlaceholder": "Soyadınız",
+    "lastNameRequired": "Soyad gerekli",
+    "email": "E-posta",
+    "emailPlaceholder": "ornek@email.com",
+    "emailRequired": "E-posta gerekli",
+    "emailInvalid": "Geçerli bir e-posta girin",
+    "phone": "Telefon",
+    "phonePlaceholder": "+90 555 123 45 67",
+    "phoneRequired": "Telefon gerekli",
+    "country": "Ülke",
+    "city": "Şehir",
+    "cityPlaceholder": "İstanbul",
+    "paymentInformation": "Ödeme Bilgileri",
+    "paymentNote": "Bu form sadece görünüm amaçlıdır. Gerçek ödeme işlemi henüz aktif değildir.",
+    "cardNumber": "Kart Numarası",
+    "cardNumberPlaceholder": "1234 5678 9012 3456",
+    "cardNumberRequired": "Kart numarası gerekli",
+    "cardName": "Kart Üzerindeki İsim",
+    "cardNamePlaceholder": "AD SOYAD",
+    "cardNameRequired": "Kart üzerindeki isim gerekli",
+    "expiryMonth": "Ay",
+    "expiryMonthPlaceholder": "MM",
+    "expiryMonthRequired": "Ay gerekli",
+    "expiryYear": "Yıl",
+    "expiryYearPlaceholder": "YY",
+    "expiryYearRequired": "Yıl gerekli",
+    "cvv": "CVV",
+    "cvvPlaceholder": "123",
+    "cvvRequired": "CVV gerekli",
+    "specialRequests": "Özel İstekler (Opsiyonel)",
+    "specialRequestsPlaceholder": "Özel isteklerinizi buraya yazabilirsiniz...",
+    "termsAccept": "Kullanım şartlarını ve gizlilik politikasını okudum ve kabul ediyorum.",
+    "termsRequired": "Şartları kabul etmelisiniz",
+    "marketingAccept": "Kampanya ve fırsatlardan haberdar olmak istiyorum.",
+    "completeReservation": "Rezervasyonu Tamamla",
+    "reservationInfoMissing": "Rezervasyon bilgileri eksik",
+    "backToSearch": "Arama Sayfasına Dön",
+    "trustBadges": {
+      "securePayment": "Güvenli Ödeme",
+      "sslCertified": "SSL Sertifikalı",
+      "instantConfirmation": "Anında Onay",
+      "emailConfirmation": "E-posta ile",
+      "support247": "7/24 Destek",
+      "customerService": "Müşteri Hizmetleri",
+      "flexiblePayment": "Esnek Ödeme",
+      "installmentOptions": "Taksit Seçenekleri"
+    }
+  },
+  "oldBooking": {
+    "title": "Rezervasyon Tamamla",
+    "hotelDetails": "Otel Detayları",
+    "checkIn": "Giriş",
+    "checkOut": "Çıkış",
+    "nights": "Gece",
+    "rooms": "Oda",
+    "guests": "Misafir",
+    "guestInfo": "Misafir Bilgileri",
+    "firstName": "Ad",
+    "lastName": "Soyad",
+    "email": "E-posta",
+    "phone": "Telefon",
+    "specialRequests": "Özel İstekler",
+    "specialRequestsPlaceholder": "Varsa özel isteklerinizi buraya yazabilirsiniz...",
+    "paymentInfo": "Ödeme Bilgileri",
+    "cardNumber": "Kart Numarası",
+    "cardName": "Kart Üzerindeki İsim",
+    "expiryDate": "Son Kullanma Tarihi",
+    "cvv": "CVV",
+    "bookingSummary": "Rezervasyon Özeti",
+    "roomType": "Oda Tipi",
+    "pricePerNight": "Gecelik Fiyat",
+    "totalNights": "Toplam Gece",
+    "subtotal": "Ara Toplam",
+    "taxes": "Vergiler ve Ücretler",
+    "total": "Toplam",
+    "completeBooking": "Rezervasyonu Tamamla",
+    "termsAgree": "Kullanım koşullarını ve iptal politikasını kabul ediyorum",
+    "securePayment": "Güvenli Ödeme",
+    "securePaymentDesc": "Ödeme bilgileriniz SSL şifrelemesi ile korunmaktadır"
+  }
+}

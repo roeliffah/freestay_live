@@ -1,0 +1,455 @@
+{
+  "header": {
+    "hotels": "Hotels",
+    "about": "Over ons",
+    "contact": "Contact",
+    "myBookings": "Mijn boekingen"
+  },
+  "home": {
+    "hero": {
+      "title": "Vind uw droomvakantie",
+      "subtitle": "Ontdek de perfecte accommodatie uit duizenden hotels wereldwijd"
+    },
+    "search": {
+      "where": "Waar?",
+      "wherePlaceholder": "Stad, hotel of regio",
+      "checkIn": "Inchecken",
+      "checkOut": "Uitchecken",
+      "guests": "Gasten",
+      "searchButton": "Hotels zoeken",
+      "selectDate": "Selecteer datum"
+    },
+    "features": {
+      "title": "Waarom FreeStays?",
+      "bestPrice": "Beste prijsgarantie",
+      "bestPriceDesc": "Wij bieden de meest concurrerende prijzen",
+      "secure": "Veilig boeken",
+      "secureDesc": "SSL-versleuteld beveiligd betalingssysteem",
+      "support": "24/7 ondersteuning",
+      "supportDesc": "We zijn er altijd voor u",
+      "hotels": "Duizenden hotels",
+      "hotelsDesc": "Opties van over de hele wereld"
+    },
+    "destinations": {
+      "title": "Populaire bestemmingen",
+      "hotels": "Hotels",
+      "antalya": {
+        "title": "Antalya",
+        "subtitle": "Parel van de Middellandse Zee",
+        "hotelsCount": "250+ Hotels",
+        "description": "All-inclusive concept",
+        "discount": "30% Korting",
+        "button": "Bekijk Hotels"
+      },
+      "istanbul": {
+        "title": "Istanbul",
+        "hotelsCount": "450+ Hotels"
+      },
+      "bodrum": {
+        "title": "Bodrum",
+        "hotelsCount": "180+ Hotels"
+      },
+      "cesme": {
+        "title": "Cesme",
+        "hotelsCount": "120+ Hotels"
+      },
+      "fethiye": {
+        "title": "Fethiye",
+        "hotelsCount": "200+ Hotels"
+      },
+      "marmaris": {
+        "title": "Marmaris",
+        "hotelsCount": "150+ Hotels"
+      }
+    },
+    "cta": {
+      "title": "Boek nu",
+      "subtitle": "Beste prijzen en speciale aanbiedingen wachten op u",
+      "search": "Hotels zoeken",
+      "learnMore": "Meer informatie"
+    },
+    "roomTypes": {
+      "title": "Kies accommodatietype",
+      "hotel": {
+        "title": "Hotel",
+        "description": "Comfortabel verblijf"
+      },
+      "resort": {
+        "title": "Resort",
+        "description": "All-inclusive"
+      },
+      "apart": {
+        "title": "Aparthotel",
+        "description": "Langdurig verblijf"
+      },
+      "villa": {
+        "title": "Villa",
+        "description": "Privé accommodatie"
+      }
+    },
+    "campaign": {
+      "title": "Vroegboekkortingen",
+      "subtitle": "Boek nu voor uw zomervakantie en bespaar tot 40%",
+      "badge": "Tot 40% Korting",
+      "button": "Bekijk Campagnes"
+    }
+  },
+  "search": {
+    "title": "Zoekresultaten",
+    "hotelsFound": "hotels gevonden",
+    "filters": "Filters",
+    "sortBy": "Sorteer op",
+    "price": "Prijs",
+    "rating": "Beoordeling",
+    "name": "Naam",
+    "stars": "Sterren",
+    "priceRange": "Prijsklasse",
+    "all": "Alle",
+    "clearFilters": "Filters wissen",
+    "perNight": "Vanaf prijs per nacht",
+    "taxIncluded": "Inclusief belasting",
+    "viewDetails": "Bekijk details",
+    "freeCancellation": "Gratis annuleren",
+    "noResults": "Geen hotels gevonden die aan uw criteria voldoen.",
+    "allStars": "Alle Sterren",
+    "tryAgain": "Probeer opnieuw",
+    "loading": "Hotels laden...",
+    "sortOptions": {
+      "priceAsc": "Prijs (Laag naar Hoog)",
+      "priceDesc": "Prijs (Hoog naar Laag)",
+      "ratingDesc": "Beoordeling (Hoog naar Laag)",
+      "nameAsc": "Naam (A-Z)"
+    },
+    "priceRanges": {
+      "budget": "0-1000 ₺",
+      "mid": "1000-2000 ₺",
+      "high": "2000-5000 ₺",
+      "luxury": "5000+ ₺"
+    }
+  },
+  "hotel": {
+    "about": "Over het hotel",
+    "facilities": "Faciliteiten",
+    "roomOptions": "Kameropties",
+    "perNight": "Per nacht",
+    "book": "Boek nu",
+    "quickBooking": "Snel boeken",
+    "lowestPrice": "Laagste prijs",
+    "taxIncluded": "Per nacht, inclusief belasting",
+    "freeCancellation": "Gratis annuleren",
+    "noPayment": "Geen vooruitbetaling",
+    "instantConfirm": "Directe bevestiging",
+    "location": "Locatie"
+  },
+  "about": {
+    "hero": {
+      "badge": "Over ons",
+      "title": "Uw Vakantiedromen Werkelijkheid Maken",
+      "description": "Als FreeStays willen we onze klanten de beste accommodatie-ervaring bieden door samen te werken met duizenden hotels wereldwijd. Met moderne technologie en onze klantgerichte aanpak maken we uw vakantieplanning gemakkelijker."
+    },
+    "values": {
+      "title": "Onze Waarden",
+      "satisfaction": {
+        "title": "Klanttevredenheid",
+        "description": "Het geluk van onze klanten is onze prioriteit"
+      },
+      "reliability": {
+        "title": "Betrouwbaarheid",
+        "description": "Transparante en veilige service-aanpak"
+      },
+      "innovation": {
+        "title": "Innovatie",
+        "description": "Continue ontwikkeling met moderne technologie"
+      },
+      "quality": {
+        "title": "Kwaliteit",
+        "description": "Streven naar uitmuntendheid in elk detail"
+      }
+    },
+    "story": {
+      "title": "Ons Verhaal",
+      "paragraph1": "FreeStays werd in 2020 opgericht met de visie om het vakantieplanningsproces te vereenvoudigen. We breiden ons wereldwijde hotelnetwerk voortdurend uit om onze klanten de beste accommodatieopties te bieden.",
+      "paragraph2": "Vandaag werken we samen met duizenden hotelpartners wereldwijd en bedienen we miljoenen tevreden gasten. Ons doel is om betrouwbare en kwalitatieve accommodatie-ervaringen te bieden voor elk budget.",
+      "paragraph3": "Met onze technologie-infrastructuur en ervaren team maken we uw boekingsproces van begin tot eind naadloos. Onze 24/7 klantenondersteuning is altijd voor u beschikbaar."
+    },
+    "stats": {
+      "title": "FreeStays in Cijfers",
+      "countries": "Landen",
+      "hotels": "Hotels",
+      "guests": "Tevreden Gasten",
+      "satisfaction": "Tevredenheid"
+    },
+    "hotels": {
+      "title": "De Beste Hotels van Turkije",
+      "description": "Ontdek de meest prestigieuze en comfortabele accommodaties van ons land"
+    },
+    "cta": {
+      "title": "Ontdek Uw Droomvakantie",
+      "description": "Vind de meest geschikte optie onder duizenden hotelkeuzes en beleef een onvergetelijke vakantie",
+      "button": "Start Hotelzoeken"
+    }
+  },
+  "contact": {
+    "hero": {
+      "badge": "Contact",
+      "title": "Hoe Kunnen We U Helpen?",
+      "description": "Neem contact met ons op voor uw vragen, suggesties of ondersteuningsverzoeken"
+    },
+    "info": {
+      "phone": {
+        "title": "Telefoon",
+        "number": "+90 242 XXX XX XX",
+        "hours": "Ma-Vr: 09:00-18:00"
+      },
+      "email": {
+        "title": "E-mail",
+        "address": "info@freestays.com",
+        "response": "24/7 reactietijd"
+      },
+      "address": {
+        "title": "Adres",
+        "line1": "Lara, Antalya",
+        "line2": "Turkije"
+      }
+    },
+    "form": {
+      "title": "Schrijf Ons",
+      "name": {
+        "label": "Volledige Naam",
+        "placeholder": "Uw voor- en achternaam"
+      },
+      "email": {
+        "label": "E-mail",
+        "placeholder": "voorbeeld@email.com"
+      },
+      "subject": {
+        "label": "Onderwerp",
+        "placeholder": "Onderwerp van uw bericht"
+      },
+      "message": {
+        "label": "Uw Bericht",
+        "placeholder": "Schrijf hier uw bericht..."
+      },
+      "submit": "Bericht Verzenden",
+      "successMessage": "Uw bericht is verzonden! We nemen zo snel mogelijk contact met u op."
+    },
+    "map": {
+      "title": "Onze Kantoorlocatie",
+      "coordinates": "Coördinaten: 36.8685° N, 30.7153° E"
+    },
+    "hours": {
+      "title": "Onze Openingstijden",
+      "weekdays": "Maandag - Vrijdag",
+      "weekdaysTime": "09:00 - 18:00",
+      "saturday": "Zaterdag",
+      "saturdayTime": "10:00 - 16:00",
+      "sunday": "Zondag",
+      "sundayTime": "Gesloten",
+      "emergency": {
+        "title": "Noodlijn:",
+        "time": "24/7 open",
+        "description": "U kunt ons altijd bereiken voor reserveringen en noodgevallen."
+      }
+    },
+    "faq": {
+      "title": "Veelgestelde Vragen",
+      "description": "De meest gestelde vragen en antwoorden",
+      "items": [
+        {
+          "question": "Hoe kan ik mijn reservering annuleren?",
+          "answer": "Om uw reservering te annuleren, kunt u de betreffende reservering selecteren op de pagina \"Mijn Reserveringen\" en op de annuleringsknop klikken. Annuleringsvoorwaarden variëren afhankelijk van het hotel en type reservering."
+        },
+        {
+          "question": "Wat zijn de betalingsopties?",
+          "answer": "We bieden creditcard (Visa, Mastercard, American Express), bankoverschrijving en betaling bij aankomst aan. De betalingsmethode kan variëren per hotel."
+        },
+        {
+          "question": "Kan ik wijzigingen aanbrengen in mijn reservering?",
+          "answer": "Ja, u kunt uw reserveringsgegevens wijzigen. Wijzigingen zijn echter afhankelijk van de hotelbeschikbaarheid en annulerings-/wijzigingsvoorwaarden. We raden aan contact op te nemen met onze klantenservice."
+        },
+        {
+          "question": "Wat is de beste prijsgarantie?",
+          "answer": "Als u hetzelfde hotel goedkoper vindt op een andere site voor dezelfde data en voorwaarden, betalen we het verschil terug. Laat het ons binnen 24 uur weten."
+        },
+        {
+          "question": "Zijn er kortingen voor kinderen?",
+          "answer": "De meeste van onze hotels bieden kortingen of gratis accommodatie voor kinderen in bepaalde leeftijdsgroepen. Details zijn vermeld op de hotelpagina."
+        },
+        {
+          "question": "Hoe worden hotelbeoordelingen berekend?",
+          "answer": "Hotelbeoordelingen worden berekend op basis van criteria zoals de beoordelingen van onze gasten, netheid, locatie en servicekwaliteit. Alle beoordelingen zijn van onze geverifieerde gasten."
+        },
+        {
+          "question": "Kan ik vroeg inchecken of laat uitchecken?",
+          "answer": "Verzoeken voor vroeg inchecken en laat uitchecken worden beoordeeld op basis van hotelbeschikbaarheid. Er kunnen extra kosten van toepassing zijn. We raden aan om na het boeken direct contact op te nemen met het hotel."
+        },
+        {
+          "question": "Hoe ontvang ik bevestiging van mijn reservering?",
+          "answer": "Na het maken van een reservering wordt een bevestigingsmail naar uw e-mailadres gestuurd. U kunt uw reserveringsgegevens ook bekijken in de sectie \"Mijn Reserveringen\"."
+        }
+      ]
+    },
+    "help": {
+      "title": "Heeft u meer hulp nodig?",
+      "description": "In ons helpcentrum vindt u gedetailleerde handleidingen en meer Q&A",
+      "button": "Ga naar Helpcentrum"
+    }
+  },
+  "footer": {
+    "description": "Ontdek 's werelds beste hotels. Onvergetelijke vakantieervaringen.",
+    "quickLinks": "Snelle links",
+    "home": "Home",
+    "about": "Over ons",
+    "faq": "FAQ",
+    "terms": "Voorwaarden",
+    "support": "Ondersteuning",
+    "contact": "Contact",
+    "help": "Helpcentrum",
+    "cancellation": "Annuleringsvoorwaarden",
+    "privacy": "Privacy",
+    "contactInfo": "Contact",
+    "rights": "Alle rechten voorbehouden."
+  },
+  "room": {
+    "adults": "Volwassenen",
+    "children": "Kinderen",
+    "room": "Kamer",
+    "addRoom": "Kamer toevoegen",
+    "remove": "Verwijderen",
+    "ok": "OK"
+  },
+  "days": {
+    "monday": "Maandag",
+    "tuesday": "Dinsdag",
+    "wednesday": "Woensdag",
+    "thursday": "Donderdag",
+    "friday": "Vrijdag",
+    "saturday": "Zaterdag",
+    "sunday": "Zondag",
+    "weekdays": "Maandag - Vrijdag",
+    "closed": "Gesloten"
+  },
+  "hotelDetail": {
+    "backToSearch": "Terug naar zoeken",
+    "aboutHotel": "Over het hotel",
+    "facilities": "Faciliteiten",
+    "roomOptions": "Kameropties",
+    "maxGuests": "Maximaal {count} gasten",
+    "bedsInfo": "{beds} bedden, {extrabeds} extra bedden beschikbaar",
+    "roomsAvailable": "{count} kamers beschikbaar",
+    "fewRoomsLeft": "Slechts enkele kamers over",
+    "totalPrice": "Totale prijs",
+    "makeReservation": "Reservering maken",
+    "noRoomsAvailable": "Geen kamers beschikbaar voor geselecteerde data",
+    "quickReservation": "Snelle reservering",
+    "lowestPrice": "Laagste prijs",
+    "perNight": "Per nacht",
+    "totalWithTax": "Totale prijs, inclusief belastingen",
+    "instantConfirmation": "Onmiddellijke bevestiging",
+    "secureReservation": "Veilige reservering",
+    "support247": "24/7 klantenondersteuning",
+    "location": "Locatie",
+    "loading": "Laden...",
+    "hotelNotFound": "Hotel niet gevonden"
+  },
+  "booking": {
+    "title": "Boeking",
+    "backToHotel": "Terug naar hotel",
+    "completeYourReservation": "Voer uw gegevens in om uw reservering te voltooien",
+    "secureReservationBadge": "Veilige reservering",
+    "sslEncrypted": "SSL-versleuteld",
+    "reservationSummary": "Reserveringsoverzicht",
+    "hotel": "Hotel",
+    "roomType": "Kamertype",
+    "boardType": "Verblijfsarrangement",
+    "checkIn": "Inchecken",
+    "checkOut": "Uitchecken",
+    "guests": "Gasten",
+    "person": "persoon",
+    "nights": "nachten",
+    "guestInformation": "Gastinformatie",
+    "firstName": "Voornaam",
+    "firstNamePlaceholder": "Uw voornaam",
+    "firstNameRequired": "Voornaam verplicht",
+    "lastName": "Achternaam",
+    "lastNamePlaceholder": "Uw achternaam",
+    "lastNameRequired": "Achternaam verplicht",
+    "email": "E-mail",
+    "emailPlaceholder": "voorbeeld@email.com",
+    "emailRequired": "E-mail verplicht",
+    "emailInvalid": "Voer een geldig e-mailadres in",
+    "phone": "Telefoon",
+    "phonePlaceholder": "+31 6 12 34 56 78",
+    "phoneRequired": "Telefoon verplicht",
+    "country": "Land",
+    "city": "Stad",
+    "cityPlaceholder": "Amsterdam",
+    "paymentInformation": "Betalingsinformatie",
+    "paymentNote": "Dit formulier is alleen ter weergave. Echte betalingsverwerking is nog niet actief.",
+    "cardNumber": "Kaartnummer",
+    "cardNumberPlaceholder": "1234 5678 9012 3456",
+    "cardNumberRequired": "Kaartnummer verplicht",
+    "cardName": "Naam op kaart",
+    "cardNamePlaceholder": "JAN DE VRIES",
+    "cardNameRequired": "Naam op kaart verplicht",
+    "expiryMonth": "Maand",
+    "expiryMonthPlaceholder": "MM",
+    "expiryMonthRequired": "Maand verplicht",
+    "expiryYear": "Jaar",
+    "expiryYearPlaceholder": "JJ",
+    "expiryYearRequired": "Jaar verplicht",
+    "cvv": "CVV",
+    "cvvPlaceholder": "123",
+    "cvvRequired": "CVV verplicht",
+    "specialRequests": "Speciale verzoeken (optioneel)",
+    "specialRequestsPlaceholder": "U kunt hier uw speciale verzoeken schrijven...",
+    "termsAccept": "Ik heb de gebruiksvoorwaarden en het privacybeleid gelezen en accepteer deze.",
+    "termsRequired": "U moet de voorwaarden accepteren",
+    "marketingAccept": "Ik wil geïnformeerd worden over campagnes en aanbiedingen.",
+    "completeReservation": "Reservering voltooien",
+    "reservationInfoMissing": "Reserveringsinformatie ontbreekt",
+    "backToSearch": "Terug naar zoeken",
+    "trustBadges": {
+      "securePayment": "Veilige betaling",
+      "sslCertified": "SSL-gecertificeerd",
+      "instantConfirmation": "Onmiddellijke bevestiging",
+      "emailConfirmation": "E-mailbevestiging",
+      "support247": "24/7 ondersteuning",
+      "customerService": "Klantenservice",
+      "flexiblePayment": "Flexibele betaling",
+      "installmentOptions": "Betalingsopties"
+    }
+  },
+  "oldBooking": {
+    "title": "Boeking voltooien",
+    "hotelDetails": "Hotel Details",
+    "checkIn": "Inchecken",
+    "checkOut": "Uitchecken",
+    "nights": "Nachten",
+    "rooms": "Kamers",
+    "guests": "Gasten",
+    "guestInfo": "Gastinformatie",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "email": "E-mail",
+    "phone": "Telefoon",
+    "specialRequests": "Speciale verzoeken",
+    "specialRequestsPlaceholder": "U kunt hier uw speciale verzoeken schrijven...",
+    "paymentInfo": "Betaalinformatie",
+    "cardNumber": "Kaartnummer",
+    "cardName": "Naam op kaart",
+    "expiryDate": "Vervaldatum",
+    "cvv": "CVV",
+    "bookingSummary": "Boekingsoverzicht",
+    "roomType": "Kamertype",
+    "pricePerNight": "Prijs per nacht",
+    "totalNights": "Totaal nachten",
+    "subtotal": "Subtotaal",
+    "taxes": "Belastingen en kosten",
+    "total": "Totaal",
+    "completeBooking": "Boeking voltooien",
+    "termsAgree": "Ik ga akkoord met de algemene voorwaarden en het annuleringsbeleid",
+    "securePayment": "Veilige betaling",
+    "securePaymentDesc": "Uw betalingsinformatie is beschermd met SSL-versleuteling"
+  }
+}
