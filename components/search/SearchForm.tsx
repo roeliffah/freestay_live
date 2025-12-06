@@ -182,39 +182,39 @@ export function SearchForm() {
           </Dialog>
         </div>
 
-        {/* Misafir Sayısı */}
+        {/* Guest Count */}
         <div>
           <label className="text-sm font-medium mb-2 block">{t('guests')}</label>
           <Dialog open={showGuestDialog} onOpenChange={setShowGuestDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full justify-start text-left font-normal">
                 <Users className="mr-2 h-4 w-4" />
-                {rooms.length} Oda, {totalGuests} Misafir
+                {rooms.length} {t('room')}, {totalGuests} {t('guest')}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Oda ve Misafir Sayısı</DialogTitle>
+                <DialogTitle>{t('roomsAndGuests')}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 {rooms.map((room, index) => (
                   <div key={index} className="border rounded-lg p-4">
                     <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium">Oda {index + 1}</h4>
+                      <h4 className="font-medium">{t('room')} {index + 1}</h4>
                       {rooms.length > 1 && (
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => removeRoom(index)}
                         >
-                          Kaldır
+                          {t('remove')}
                         </Button>
                       )}
                     </div>
                     
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Yetişkin</span>
+                        <span className="text-sm">{t('adults')}</span>
                         <div className="flex items-center space-x-2">
                           <Button
                             variant="outline"
@@ -237,7 +237,7 @@ export function SearchForm() {
                       </div>
 
                       <div className="flex justify-between items-center">
-                        <span className="text-sm">Çocuk (0-12 yaş)</span>
+                        <span className="text-sm">{t('children')}</span>
                         <div className="flex items-center space-x-2">
                           <Button
                             variant="outline"
@@ -269,7 +269,7 @@ export function SearchForm() {
                     onClick={addRoom}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Oda Ekle
+                    {t('addRoom')}
                   </Button>
                 )}
 
@@ -277,7 +277,7 @@ export function SearchForm() {
                   className="w-full"
                   onClick={() => setShowGuestDialog(false)}
                 >
-                  Tamam
+                  {t('done')}
                 </Button>
               </div>
             </DialogContent>

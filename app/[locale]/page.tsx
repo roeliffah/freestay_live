@@ -151,7 +151,7 @@ export default async function HomePage({
               <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
                 <div className="relative h-full min-h-[400px] overflow-hidden">
                   <Image
-                    src="https://images.unsplash.com/photo-1531759043493-116dbc8fb05d?w=800"
+                    src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800"
                     alt="Antalya"
                     fill
                     className="object-cover group-hover:scale-110 transition-transform duration-300"

@@ -1,11 +1,16 @@
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const handleI18nRouting = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Skip middleware for admin routes - they don't need localization
+  if (pathname.startsWith('/admin')) {
+    return NextResponse.next();
+  }
   
   // Check if pathname already has a locale
   const pathnameHasLocale = routing.locales.some(
@@ -51,6 +56,7 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next|_vercel|.*\\..*).*)'
+    // Skip admin routes, api, static files
+    '/((?!admin|api|_next|_vercel|.*\\..*).*)'
   ]
 };

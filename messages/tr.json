@@ -17,7 +17,21 @@
       "checkOut": "Çıkış Tarihi",
       "guests": "Misafirler",
       "searchButton": "Otel Ara",
-      "selectDate": "Tarih seçin"
+      "selectDate": "Tarih seçin",
+      "room": "Oda",
+      "guest": "Misafir",
+      "roomsAndGuests": "Oda ve Misafir Sayısı",
+      "remove": "Kaldır",
+      "adults": "Yetişkin",
+      "children": "Çocuk (0-12 yaş)",
+      "addRoom": "Oda Ekle",
+      "done": "Tamam"
+    },
+    "popularHotels": {
+      "title": "Popüler Oteller",
+      "subtitle": "Dünya çapında en çok tercih edilen tatil otelleri",
+      "perNight": "gece",
+      "viewAll": "Tüm Otelleri Gör"
     },
     "features": {
       "title": "Neden FreeStays?",
