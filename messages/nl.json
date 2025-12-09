@@ -17,7 +17,21 @@
       "checkOut": "Uitchecken",
       "guests": "Gasten",
       "searchButton": "Hotels zoeken",
-      "selectDate": "Selecteer datum"
+      "selectDate": "Selecteer datum",
+      "room": "Kamer",
+      "guest": "Gasten",
+      "roomsAndGuests": "Kamers en gasten",
+      "remove": "Verwijderen",
+      "adults": "Volwassenen",
+      "children": "Kinderen (0-12)",
+      "addRoom": "Kamer toevoegen",
+      "done": "Klaar"
+    },
+    "popularHotels": {
+      "title": "Populaire hotels",
+      "subtitle": "De populairste vakantiehotels wereldwijd",
+      "perNight": "nacht",
+      "viewAll": "Alle hotels bekijken"
     },
     "features": {
       "title": "Waarom FreeStays?",

@@ -16,21 +16,28 @@ const fallbackHotels = [
   { id: '3', name: 'Blue Lagoon Resort', city: 'Fethiye', country: 'Turkey', rating: 4.7, stars: 5, priceFrom: 150, currency: 'EUR', images: ['https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800'] },
   { id: '4', name: 'Paradise Bay Hotel', city: 'Marmaris', country: 'Turkey', rating: 4.5, stars: 4, priceFrom: 85, currency: 'EUR', images: ['https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800'] },
   { id: '5', name: 'Crystal Palace Resort', city: 'Alanya', country: 'Turkey', rating: 4.9, stars: 5, priceFrom: 180, currency: 'EUR', images: ['https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800'] },
+  { id: '6', name: 'Aegean Dream Hotel', city: 'Çeşme', country: 'Turkey', rating: 4.4, stars: 4, priceFrom: 110, currency: 'EUR', images: ['https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800'] },
+  { id: '7', name: 'Mediterranean Pearl', city: 'Kaş', country: 'Turkey', rating: 4.7, stars: 5, priceFrom: 140, currency: 'EUR', images: ['https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800'] },
+  { id: '8', name: 'Golden Sands Resort', city: 'Side', country: 'Turkey', rating: 4.6, stars: 4, priceFrom: 100, currency: 'EUR', images: ['https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800'] },
+  { id: '9', name: 'Turquoise Coast Hotel', city: 'Kalkan', country: 'Turkey', rating: 4.8, stars: 5, priceFrom: 165, currency: 'EUR', images: ['https://images.unsplash.com/photo-1549294413-26f195200c16?w=800'] },
+  { id: '10', name: 'Royal Beach Resort', city: 'Kemer', country: 'Turkey', rating: 4.5, stars: 4, priceFrom: 90, currency: 'EUR', images: ['https://images.unsplash.com/photo-1559599238-2e0ef3f505b8?w=800'] },
 ];
 
 export function PopularHotels({ locale }: { locale: string }) {
   const t = useTranslations('home');
-  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [hotels, setHotels] = useState<Hotel[]>(fallbackHotels as unknown as Hotel[]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadFeaturedHotels = async () => {
       try {
         const response = await api.hotels.getFeatured();
-        setHotels(response.data);
-      } catch {
-        // Use fallback data when API is not available
-        setHotels(fallbackHotels as unknown as Hotel[]);
+        if (response?.data && Array.isArray(response.data) && response.data.length > 0) {
+          setHotels(response.data);
+        }
+      } catch (error) {
+        console.log('Using fallback hotels data');
+        // Fallback data is already set in initial state
       } finally {
         setIsLoading(false);
       }
@@ -60,7 +67,7 @@ export function PopularHotels({ locale }: { locale: string }) {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {hotels.slice(0, 10).map((hotel) => (
+          {(hotels || []).slice(0, 10).map((hotel) => (
             <Link
               key={hotel.id}
               href={`/${locale}/hotel/${hotel.id}`}

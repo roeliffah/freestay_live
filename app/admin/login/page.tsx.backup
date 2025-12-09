@@ -1,0 +1,249 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Form, Input, Button, Checkbox, message, Card, Alert } from 'antd';
+import { UserOutlined, LockOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
+import { authAPI } from '@/lib/api/client';
+import { rateLimiter, loginRateLimiter } from '@/lib/security/rate-limiter';
+import { isValidEmail } from '@/lib/security/input-validator';
+import { initCsrfProtection } from '@/lib/security/csrf-protection';
+import { createHoneypot, validateHoneypot, honeypotClassName } from '@/lib/security/honeypot';
+
+interface LoginFormData {
+  email: string;
+  password: string;
+  remember: boolean;
+  website?: string; // Honeypot field
+}
+
+export default function AdminLoginPage() {
+  const [loading, setLoading] = useState(false);
+  const [blocked, setBlocked] = useState(false);
+  const onFinish = async (values: LoginFormData) => {
+    // Honeypot kontrolü - Bot tespit
+    const botCheck = validateHoneypot(values.website || '', honeypot.timestamp);
+    if (botCheck.isBot) {
+      console.warn('Bot detected:', botCheck.reason);
+      message.error('Geçersiz istek. Lütfen tekrar deneyin.');
+      return;
+    }
+
+    // Email validasyonu
+    if (!isValidEmail(values.email)) {
+      message.error('Geçerli bir e-posta adresi girin!');
+      return;
+    }
+
+    // Rate limiting kontrolü
+    const identifier = values.email.toLowerCase();
+    const rateCheck = rateLimiter.check(identifier, loginRateLimiter);
+
+    if (!rateCheck.allowed) {
+      setBlocked(true);
+      setBlockTime(rateCheck.resetTime || 0);
+      const minutesLeft = Math.ceil((rateCheck.resetTime! - Date.now()) / 60000);
+      message.error({
+        content: `Çok fazla başarısız deneme! Lütfen ${minutesLeft} dakika sonra tekrar deneyin.`,
+        duration: 5,
+      });
+      return;
+    }
+
+    // Kalan deneme hakkını göster
+    if (rateCheck.remainingAttempts < 3) {
+      setRemainingAttempts(rateCheck.remainingAttempts);
+    }
+
+    setLoading(true);
+    try {
+      const response = await authAPI.login(values.email, values.password);
+
+      // Token'ları localStorage'a kaydet
+      if (response.token) {
+        localStorage.setItem('admin_token', response.token);
+      }
+      if (response.refreshToken) {
+        localStorage.setItem('admin_refresh_token', response.refreshToken);
+      }
+      
+      // Kullanıcı bilgilerini kaydet
+      if (response.user) {
+        localStorage.setItem('admin_user', JSON.stringify(response.user));
+      }
+
+      // Başarılı giriş - rate limiter'ı sıfırla
+      rateLimiter.reset(identifier);
+  const getBlockMessage = () => {
+    if (!blockTime) return '';
+    const minutesLeft = Math.ceil((blockTime - Date.now()) / 60000);
+    return `Hesabınız geçici olarak kilitlendi. ${minutesLeft} dakika sonra tekrar deneyin.`;
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <style jsx>{`
+        .${honeypotClassName} {
+          position: absolute !important;
+          left: -9999px !important;
+          width: 1px !important;
+          height: 1px !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+          tab-index: -1 !important;
+        }
+      `}</style>
+      
+      <Card className="w-full max-w-md shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+              <UserOutlined className="text-3xl text-white" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">FreeStays Admin</h1>
+          <p className="text-gray-600 mt-2">Yönetim Paneline Giriş</p>
+        </div>
+
+        {/* Rate Limit Uyarıları */}
+        {blocked && (
+          <Alert
+            message="Hesap Kilitli"
+            description={getBlockMessage()}
+            type="error"
+            icon={<ClockCircleOutlined />}
+            showIcon
+            className="mb-4"
+          />
+        )}
+
+        {!blocked && remainingAttempts !== null && remainingAttempts < 3 && (
+          <Alert
+            message="Uyarı"
+            description={`Kalan deneme hakkınız: ${remainingAttempts}`}
+            type="warning"
+            showIcon
+            className="mb-4"
+          />
+        )}
+
+        <Form
+          name="admin-login"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          size="large"
+          disabled={blocked}
+        >
+          {/* Honeypot field - botlar için görünmez tuzak */}
+          <Form.Item name="website" className={honeypotClassName} hidden>
+            <Input type="text" tabIndex={-1} autoComplete="off" />
+          </Form.Item>
+  };nst onFinish = async (values: LoginFormData) => {
+    setLoading(true);
+    try {
+      const response = await authAPI.login(values.email, values.password);
+
+      // Token'ları localStorage'a kaydet
+      if (response.token) {
+        localStorage.setItem('admin_token', response.token);
+      }
+      if (response.refreshToken) {
+        localStorage.setItem('admin_refresh_token', response.refreshToken);
+      }
+      
+      // Kullanıcı bilgilerini kaydet
+      if (response.user) {
+        localStorage.setItem('admin_user', JSON.stringify(response.user));
+      }
+
+      message.success('Giriş başarılı!');
+      router.push('/admin');
+    } catch (error: any) {
+      console.error('Login error:', error);
+      message.error(error.message || 'Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+              <UserOutlined className="text-3xl text-white" />
+            </div>
+          </div>
+          <h1 className="text-2xl font-bold text-gray-800">FreeStays Admin</h1>
+          <p className="text-gray-600 mt-2">Yönetim Paneline Giriş</p>
+        </div>
+
+        <Form
+          name="admin-login"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          size="large"
+        >
+          <Form.Item
+            name="email"
+            rules={[
+              { required: true, message: 'E-posta adresi gerekli!' },
+              { type: 'email', message: 'Geçerli bir e-posta adresi girin!' },
+            ]}
+          >
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="E-posta"
+              autoComplete="email"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: 'Şifre gerekli!' }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Şifre"
+              autoComplete="current-password"
+            />
+          </Form.Item>
+
+          <Form.Item>
+            <div className="flex items-center justify-between">
+              <Form.Item name="remember" valuePropName="checked" noStyle>
+                <Checkbox>Beni Hatırla</Checkbox>
+              </Form.Item>
+              <a href="/admin/forgot-password" className="text-blue-600 hover:text-blue-800">
+                Şifremi Unuttum
+              </a>
+            </div>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={loading}
+              block
+              className="h-12 text-base font-semibold"
+            >
+              Giriş Yap
+            </Button>
+          </Form.Item>
+        </Form>
+
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <p className="text-sm text-gray-700 font-medium mb-2">Demo Hesap:</p>
+          <p className="text-xs text-gray-600">Email: admin@freestays.com</p>
+          <p className="text-xs text-gray-600">Şifre: Admin123!</p>
+        </div>
+
+        <div className="text-center text-gray-600 text-sm mt-6">
+          <p>© 2024 FreeStays. Tüm hakları saklıdır.</p>
+        </div>
+      </Card>
+    </div>
+  );
+}

@@ -359,7 +359,7 @@ const handleDelete = (id: string) => {
             <Statistic 
               title="Active Coupons" 
               value={activeCoupons}
-              valueStyle={{ color: '#10b981' }}
+              styles={{ content: { color: '#10b981' } }}
             />
           </Card>
         </Col>
@@ -377,7 +377,7 @@ const handleDelete = (id: string) => {
               title="Usage Rate" 
               value={68}
               suffix="%"
-              valueStyle={{ color: '#f59e0b' }}
+              styles={{ content: { color: '#f59e0b' } }}
             />
           </Card>
         </Col>

@@ -17,7 +17,21 @@
       "checkOut": "Check-out",
       "guests": "Επισκέπτες",
       "searchButton": "Αναζήτηση ξενοδοχείων",
-      "selectDate": "Επιλέξτε ημερομηνία"
+      "selectDate": "Επιλέξτε ημερομηνία",
+      "room": "Δωμάτιο",
+      "guest": "Επισκέπτες",
+      "roomsAndGuests": "Δωμάτια και επισκέπτες",
+      "remove": "Αφαίρεση",
+      "adults": "Ενήλικες",
+      "children": "Παιδιά (0-12)",
+      "addRoom": "Προσθήκη δωματίου",
+      "done": "Τέλος"
+    },
+    "popularHotels": {
+      "title": "Δημοφιλή ξενοδοχεία",
+      "subtitle": "Τα πιο δημοφιλή ξενοδοχεία διακοπών παγκοσμίως",
+      "perNight": "βράδυ",
+      "viewAll": "Δείτε όλα τα ξενοδοχεία"
     },
     "features": {
       "title": "Γιατί FreeStays;",

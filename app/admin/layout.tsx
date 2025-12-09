@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Avatar, Dropdown, Badge, theme, Button } from 'antd';
 import type { MenuProps } from 'antd';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   DashboardOutlined,
   UserOutlined,
@@ -23,7 +24,6 @@ import {
   GlobalOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
 import { ConfigProvider } from 'antd';
 import enUS from 'antd/locale/en_US';
@@ -59,8 +59,11 @@ const menuItems: MenuItem[] = [
     getItem(<Link href="/admin/pages">Static Pages</Link>, '/admin/pages', <FileTextOutlined />),
     getItem(<Link href="/admin/email-templates">Email Templates</Link>, '/admin/email-templates', <MailOutlined />),
   ]),
-  getItem('Settings', 'settings', <SettingOutlined />, [
+  getItem('System', 'system', <ApiOutlined />, [
     getItem(<Link href="/admin/services">External Services</Link>, '/admin/services', <ApiOutlined />),
+    getItem(<Link href="/admin/jobs">Background Jobs</Link>, '/admin/jobs', <ApiOutlined />),
+  ]),
+  getItem('Settings', 'settings', <SettingOutlined />, [
     getItem(<Link href="/admin/settings">Site Settings</Link>, '/admin/settings', <GlobalOutlined />),
     getItem(<Link href="/admin/settings/seo">SEO Settings</Link>, '/admin/settings/seo', <HomeOutlined />),
     getItem(<Link href="/admin/settings/payment">Payment Settings</Link>, '/admin/settings/payment', <CreditCardOutlined />),
@@ -95,8 +98,33 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
   const { token } = theme.useToken();
+
+  // Check authentication only on mount
+  useEffect(() => {
+    // Must be client-side only
+    if (typeof window === 'undefined') return;
+
+    // Always allow login page
+    if (pathname === '/admin/login') {
+      setLoading(false);
+      return;
+    }
+
+    // Check token for other pages
+    const adminToken = localStorage.getItem('admin_token');
+    
+    if (!adminToken) {
+      // No token, redirect to login
+      window.location.replace('/admin/login');
+    } else {
+      // Token exists, allow access
+      setLoading(false);
+    }
+  }, [pathname]);
 
   // Find the selected keys based on current path
   const getSelectedKeys = () => {
@@ -124,9 +152,71 @@ export default function AdminLayout({
     return [];
   };
 
+  // Show loading spinner during authentication check
+  if (loading) {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body style={{ margin: 0 }} suppressHydrationWarning>
+          <AntdRegistry>
+            <ConfigProvider
+              locale={enUS}
+              theme={{
+                token: {
+                  colorPrimary: '#6366f1',
+                  borderRadius: 8,
+                },
+              }}
+            >
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                height: '100vh',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid rgba(255,255,255,0.3)',
+                  borderTop: '4px solid white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+              </div>
+            </ConfigProvider>
+          </AntdRegistry>
+        </body>
+      </html>
+    );
+  }
+
+  // Show login page without sidebar
+  if (pathname === '/admin/login') {
+    return (
+      <html lang="en" suppressHydrationWarning>
+        <body style={{ margin: 0 }} suppressHydrationWarning>
+          <AntdRegistry>
+            <ConfigProvider
+              locale={enUS}
+              theme={{
+                token: {
+                  colorPrimary: '#6366f1',
+                  borderRadius: 8,
+                },
+              }}
+            >
+              {children}
+            </ConfigProvider>
+          </AntdRegistry>
+        </body>
+      </html>
+    );
+  }
+
   return (
-    <html lang="en">
-      <body style={{ margin: 0 }}>
+    <html lang="en" suppressHydrationWarning>
+      <body style={{ margin: 0 }} suppressHydrationWarning>
         <AntdRegistry>
           <ConfigProvider
             locale={enUS}

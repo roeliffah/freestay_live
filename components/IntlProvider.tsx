@@ -13,7 +13,12 @@ export function IntlProvider({
   children: ReactNode;
 }) {
   return (
-    <NextIntlClientProvider messages={messages} locale={locale}>
+    <NextIntlClientProvider 
+      messages={messages} 
+      locale={locale}
+      timeZone="Europe/Istanbul"
+      now={new Date()}
+    >
       {children}
     </NextIntlClientProvider>
   );

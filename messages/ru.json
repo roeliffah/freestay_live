@@ -17,7 +17,21 @@
       "checkOut": "Выезд",
       "guests": "Гости",
       "searchButton": "Поиск отелей",
-      "selectDate": "Выберите дату"
+      "selectDate": "Выберите дату",
+      "room": "Номер",
+      "guest": "Гости",
+      "roomsAndGuests": "Номера и гости",
+      "remove": "Удалить",
+      "adults": "Взрослые",
+      "children": "Дети (0-12)",
+      "addRoom": "Добавить номер",
+      "done": "Готово"
+    },
+    "popularHotels": {
+      "title": "Популярные отели",
+      "subtitle": "Самые популярные отели для отдыха в мире",
+      "perNight": "ночь",
+      "viewAll": "Смотреть все отели"
     },
     "features": {
       "title": "Почему FreeStays?",

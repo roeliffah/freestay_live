@@ -17,7 +17,21 @@
       "checkOut": "Check-out",
       "guests": "Gäste",
       "searchButton": "Hotels suchen",
-      "selectDate": "Datum wählen"
+      "selectDate": "Datum wählen",
+      "room": "Zimmer",
+      "guest": "Gäste",
+      "roomsAndGuests": "Zimmer und Gäste",
+      "remove": "Entfernen",
+      "adults": "Erwachsene",
+      "children": "Kinder (0-12)",
+      "addRoom": "Zimmer hinzufügen",
+      "done": "Fertig"
+    },
+    "popularHotels": {
+      "title": "Beliebte Hotels",
+      "subtitle": "Die beliebtesten Urlaubshotels weltweit",
+      "perNight": "Nacht",
+      "viewAll": "Alle Hotels anzeigen"
     },
     "features": {
       "title": "Warum FreeStays?",

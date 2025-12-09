@@ -438,7 +438,7 @@ export default function PaymentSettingsPage() {
                   value={1340}
                   precision={2}
                   prefix="€"
-                  valueStyle={{ color: '#3f8600' }}
+                  styles={{ content: { color: '#3f8600' } }}
                 />
               </Card>
             </Col>
@@ -449,7 +449,7 @@ export default function PaymentSettingsPage() {
                   value={24580}
                   precision={2}
                   prefix="€"
-                  valueStyle={{ color: '#3f8600' }}
+                  styles={{ content: { color: '#3f8600' } }}
                 />
               </Card>
             </Col>
@@ -460,7 +460,7 @@ export default function PaymentSettingsPage() {
                   value={1250}
                   precision={2}
                   prefix="€"
-                  valueStyle={{ color: '#cf1322' }}
+                  styles={{ content: { color: '#cf1322' } }}
                 />
               </Card>
             </Col>
@@ -471,7 +471,7 @@ export default function PaymentSettingsPage() {
                   value={97.5}
                   precision={1}
                   suffix="%"
-                  valueStyle={{ color: '#3f8600' }}
+                  styles={{ content: { color: '#3f8600' } }}
                 />
               </Card>
             </Col>

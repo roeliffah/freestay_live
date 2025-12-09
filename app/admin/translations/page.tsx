@@ -185,7 +185,7 @@ export default function TranslationsPage() {
       render: (key: string, record: Translation) => {
         const status = getCompletionStatus(record.values);
         return (
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Text code copyable={{ text: key }}>{key}</Text>
             <Space size={4}>
               <Badge 

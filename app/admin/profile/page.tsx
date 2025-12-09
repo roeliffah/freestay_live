@@ -253,7 +253,7 @@ export default function ProfilePage() {
           <Card title="Two-Factor Authentication" size="small">
             <Row align="middle" justify="space-between">
               <Col>
-                <Space direction="vertical" size={0}>
+                <Space orientation="vertical" size={0}>
                   <Text strong>Two-Factor Authentication (2FA)</Text>
                   <Text type="secondary">Protect your account with an extra layer of security</Text>
                 </Space>

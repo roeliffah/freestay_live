@@ -248,25 +248,22 @@ export default function AdminDashboard() {
         {/* Top Destinations */}
         <Col xs={24} lg={8}>
           <Card title="Popular Destinations">
-            <List
-              dataSource={topDestinations}
-              renderItem={(item) => (
-                <List.Item>
-                  <div style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <Text>{item.name}</Text>
-                      <Text type="secondary">{item.bookings} bookings</Text>
-                    </div>
-                    <Progress 
-                      percent={item.percent} 
-                      showInfo={false} 
-                      strokeColor="#6366f1"
-                      size="small"
-                    />
+            <div className="space-y-4">
+              {topDestinations.map((item, index) => (
+                <div key={index}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <Text strong>{item.name}</Text>
+                    <Text type="secondary">{item.bookings} bookings</Text>
                   </div>
-                </List.Item>
-              )}
-            />
+                  <Progress 
+                    percent={item.percent} 
+                    showInfo={false} 
+                    strokeColor="#6366f1"
+                    size="small"
+                  />
+                </div>
+              ))}
+            </div>
           </Card>
         </Col>
       </Row>
