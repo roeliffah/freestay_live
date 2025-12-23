@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5240/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1';
 
 // Types
 export interface ApiResponse<T> {
