@@ -4,11 +4,24 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const handleI18nRouting = createMiddleware(routing);
 
-export default function middleware(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // Skip middleware for admin routes - they don't need localization
+  // Admin route authentication kontrolü
   if (pathname.startsWith('/admin')) {
+    // Login sayfasına izin ver
+    if (pathname === '/admin/login') {
+      return NextResponse.next();
+    }
+    
+    // Token kontrolü yap
+    const token = request.cookies.get('admin_token')?.value;
+    
+    if (!token) {
+      // Token yoksa login'e yönlendir
+      return NextResponse.redirect(new URL('/admin/login', request.url));
+    }
+    
     return NextResponse.next();
   }
   

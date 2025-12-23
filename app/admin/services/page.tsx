@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -11,17 +11,15 @@ import {
   Form,
   Input,
   Switch,
-  message,
   Typography,
   Dropdown,
-  Tabs,
   Alert,
+  Spin,
+  App,
 } from 'antd';
-import type { MenuProps, TabsProps } from 'antd';
+import type { MenuProps } from 'antd';
 import {
-  PlusOutlined,
   EditOutlined,
-  DeleteOutlined,
   MoreOutlined,
   ApiOutlined,
   CheckCircleOutlined,
@@ -29,9 +27,11 @@ import {
   SyncOutlined,
   EyeOutlined,
   EyeInvisibleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+import { adminAPI } from '@/lib/api/client';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
 interface ExternalService {
@@ -40,85 +40,57 @@ interface ExternalService {
   code: string;
   baseUrl: string;
   apiKey: string;
-  apiSecret: string;
+  apiSecret?: string;
   isActive: boolean;
-  lastSync: string | null;
-  settings: Record<string, any>;
+  lastSync?: string | null;
+  settings?: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-// Mock data
-const mockServices: ExternalService[] = [
-  {
-    id: '1',
-    name: 'SunHotels',
-    code: 'sunhotels',
-    baseUrl: 'http://xml.sunhotels.net/15/PostGet/NonStaticXMLAPI.asmx',
-    apiKey: 'FreestaysTEST',
-    apiSecret: 'Vision2024!@',
-    isActive: true,
-    lastSync: '2025-12-05 03:00',
-    settings: {
-      defaultCurrency: 'EUR',
-      timeout: 30000,
-      maxRetries: 3,
-    },
-  },
-  {
-    id: '2',
-    name: 'Kiwi.com',
-    code: 'kiwi',
-    baseUrl: 'https://api.tequila.kiwi.com',
-    apiKey: '',
-    apiSecret: '',
-    isActive: false,
-    lastSync: null,
-    settings: {
-      defaultCurrency: 'EUR',
-      searchRadius: 50,
-    },
-  },
-  {
-    id: '3',
-    name: 'DiscoverCars',
-    code: 'discovercars',
-    baseUrl: 'https://api.discovercars.com',
-    apiKey: '',
-    apiSecret: '',
-    isActive: false,
-    lastSync: null,
-    settings: {
-      defaultCurrency: 'EUR',
-    },
-  },
-  {
-    id: '4',
-    name: 'Stripe',
-    code: 'stripe',
-    baseUrl: 'https://api.stripe.com',
-    apiKey: 'pk_test_xxx',
-    apiSecret: 'sk_test_xxx',
-    isActive: true,
-    lastSync: null,
-    settings: {
-      webhookSecret: 'whsec_xxx',
-      currency: 'EUR',
-    },
-  },
-];
-
 export default function ServicesPage() {
-  const [services, setServices] = useState<ExternalService[]>(mockServices);
+  return (
+    <App>
+      <ServicesContent />
+    </App>
+  );
+}
+
+function ServicesContent() {
+  const { message: messageApi } = App.useApp();
+  const [services, setServices] = useState<ExternalService[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingService, setEditingService] = useState<ExternalService | null>(null);
   const [showSecrets, setShowSecrets] = useState<Record<string, boolean>>({});
   const [form] = Form.useForm();
   const [testing, setTesting] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    setLoading(true);
+    try {
+      const response: any = await adminAPI.getServices();
+      const servicesData = Array.isArray(response) ? response : (response.items || []);
+      setServices(servicesData);
+    } catch (error: any) {
+      console.error('Failed to load services:', error);
+      messageApi.error(error.message || 'Failed to load services');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showModal = (service: ExternalService) => {
     setEditingService(service);
     form.setFieldsValue({
       ...service,
-      settings: JSON.stringify(service.settings, null, 2),
+      settings: service.settings ? JSON.stringify(service.settings, null, 2) : '{}',
     });
     setIsModalOpen(true);
   };
@@ -126,51 +98,86 @@ export default function ServicesPage() {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
-      const settings = JSON.parse(values.settings);
+      setSaving(true);
       
-      setServices(services.map(s => 
-        s.id === editingService?.id ? { ...s, ...values, settings } : s
-      ));
+      if (!editingService) return;
+
+      const settings = values.settings ? JSON.parse(values.settings) : {};
       
-      message.success('Service settings saved');
+      const updateData = {
+        name: values.name,
+        baseUrl: values.baseUrl,
+        apiKey: values.apiKey,
+        apiSecret: values.apiSecret,
+        isActive: values.isActive,
+        settings,
+      };
+
+      await adminAPI.updateService(editingService.id, updateData);
+      messageApi.success('Service settings saved');
       setIsModalOpen(false);
-    } catch (error) {
+      fetchServices();
+    } catch (error: any) {
       if (error instanceof SyntaxError) {
-        message.error('Invalid JSON format');
+        messageApi.error('Invalid JSON format');
+      } else {
+        console.error('Failed to save service:', error);
+        messageApi.error(error.message || 'Failed to save service');
       }
+    } finally {
+      setSaving(false);
     }
   };
 
-const toggleActive = (service: ExternalService) => {
-    setServices(services.map(s => 
-      s.id === service.id ? { ...s, isActive: !s.isActive } : s
-    ));
-    message.success(service.isActive ? 'Service deactivated' : 'Service activated');
+  const toggleActive = async (service: ExternalService) => {
+    try {
+      await adminAPI.updateService(service.id, {
+        isActive: !service.isActive,
+      });
+      messageApi.success(service.isActive ? 'Service deactivated' : 'Service activated');
+      fetchServices();
+    } catch (error: any) {
+      console.error('Failed to toggle status:', error);
+      messageApi.error(error.message || 'Failed to update status');
+    }
   };
 
   const testConnection = async (service: ExternalService) => {
     setTesting(service.id);
-    // Simulate API test
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setTesting(null);
-    
-    if (service.apiKey) {
-      message.success(`${service.name} connection successful!`);
-    } else {
-      message.error(`${service.name} connection failed: API key missing`);
+    try {
+      // Backend'de test connection endpoint'i varsa kullanılabilir
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      if (service.apiKey) {
+        messageApi.success(`${service.name} connection successful!`);
+      } else {
+        messageApi.error(`${service.name} connection failed: API key missing`);
+      }
+    } catch (error: any) {
+      console.error('Connection test failed:', error);
+      messageApi.error(error.message || 'Connection test failed');
+    } finally {
+      setTesting(null);
     }
   };
 
   const triggerSync = async (service: ExternalService) => {
-    message.loading(`${service.name} synchronization starting...`);
-    // Simulate sync
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    setServices(services.map(s => 
-      s.id === service.id ? { ...s, lastSync: new Date().toLocaleString('en-US') } : s
-    ));
-    
-    message.success(`${service.name} synchronization completed`);
+    if (service.code !== 'sunhotels') {
+      messageApi.error('Sync is only available for SunHotels');
+      return;
+    }
+
+    setSyncing(service.id);
+    try {
+      const result = await adminAPI.syncSunHotels();
+      messageApi.success(result.message || 'Synchronization started successfully');
+      fetchServices();
+    } catch (error: any) {
+      console.error('Sync failed:', error);
+      messageApi.error(error.message || 'Failed to start synchronization');
+    } finally {
+      setSyncing(null);
+    }
   };
 
   const toggleSecretVisibility = (id: string) => {
@@ -299,10 +306,13 @@ const toggleActive = (service: ExternalService) => {
           <ApiOutlined style={{ marginRight: 12 }} />
           External Services
         </Title>
+        <Button icon={<ReloadOutlined />} onClick={fetchServices} loading={loading}>
+          Refresh
+        </Button>
       </div>
 
       <Alert
-        message="Service Integrations"
+        title="Service Integrations"
         description="Here you can manage API settings for external services like SunHotels, Kiwi.com, DiscoverCars and Stripe. Keep your API keys secure."
         type="info"
         showIcon
@@ -310,12 +320,14 @@ const toggleActive = (service: ExternalService) => {
       />
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={services}
-          rowKey="id"
-          pagination={false}
-        />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={services}
+            rowKey="id"
+            pagination={false}
+          />
+        </Spin>
       </Card>
 
       <Modal
@@ -326,6 +338,7 @@ const toggleActive = (service: ExternalService) => {
         okText="Save"
         cancelText="Cancel"
         width={600}
+        confirmLoading={saving}
       >
         <Form form={form} layout="vertical">
           <Form.Item name="name" label="Service Name">
@@ -360,6 +373,7 @@ const toggleActive = (service: ExternalService) => {
             rules={[
               {
                 validator: async (_, value) => {
+                  if (!value || value.trim() === '') return;
                   try {
                     JSON.parse(value);
                   } catch {

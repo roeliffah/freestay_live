@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Input, Button, Checkbox, Card, Typography, App } from 'antd';
 import { UserOutlined, LockOutlined, ThunderboltOutlined, EyeInvisibleOutlined, EyeTwoTone, SafetyCertificateOutlined } from '@ant-design/icons';
 import { authAPI } from '@/lib/api/client';
@@ -9,7 +10,7 @@ import { loginRateLimiter } from '@/lib/security/rate-limiter';
 import SecureForm from '@/components/forms/SecureForm';
 import { Form } from 'antd';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 interface LoginFormData {
   email: string;
@@ -43,6 +44,9 @@ function LoginContent() {
       // Backend returns accessToken/refreshToken/user; persist under admin_* keys for layout checks
       if (response.accessToken) {
         localStorage.setItem('admin_token', response.accessToken);
+        
+        // Cookie'ye de kaydet (middleware için)
+        document.cookie = `admin_token=${response.accessToken}; path=/; max-age=${30 * 24 * 60 * 60}`; // 30 gün
       }
       if (response.refreshToken) {
         localStorage.setItem('admin_refresh_token', response.refreshToken);
@@ -53,8 +57,10 @@ function LoginContent() {
 
       message.success('Login successful!');
       
-      // Full page reload redirect
-      window.location.href = '/admin';
+      // Token'ın set edilmesini bekle, sonra redirect yap
+      setTimeout(() => {
+        window.location.href = '/admin';
+      }, 100);
     } catch (error: any) {
       console.error('Login error:', error);
       const errorMessage = error.message || 'Login failed. Please check your credentials.';
@@ -182,12 +188,12 @@ function LoginContent() {
               <Form.Item name="remember" valuePropName="checked" noStyle>
                 <Checkbox>Remember me</Checkbox>
               </Form.Item>
-              <a 
+              <Link 
                 href="/admin/forgot-password" 
                 className="text-indigo-600 hover:text-indigo-800 font-medium"
               >
                 Forgot Password?
-              </a>
+              </Link>
             </div>
           </Form.Item>
 

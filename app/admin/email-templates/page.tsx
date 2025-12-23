@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -13,11 +13,12 @@ import {
   Switch,
   message,
   Typography,
-  Dropdown,
   Tabs,
   Select,
   Alert,
   Tooltip,
+  Spin,
+  App,
 } from 'antd';
 import type { MenuProps, TabsProps } from 'antd';
 import {
@@ -28,196 +29,90 @@ import {
   EyeOutlined,
   CopyOutlined,
   CodeOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
+
+interface EmailTemplateTranslation {
+  locale: string;
+  subject: string;
+  body: string;
+}
 
 interface EmailTemplate {
   id: string;
   code: string;
   name: string;
-  subject: Record<string, string>;
-  body: Record<string, string>;
+  description?: string;
   variables: string[];
   isActive: boolean;
+  translations: EmailTemplateTranslation[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 const locales = [
   { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
   { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-];
-
-// Mock data
-const mockTemplates: EmailTemplate[] = [
-  {
-    id: '1',
-    code: 'booking_confirmation',
-    name: 'Booking Confirmation',
-    subject: {
-      tr: 'Rezervasyonunuz onaylandı - {{bookingId}}',
-      en: 'Your booking is confirmed - {{bookingId}}',
-      de: 'Ihre Buchung ist bestätigt - {{bookingId}}',
-    },
-    body: {
-      tr: `Sayın {{customerName}},
-
-Rezervasyonunuz başarıyla onaylanmıştır.
-
-Rezervasyon Detayları:
-- Rezervasyon No: {{bookingId}}
-- Otel: {{hotelName}}
-- Giriş Tarihi: {{checkIn}}
-- Çıkış Tarihi: {{checkOut}}
-- Toplam Tutar: {{totalAmount}}
-
-İyi tatiller dileriz!
-
-FreeStays Ekibi`,
-      en: `Dear {{customerName}},
-
-Your booking has been confirmed.
-
-Booking Details:
-- Booking ID: {{bookingId}}
-- Hotel: {{hotelName}}
-- Check-in: {{checkIn}}
-- Check-out: {{checkOut}}
-- Total: {{totalAmount}}
-
-Have a great vacation!
-
-FreeStays Team`,
-      de: `Sehr geehrte(r) {{customerName}},
-
-Ihre Buchung wurde bestätigt.
-
-Buchungsdetails:
-- Buchungsnummer: {{bookingId}}
-- Hotel: {{hotelName}}
-- Check-in: {{checkIn}}
-- Check-out: {{checkOut}}
-- Gesamtbetrag: {{totalAmount}}
-
-Wir wünschen Ihnen einen schönen Urlaub!
-
-FreeStays Team`,
-    },
-    variables: ['customerName', 'bookingId', 'hotelName', 'checkIn', 'checkOut', 'totalAmount'],
-    isActive: true,
-  },
-  {
-    id: '2',
-    code: 'welcome',
-    name: 'Welcome',
-    subject: {
-      tr: 'FreeStays\'e Hoş Geldiniz!',
-      en: 'Welcome to FreeStays!',
-      de: 'Willkommen bei FreeStays!',
-    },
-    body: {
-      tr: `Merhaba {{customerName}},
-
-FreeStays ailesine hoş geldiniz!
-
-Hesabınız başarıyla oluşturuldu. Artık binlerce otel arasından seçim yapabilir ve özel fırsatlardan yararlanabilirsiniz.
-
-İlk rezervasyonunuzda %10 indirim için WELCOME10 kupon kodunu kullanmayı unutmayın!
-
-FreeStays Ekibi`,
-      en: `Hello {{customerName}},
-
-Welcome to FreeStays!
-
-Your account has been created successfully. You can now choose from thousands of hotels and take advantage of special offers.
-
-Don't forget to use the coupon code WELCOME10 for 10% off your first booking!
-
-FreeStays Team`,
-      de: '',
-    },
-    variables: ['customerName'],
-    isActive: true,
-  },
-  {
-    id: '3',
-    code: 'password_reset',
-    name: 'Password Reset',
-    subject: {
-      tr: 'Şifre Sıfırlama İsteği',
-      en: 'Password Reset Request',
-      de: 'Passwort zurücksetzen',
-    },
-    body: {
-      tr: `Merhaba {{customerName}},
-
-Şifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:
-
-{{resetLink}}
-
-Bu bağlantı 24 saat geçerlidir.
-
-Eğer bu isteği siz yapmadıysanız, bu e-postayı görmezden gelebilirsiniz.
-
-FreeStays Ekibi`,
-      en: `Hello {{customerName}},
-
-Click the link below to reset your password:
-
-{{resetLink}}
-
-This link is valid for 24 hours.
-
-If you didn't request this, you can ignore this email.
-
-FreeStays Team`,
-      de: '',
-    },
-    variables: ['customerName', 'resetLink'],
-    isActive: true,
-  },
-  {
-    id: '4',
-    code: 'booking_cancelled',
-    name: 'Booking Cancelled',
-    subject: {
-      tr: 'Rezervasyonunuz iptal edildi - {{bookingId}}',
-      en: 'Your booking has been cancelled - {{bookingId}}',
-      de: 'Ihre Buchung wurde storniert - {{bookingId}}',
-    },
-    body: {
-      tr: `Sayın {{customerName}},
-
-{{bookingId}} numaralı rezervasyonunuz iptal edilmiştir.
-
-İade tutarı 5-10 iş günü içinde hesabınıza yatırılacaktır.
-
-Sorularınız için bizimle iletişime geçebilirsiniz.
-
-FreeStays Ekibi`,
-      en: '',
-      de: '',
-    },
-    variables: ['customerName', 'bookingId'],
-    isActive: true,
-  },
+  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
 ];
 
 export default function EmailTemplatesPage() {
-  const [templates, setTemplates] = useState<EmailTemplate[]>(mockTemplates);
+  return (
+    <App>
+      <EmailTemplatesContent />
+    </App>
+  );
+}
+
+function EmailTemplatesContent() {
+  const { message: messageApi } = App.useApp();
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
-  const [selectedLocale, setSelectedLocale] = useState('tr');
+  const [selectedLocale, setSelectedLocale] = useState('en');
   const [form] = Form.useForm();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
-  const [testEmail, setTestEmail] = useState('');
+  const [testEmailForm] = Form.useForm();
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const fetchTemplates = async () => {
+    setLoading(true);
+    try {
+      const response: any = await adminAPI.getEmailTemplates();
+      const templatesData = Array.isArray(response) ? response : (response.items || []);
+      setTemplates(templatesData);
+    } catch (error: any) {
+      console.error('Failed to load email templates:', error);
+      messageApi.error(error.message || 'Failed to load email templates');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showModal = (template: EmailTemplate) => {
     setEditingTemplate(template);
+    const translation = template.translations?.find(t => t.locale === selectedLocale) || 
+                       template.translations?.[0] || 
+                       { locale: selectedLocale, subject: '', body: '' };
+    
     form.setFieldsValue({
-      subject: template.subject[selectedLocale] || '',
-      body: template.body[selectedLocale] || '',
+      subject: translation.subject || '',
+      body: translation.body || '',
       isActive: template.isActive,
     });
     setIsModalOpen(true);
@@ -226,49 +121,85 @@ export default function EmailTemplatesPage() {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      setSaving(true);
       
-      setTemplates(templates.map(t => {
-        if (t.id === editingTemplate?.id) {
-          return {
-            ...t,
-            subject: { ...t.subject, [selectedLocale]: values.subject },
-            body: { ...t.body, [selectedLocale]: values.body },
-            isActive: values.isActive,
-          };
+      if (!editingTemplate) return;
+
+      // Mevcut translations'ı güncelle veya yeni ekle
+      const existingTranslations = editingTemplate.translations?.filter(t => t.locale !== selectedLocale) || [];
+      const updatedTranslations = [
+        ...existingTranslations,
+        {
+          locale: selectedLocale,
+          subject: values.subject,
+          body: values.body,
         }
-        return t;
-      }));
-      
-      message.success('Template saved');
+      ];
+
+      const updateData = {
+        name: editingTemplate.name,
+        description: editingTemplate.description,
+        isActive: values.isActive,
+        translations: updatedTranslations,
+      };
+
+      await adminAPI.updateEmailTemplate(editingTemplate.id, updateData);
+      messageApi.success('Template saved successfully');
       setIsModalOpen(false);
-    } catch (error) {
-      console.error('Validation failed:', error);
+      fetchTemplates();
+    } catch (error: any) {
+      console.error('Failed to save template:', error);
+      messageApi.error(error.message || 'Failed to save template');
+    } finally {
+      setSaving(false);
     }
   };
 
   const onLocaleChange = (locale: string) => {
     setSelectedLocale(locale);
     if (editingTemplate) {
+      const translation = editingTemplate.translations?.find(t => t.locale === locale);
       form.setFieldsValue({
-        subject: editingTemplate.subject[locale] || '',
-        body: editingTemplate.body[locale] || '',
+        subject: translation?.subject || '',
+        body: translation?.body || '',
       });
     }
   };
 
-  const sendTestEmail = () => {
-    if (!testEmail) {
-      message.error('Enter email address');
-      return;
+  const handleSendTestEmail = async () => {
+    try {
+      const values = await testEmailForm.validateFields();
+      if (!editingTemplate) return;
+
+      await adminAPI.sendTestEmail(editingTemplate.code, {
+        email: values.email,
+        locale: values.locale || selectedLocale,
+        testVariables: values.testVariables ? JSON.parse(values.testVariables) : undefined,
+      });
+
+      messageApi.success(`Test email sent to ${values.email}`);
+      setTestEmailModalOpen(false);
+      testEmailForm.resetFields();
+    } catch (error: any) {
+      console.error('Failed to send test email:', error);
+      messageApi.error(error.message || 'Failed to send test email');
     }
-    message.success(`Test email sent to ${testEmail}`);
-    setTestEmailModalOpen(false);
-    setTestEmail('');
+  };
+
+  const toggleStatus = async (template: EmailTemplate) => {
+    try {
+      await adminAPI.toggleEmailTemplateStatus(template.id);
+      messageApi.success(`Template ${template.isActive ? 'deactivated' : 'activated'}`);
+      fetchTemplates();
+    } catch (error: any) {
+      console.error('Failed to toggle status:', error);
+      messageApi.error(error.message || 'Failed to update status');
+    }
   };
 
   const copyVariable = (variable: string) => {
     navigator.clipboard.writeText(`{{${variable}}}`);
-    message.success(`{{${variable}}} copied`);
+    messageApi.success(`{{${variable}}} copied`);
   };
 
   const columns = [
@@ -287,11 +218,11 @@ export default function EmailTemplatesPage() {
       ),
     },
     {
-      title: 'Subject (TR)',
-      dataIndex: ['subject', 'tr'],
-      key: 'subject',
-      render: (subject: string) => (
-        <Text ellipsis style={{ maxWidth: 300 }}>{subject}</Text>
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+      render: (description: string) => (
+        <Text ellipsis style={{ maxWidth: 250 }}>{description || '-'}</Text>
       ),
     },
     {
@@ -319,7 +250,9 @@ export default function EmailTemplatesPage() {
       render: (_: any, record: EmailTemplate) => (
         <Space>
           {locales.map(locale => {
-            const hasTranslation = record.body[locale.code] && record.body[locale.code].trim() !== '';
+            const hasTranslation = record.translations?.some(
+              t => t.locale === locale.code && t.body && t.body.trim() !== ''
+            ) || false;
             return (
               <Tag 
                 key={locale.code} 
@@ -337,10 +270,13 @@ export default function EmailTemplatesPage() {
       title: 'Status',
       dataIndex: 'isActive',
       key: 'isActive',
-      render: (isActive: boolean) => (
-        <Tag color={isActive ? 'green' : 'default'}>
-          {isActive ? 'Active' : 'Inactive'}
-        </Tag>
+      render: (isActive: boolean, record: EmailTemplate) => (
+        <Switch
+          checked={isActive}
+          checkedChildren="Active"
+          unCheckedChildren="Inactive"
+          onChange={() => toggleStatus(record)}
+        />
       ),
     },
     {
@@ -357,6 +293,7 @@ export default function EmailTemplatesPage() {
             icon={<SendOutlined />} 
             onClick={() => {
               setEditingTemplate(record);
+              testEmailForm.setFieldsValue({ locale: selectedLocale });
               setTestEmailModalOpen(true);
             }}
           >
@@ -374,10 +311,13 @@ export default function EmailTemplatesPage() {
           <MailOutlined style={{ marginRight: 12 }} />
           Email Templates
         </Title>
+        <Button icon={<ReloadOutlined />} onClick={fetchTemplates} loading={loading}>
+          Refresh
+        </Button>
       </div>
 
       <Alert
-        message="Email Templates"
+        title="Email Templates"
         description="You can edit the templates for system emails. Variables are used in {{variable}} format."
         type="info"
         showIcon
@@ -385,12 +325,17 @@ export default function EmailTemplatesPage() {
       />
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={templates}
-          rowKey="id"
-          pagination={false}
-        />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={templates}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showTotal: (total) => `Total ${total} templates`,
+            }}
+          />
+        </Spin>
       </Card>
 
       {/* Edit Modal */}
@@ -415,6 +360,7 @@ export default function EmailTemplatesPage() {
         okText="Save"
         cancelText="Cancel"
         width={800}
+        confirmLoading={saving}
       >
         <div style={{ marginBottom: 16 }}>
           <Text type="secondary">Available variables: </Text>
@@ -460,28 +406,62 @@ export default function EmailTemplatesPage() {
       <Modal
         title="Send Test Email"
         open={testEmailModalOpen}
-        onOk={sendTestEmail}
+        onOk={handleSendTestEmail}
         onCancel={() => {
           setTestEmailModalOpen(false);
-          setTestEmail('');
+          testEmailForm.resetFields();
         }}
         okText="Send"
         cancelText="Cancel"
       >
-        <Form layout="vertical">
+        <Form form={testEmailForm} layout="vertical">
           <Form.Item label="Template">
             <Text strong>{editingTemplate?.name}</Text>
+            <br />
+            <Text type="secondary" code>{editingTemplate?.code}</Text>
           </Form.Item>
-          <Form.Item label="Email Address" required>
+          
+          <Form.Item 
+            name="email" 
+            label="Email Address" 
+            rules={[
+              { required: true, message: 'Email is required' },
+              { type: 'email', message: 'Invalid email format' }
+            ]}
+          >
             <Input
               type="email"
               placeholder="test@example.com"
-              value={testEmail}
-              onChange={(e) => setTestEmail(e.target.value)}
+              prefix={<MailOutlined />}
             />
           </Form.Item>
+
+          <Form.Item 
+            name="locale" 
+            label="Language"
+            rules={[{ required: true, message: 'Language is required' }]}
+          >
+            <Select
+              options={locales.map(l => ({
+                label: <Space>{l.flag} {l.name}</Space>,
+                value: l.code,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item 
+            name="testVariables" 
+            label="Test Variables (JSON)"
+          >
+            <TextArea 
+              rows={4} 
+              placeholder={`{\n  "customerName": "John Doe",\n  "bookingId": "BK-12345"\n}`}
+              style={{ fontFamily: 'monospace' }}
+            />
+          </Form.Item>
+
           <Alert
-            message="Test email will be sent with sample values."
+            message="Test email will be sent with the provided variables or sample values."
             type="info"
             showIcon
           />

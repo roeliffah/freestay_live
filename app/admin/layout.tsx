@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, theme, Button } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Badge, theme, Button, App } from 'antd';
 import type { MenuProps } from 'antd';
 import { useRouter, usePathname } from 'next/navigation';
 import {
@@ -22,6 +22,8 @@ import {
   MenuUnfoldOutlined,
   HomeOutlined,
   GlobalOutlined,
+  QuestionCircleOutlined,
+  StarOutlined,
 } from '@ant-design/icons';
 import Link from 'next/link';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
@@ -54,10 +56,12 @@ const menuItems: MenuItem[] = [
   ]),
   getItem(<Link href="/admin/bookings">Bookings</Link>, '/admin/bookings', <CalendarOutlined />),
   getItem(<Link href="/admin/coupons">Coupons</Link>, '/admin/coupons', <GiftOutlined />),
+  getItem(<Link href="/admin/featured-content">Featured Content</Link>, '/admin/featured-content', <StarOutlined />),
   getItem('Content', 'content', <FileTextOutlined />, [
     getItem(<Link href="/admin/translations">Translations</Link>, '/admin/translations', <TranslationOutlined />),
     getItem(<Link href="/admin/pages">Static Pages</Link>, '/admin/pages', <FileTextOutlined />),
     getItem(<Link href="/admin/email-templates">Email Templates</Link>, '/admin/email-templates', <MailOutlined />),
+    getItem(<Link href="/admin/faq">FAQ</Link>, '/admin/faq', <QuestionCircleOutlined />),
   ]),
   getItem('System', 'system', <ApiOutlined />, [
     getItem(<Link href="/admin/services">External Services</Link>, '/admin/services', <ApiOutlined />),
@@ -100,8 +104,24 @@ export default function AdminLayout({
   const [collapsed, setCollapsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
-  const router = useRouter();
   const { token } = theme.useToken();
+
+  // Logout handler
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_refresh_token');
+    localStorage.removeItem('admin_user');
+    // Cookie'yi temizle
+    document.cookie = 'admin_token=; path=/; max-age=0';
+    window.location.href = '/admin/login';
+  };
+
+  // Handle menu clicks
+  const handleUserMenuClick: MenuProps['onClick'] = (e) => {
+    if (e.key === 'logout') {
+      handleLogout();
+    }
+  };
 
   // Check authentication only on mount
   useEffect(() => {
@@ -110,8 +130,9 @@ export default function AdminLayout({
 
     // Always allow login page
     if (pathname === '/admin/login') {
-      setLoading(false);
-      return;
+      // Use timeout to avoid setState during render
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
     }
 
     // Check token for other pages
@@ -122,7 +143,8 @@ export default function AdminLayout({
       window.location.replace('/admin/login');
     } else {
       // Token exists, allow access
-      setLoading(false);
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
     }
   }, [pathname]);
 
@@ -167,23 +189,25 @@ export default function AdminLayout({
                 },
               }}
             >
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                height: '100vh',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  border: '4px solid rgba(255,255,255,0.3)',
-                  borderTop: '4px solid white',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-              </div>
+              <App>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'center', 
+                  alignItems: 'center', 
+                  height: '100vh',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '4px solid rgba(255,255,255,0.3)',
+                    borderTop: '4px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              </App>
             </ConfigProvider>
           </AntdRegistry>
         </body>
@@ -206,7 +230,9 @@ export default function AdminLayout({
                 },
               }}
             >
-              {children}
+              <App>
+                {children}
+              </App>
             </ConfigProvider>
           </AntdRegistry>
         </body>
@@ -227,7 +253,8 @@ export default function AdminLayout({
               },
             }}
           >
-            <Layout style={{ minHeight: '100vh' }}>
+            <App>
+              <Layout style={{ minHeight: '100vh' }}>
               <Sider 
                 trigger={null} 
                 collapsible 
@@ -299,7 +326,7 @@ export default function AdminLayout({
                       <Button type="text" icon={<BellOutlined />} />
                     </Badge>
                     
-                    <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
+                    <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight">
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                         <Avatar style={{ backgroundColor: token.colorPrimary }}>
                           <UserOutlined />
@@ -321,6 +348,7 @@ export default function AdminLayout({
                 </Content>
               </Layout>
             </Layout>
+            </App>
           </ConfigProvider>
         </AntdRegistry>
       </body>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Card,
@@ -8,9 +8,8 @@ import {
   Space,
   Tag,
   Modal,
-  Form,
+  App,
   Input,
-  message,
   Typography,
   Avatar,
   Dropdown,
@@ -22,6 +21,7 @@ import {
   Row,
   Col,
   Badge,
+  Switch,
 } from 'antd';
 import type { MenuProps, TabsProps } from 'antd';
 import {
@@ -38,7 +38,9 @@ import {
   HomeOutlined,
   RocketOutlined,
   CarOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text } = Typography;
 
@@ -48,80 +50,40 @@ interface Customer {
   email: string;
   phone: string;
   locale: string;
-  status: 'active' | 'blocked';
+  isBlocked: boolean;
   totalBookings: number;
   totalSpent: number;
-  lastBookingAt: string;
+  lastBookingAt: string | null;
   createdAt: string;
+  notes?: string;
+}
+
+interface ApiCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  locale: string;
+  isBlocked: boolean;
+  totalBookings: number;
+  totalSpent: number;
+  lastBookingAt: string | null;
+  createdAt: string;
+  notes?: string;
 }
 
 interface CustomerBooking {
   id: string;
-  type: 'hotel' | 'flight' | 'car';
-  title: string;
+  type: number; // 0=Hotel, 1=Flight, 2=Car
+  hotelName?: string;
+  flightInfo?: string;
+  carInfo?: string;
   amount: number;
-  status: 'confirmed' | 'pending' | 'cancelled';
-  date: string;
+  status: number; // 0=Pending, 1=Confirmed, 2=Cancelled, 3=Completed
+  checkInDate?: string;
+  checkOutDate?: string;
+  createdAt: string;
 }
-
-// Mock data
-const mockCustomers: Customer[] = [
-  {
-    id: '1',
-    name: 'Ahmet Yılmaz',
-    email: 'ahmet@gmail.com',
-    phone: '+90 532 111 2233',
-    locale: 'tr',
-    status: 'active',
-    totalBookings: 12,
-    totalSpent: 15600,
-    lastBookingAt: '2025-12-01',
-    createdAt: '2024-06-15',
-  },
-  {
-    id: '2',
-    name: 'John Smith',
-    email: 'john.smith@gmail.com',
-    phone: '+1 555 123 4567',
-    locale: 'en',
-    status: 'active',
-    totalBookings: 5,
-    totalSpent: 8900,
-    lastBookingAt: '2025-11-28',
-    createdAt: '2024-08-20',
-  },
-  {
-    id: '3',
-    name: 'Hans Müller',
-    email: 'hans@web.de',
-    phone: '+49 170 123 4567',
-    locale: 'de',
-    status: 'blocked',
-    totalBookings: 2,
-    totalSpent: 2300,
-    lastBookingAt: '2025-10-15',
-    createdAt: '2024-09-10',
-  },
-  {
-    id: '4',
-    name: 'Maria Garcia',
-    email: 'maria@outlook.es',
-    phone: '+34 612 345 678',
-    locale: 'es',
-    status: 'active',
-    totalBookings: 8,
-    totalSpent: 11200,
-    lastBookingAt: '2025-12-03',
-    createdAt: '2024-07-05',
-  },
-];
-
-const mockBookings: CustomerBooking[] = [
-  { id: 'BK-001', type: 'hotel', title: 'Grand Hotel Antalya', amount: 2450, status: 'confirmed', date: '2025-12-01' },
-  { id: 'BK-002', type: 'flight', title: 'IST → AYT', amount: 890, status: 'confirmed', date: '2025-11-15' },
-  { id: 'BK-003', type: 'car', title: 'Ekonomik Araç - 3 Gün', amount: 450, status: 'cancelled', date: '2025-10-20' },
-  { id: 'BK-004', type: 'hotel', title: 'Lara Beach Resort', amount: 3200, status: 'confirmed', date: '2025-09-10' },
-];
 
 const localeFlags: Record<string, string> = {
   tr: '🇹🇷',
@@ -135,51 +97,145 @@ const localeFlags: Record<string, string> = {
   el: '🇬🇷',
 };
 
-const statusColors = {
-  active: 'green',
-  blocked: 'red',
+const typeIcons: Record<number, React.ReactNode> = {
+  0: <HomeOutlined />,
+  1: <RocketOutlined />,
+  2: <CarOutlined />,
 };
 
-const statusLabels = {
-  active: 'Active',
-  blocked: 'Blocked',
+const typeColors: Record<number, string> = {
+  0: 'blue',
+  1: 'purple',
+  2: 'cyan',
 };
 
-const typeIcons: Record<string, React.ReactNode> = {
-  hotel: <HomeOutlined />,
-  flight: <RocketOutlined />,
-  car: <CarOutlined />,
+const typeLabels: Record<number, string> = {
+  0: 'Hotel',
+  1: 'Flight',
+  2: 'Car',
 };
 
-const typeColors: Record<string, string> = {
-  hotel: 'blue',
-  flight: 'purple',
-  car: 'cyan',
+const bookingStatusColors: Record<number, string> = {
+  0: 'orange',
+  1: 'green',
+  2: 'red',
+  3: 'blue',
 };
 
-const bookingStatusColors: Record<string, string> = {
-  confirmed: 'green',
-  pending: 'orange',
-  cancelled: 'red',
+const bookingStatusLabels: Record<number, string> = {
+  0: 'Pending',
+  1: 'Confirmed',
+  2: 'Cancelled',
+  3: 'Completed',
 };
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+  return (
+    <App>
+      <CustomersContent />
+    </App>
+  );
+}
+
+function CustomersContent() {
+  const { message, modal } = App.useApp();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [customerBookings, setCustomerBookings] = useState<CustomerBooking[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 20,
+    total: 0,
+  });
+
+  useEffect(() => {
+    loadCustomers();
+  }, [pagination.current, pagination.pageSize, searchText]);
+
+  const loadCustomers = async () => {
+    try {
+      setLoading(true);
+      const response = await adminAPI.getCustomers({
+        page: pagination.current,
+        pageSize: pagination.pageSize,
+        search: searchText || undefined,
+      });
+
+      // Map API response to UI format
+      const mappedCustomers: Customer[] = response.items.map((item: ApiCustomer) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        phone: item.phone,
+        locale: item.locale,
+        isBlocked: item.isBlocked,
+        totalBookings: item.totalBookings,
+        totalSpent: item.totalSpent,
+        lastBookingAt: item.lastBookingAt,
+        createdAt: item.createdAt,
+        notes: item.notes,
+      }));
+
+      setCustomers(mappedCustomers);
+      setPagination(prev => ({
+        ...prev,
+        total: response.totalCount,
+      }));
+    } catch (error: any) {
+      console.error('❌ Load customers error:', error);
+      message.error(error.message || 'Failed to load customers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCustomerBookings = async (customerId: string) => {
+    try {
+      setLoadingBookings(true);
+      const response = await adminAPI.getCustomerBookings(customerId);
+      setCustomerBookings(response.items || []);
+    } catch (error: any) {
+      console.error('❌ Load bookings error:', error);
+      message.error('Failed to load customer bookings');
+      setCustomerBookings([]);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
 
   const showCustomerDetail = (customer: Customer) => {
     setSelectedCustomer(customer);
     setDrawerOpen(true);
+    loadCustomerBookings(customer.id);
   };
 
-  const toggleBlockStatus = (customer: Customer) => {
-    const newStatus = customer.status === 'active' ? 'blocked' : 'active';
-    setCustomers(customers.map(c => 
-      c.id === customer.id ? { ...c, status: newStatus } : c
-    ));
-    message.success(newStatus === 'blocked' ? 'Customer blocked' : 'Customer unblocked');
+  const toggleBlockStatus = async (customer: Customer) => {
+    try {
+      const newStatus = !customer.isBlocked;
+      await adminAPI.updateCustomer(customer.id, {
+        isBlocked: newStatus,
+        blockReason: newStatus ? 'Blocked by admin' : undefined,
+      });
+
+      // Update local state
+      setCustomers(customers.map(c =>
+        c.id === customer.id ? { ...c, isBlocked: newStatus } : c
+      ));
+
+      // Update selected customer if open
+      if (selectedCustomer?.id === customer.id) {
+        setSelectedCustomer({ ...customer, isBlocked: newStatus });
+      }
+
+      message.success(newStatus ? 'Customer blocked successfully' : 'Customer unblocked successfully');
+    } catch (error: any) {
+      console.error('❌ Block status update error:', error);
+      message.error(error.message || 'Failed to update customer status');
+    }
   };
 
   const getActionItems = (record: Customer): MenuProps['items'] => [
@@ -193,22 +249,22 @@ export default function CustomersPage() {
       key: 'email',
       icon: <MailOutlined />,
       label: 'Send Email',
-      onClick: () => message.info('Email sending modal will open'),
+      onClick: () => message.info('Email feature coming soon'),
     },
     {
       type: 'divider',
     },
     {
       key: 'block',
-      icon: record.status === 'active' ? <StopOutlined /> : <CheckOutlined />,
-      label: record.status === 'active' ? 'Block' : 'Unblock',
-      danger: record.status === 'active',
+      icon: record.isBlocked ? <CheckOutlined /> : <StopOutlined />,
+      label: record.isBlocked ? 'Unblock' : 'Block',
+      danger: !record.isBlocked,
       onClick: () => {
-        Modal.confirm({
-          title: record.status === 'active' ? 'Block Customer' : 'Unblock Customer',
-          content: record.status === 'active' 
-            ? `Are you sure you want to block customer "${record.name}"?`
-            : `Are you sure you want to unblock customer "${record.name}"?`,
+        modal.confirm({
+          title: record.isBlocked ? 'Unblock Customer' : 'Block Customer',
+          content: record.isBlocked
+            ? `Are you sure you want to unblock "${record.name}"?`
+            : `Are you sure you want to block "${record.name}"?`,
           okText: 'Yes',
           cancelText: 'Cancel',
           onOk: () => toggleBlockStatus(record),
@@ -221,15 +277,17 @@ export default function CustomersPage() {
     {
       title: 'Customer',
       key: 'customer',
+      fixed: 'left' as const,
+      width: 280,
       render: (_: any, record: Customer) => (
         <Space>
           <Avatar style={{ backgroundColor: '#6366f1' }}>
-            {record.name.charAt(0)}
+            {record.name.charAt(0).toUpperCase()}
           </Avatar>
           <div>
             <Space size={4}>
               <Text strong>{record.name}</Text>
-              <span>{localeFlags[record.locale]}</span>
+              <span>{localeFlags[record.locale] || '🌐'}</span>
             </Space>
             <br />
             <Text type="secondary" style={{ fontSize: 12 }}>{record.email}</Text>
@@ -241,11 +299,13 @@ export default function CustomersPage() {
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
+      width: 150,
     },
     {
       title: 'Bookings',
       dataIndex: 'totalBookings',
       key: 'totalBookings',
+      width: 110,
       sorter: (a: Customer, b: Customer) => a.totalBookings - b.totalBookings,
       render: (count: number) => <Badge count={count} showZero color="#6366f1" />,
     },
@@ -253,31 +313,38 @@ export default function CustomersPage() {
       title: 'Total Spent',
       dataIndex: 'totalSpent',
       key: 'totalSpent',
+      width: 120,
       sorter: (a: Customer, b: Customer) => a.totalSpent - b.totalSpent,
-      render: (amount: number) => <Text strong>€{amount.toLocaleString()}</Text>,
+      render: (amount: number) => <Text strong>€{amount.toFixed(2)}</Text>,
     },
     {
       title: 'Last Booking',
       dataIndex: 'lastBookingAt',
       key: 'lastBookingAt',
+      width: 130,
+      render: (date: string | null) => date ? new Date(date).toLocaleDateString() : 'Never',
     },
     {
       title: 'Status',
-      dataIndex: 'status',
-      key: 'status',
-      render: (status: keyof typeof statusLabels) => (
-        <Tag color={statusColors[status]}>{statusLabels[status]}</Tag>
+      dataIndex: 'isBlocked',
+      key: 'isBlocked',
+      width: 100,
+      render: (isBlocked: boolean) => (
+        <Tag color={isBlocked ? 'red' : 'green'}>
+          {isBlocked ? 'Blocked' : 'Active'}
+        </Tag>
       ),
       filters: [
-        { text: 'Active', value: 'active' },
-        { text: 'Blocked', value: 'blocked' },
+        { text: 'Active', value: false },
+        { text: 'Blocked', value: true },
       ],
-      onFilter: (value: any, record: Customer) => record.status === value,
+      onFilter: (value: any, record: Customer) => record.isBlocked === value,
     },
     {
       title: 'Actions',
       key: 'actions',
-      width: 100,
+      fixed: 'right' as const,
+      width: 80,
       render: (_: any, record: Customer) => (
         <Dropdown menu={{ items: getActionItems(record) }} trigger={['click']}>
           <Button type="text" icon={<MoreOutlined />} />
@@ -286,11 +353,18 @@ export default function CustomersPage() {
     },
   ];
 
-  const filteredCustomers = customers.filter(customer =>
-    customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
-    customer.email.toLowerCase().includes(searchText.toLowerCase()) ||
-    customer.phone.includes(searchText)
-  );
+  const handleTableChange = (newPagination: any) => {
+    setPagination({
+      current: newPagination.current,
+      pageSize: newPagination.pageSize,
+      total: pagination.total,
+    });
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchText(value);
+    setPagination(prev => ({ ...prev, current: 1 }));
+  };
 
   const tabItems: TabsProps['items'] = [
     {
@@ -302,50 +376,76 @@ export default function CustomersPage() {
           <Descriptions.Item label="Email">{selectedCustomer.email}</Descriptions.Item>
           <Descriptions.Item label="Phone">{selectedCustomer.phone}</Descriptions.Item>
           <Descriptions.Item label="Language">
-            {localeFlags[selectedCustomer.locale]} {selectedCustomer.locale.toUpperCase()}
+            {localeFlags[selectedCustomer.locale] || '🌐'} {selectedCustomer.locale?.toUpperCase() || 'N/A'}
           </Descriptions.Item>
-          <Descriptions.Item label="Registration Date">{selectedCustomer.createdAt}</Descriptions.Item>
+          <Descriptions.Item label="Registration Date">
+            {new Date(selectedCustomer.createdAt).toLocaleDateString()}
+          </Descriptions.Item>
           <Descriptions.Item label="Status">
-            <Tag color={statusColors[selectedCustomer.status]}>
-              {statusLabels[selectedCustomer.status]}
+            <Tag color={selectedCustomer.isBlocked ? 'red' : 'green'}>
+              {selectedCustomer.isBlocked ? 'Blocked' : 'Active'}
             </Tag>
           </Descriptions.Item>
+          {selectedCustomer.notes && (
+            <Descriptions.Item label="Notes">{selectedCustomer.notes}</Descriptions.Item>
+          )}
         </Descriptions>
       ),
     },
     {
       key: 'bookings',
-      label: 'Bookings',
-      children: (
+      label: `Bookings (${customerBookings.length})`,
+      children: loadingBookings ? (
+        <div style={{ textAlign: 'center', padding: '40px' }}>Loading bookings...</div>
+      ) : customerBookings.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px', color: '#999' }}>
+          No bookings yet
+        </div>
+      ) : (
         <List
-          dataSource={mockBookings}
-          renderItem={(booking) => (
-            <List.Item
-              extra={<Text strong>€{booking.amount}</Text>}
-            >
-              <List.Item.Meta
-                avatar={
-                  <Avatar 
-                    icon={typeIcons[booking.type]} 
-                    style={{ backgroundColor: typeColors[booking.type] === 'blue' ? '#3b82f6' : typeColors[booking.type] === 'purple' ? '#8b5cf6' : '#06b6d4' }}
-                  />
-                }
-                title={
-                  <Space>
-                    {booking.id}
-                    <Tag color={bookingStatusColors[booking.status]}>{booking.status}</Tag>
-                  </Space>
-                }
-                description={
-                  <>
-                    {booking.title}
-                    <br />
-                    <Text type="secondary">{booking.date}</Text>
-                  </>
-                }
-              />
-            </List.Item>
-          )}
+          dataSource={customerBookings}
+          renderItem={(booking) => {
+            const title = booking.hotelName || booking.flightInfo || booking.carInfo || 'Booking';
+            const date = booking.checkInDate || booking.createdAt;
+            
+            return (
+              <List.Item extra={<Text strong>€{booking.amount.toFixed(2)}</Text>}>
+                <List.Item.Meta
+                  avatar={
+                    <Avatar
+                      icon={typeIcons[booking.type]}
+                      style={{
+                        backgroundColor:
+                          typeColors[booking.type] === 'blue'
+                            ? '#3b82f6'
+                            : typeColors[booking.type] === 'purple'
+                            ? '#8b5cf6'
+                            : '#06b6d4',
+                      }}
+                    />
+                  }
+                  title={
+                    <Space>
+                      {booking.id}
+                      <Tag color={typeColors[booking.type]}>{typeLabels[booking.type]}</Tag>
+                      <Tag color={bookingStatusColors[booking.status]}>
+                        {bookingStatusLabels[booking.status]}
+                      </Tag>
+                    </Space>
+                  }
+                  description={
+                    <>
+                      {title}
+                      <br />
+                      <Text type="secondary">
+                        {new Date(date).toLocaleDateString()}
+                      </Text>
+                    </>
+                  }
+                />
+              </List.Item>
+            );
+          }}
         />
       ),
     },
@@ -354,30 +454,46 @@ export default function CustomersPage() {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Customers</Title>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>Customers</Title>
+          <Text type="secondary">Manage customer accounts and bookings</Text>
+        </div>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={loadCustomers}
+          loading={loading}
+        >
+          Refresh
+        </Button>
       </div>
 
       <Card>
         <div style={{ marginBottom: 16 }}>
           <Input
-            placeholder="Search customers..."
+            placeholder="Search by name, email or phone..."
             prefix={<SearchOutlined />}
             value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
+            onChange={(e) => handleSearch(e.target.value)}
+            style={{ width: 350 }}
             allowClear
           />
         </div>
 
         <Table
           columns={columns}
-          dataSource={filteredCustomers}
+          dataSource={customers}
           rowKey="id"
+          loading={loading}
+          onChange={handleTableChange}
           pagination={{
-            pageSize: 10,
+            current: pagination.current,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} customers`,
+            pageSizeOptions: ['10', '20', '50', '100'],
           }}
+          scroll={{ x: 1200 }}
         />
       </Card>
 
@@ -386,19 +502,18 @@ export default function CustomersPage() {
         placement="right"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        width={500}
+        size="large"
         extra={
-          <Button 
-            danger={selectedCustomer?.status === 'active'}
-            onClick={() => {
-              if (selectedCustomer) {
-                toggleBlockStatus(selectedCustomer);
-                setDrawerOpen(false);
-              }
-            }}
-          >
-            {selectedCustomer?.status === 'active' ? 'Block' : 'Unblock'}
-          </Button>
+          selectedCustomer && (
+            <Space>
+              <Switch
+                checked={!selectedCustomer.isBlocked}
+                onChange={() => toggleBlockStatus(selectedCustomer)}
+                checkedChildren="Active"
+                unCheckedChildren="Blocked"
+              />
+            </Space>
+          )
         }
       >
         {selectedCustomer && (
@@ -406,8 +521,8 @@ export default function CustomersPage() {
             <Row gutter={16} style={{ marginBottom: 24 }}>
               <Col span={12}>
                 <Card size="small">
-                  <Statistic 
-                    title="Total Bookings" 
+                  <Statistic
+                    title="Total Bookings"
                     value={selectedCustomer.totalBookings}
                     prefix={<CalendarOutlined />}
                   />
@@ -415,9 +530,9 @@ export default function CustomersPage() {
               </Col>
               <Col span={12}>
                 <Card size="small">
-                  <Statistic 
-                    title="Total Spent" 
-                    value={selectedCustomer.totalSpent}
+                  <Statistic
+                    title="Total Spent"
+                    value={selectedCustomer.totalSpent.toFixed(2)}
                     prefix={<DollarOutlined />}
                     suffix="€"
                   />

@@ -24,6 +24,19 @@ const facilityIcons: Record<string, any> = {
   'Golf': Dumbbell,
 };
 
+// Default dates outside component to avoid impure function calls during render
+const getDefaultCheckIn = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 7);
+  return date.toISOString().split('T')[0];
+};
+
+const getDefaultCheckOut = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 14);
+  return date.toISOString().split('T')[0];
+};
+
 export function HotelCard({ hotel }: HotelCardProps) {
   const t = useTranslations('hotel');
   const params = useParams();
@@ -31,8 +44,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const locale = params.locale as string;
 
   // Build hotel detail URL with search parameters
-  const checkIn = searchParams.get('checkIn') || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const checkOut = searchParams.get('checkOut') || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  const checkIn = searchParams.get('checkIn') || getDefaultCheckIn();
+  const checkOut = searchParams.get('checkOut') || getDefaultCheckOut();
   const adults = searchParams.get('adults') || '2';
   const children = searchParams.get('children') || '0';
   

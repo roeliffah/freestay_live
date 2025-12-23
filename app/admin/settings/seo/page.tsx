@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Form,
   Input,
   Button,
   Space,
-  message,
   Typography,
   Tabs,
   Upload,
@@ -19,6 +18,8 @@ import {
   Table,
   Tag,
   Alert,
+  Spin,
+  App,
 } from 'antd';
 import type { TabsProps } from 'antd';
 import {
@@ -27,7 +28,9 @@ import {
   GlobalOutlined,
   UploadOutlined,
   RobotOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -185,13 +188,53 @@ Sitemap: https://freestays.com/sitemap.xml`,
 };
 
 export default function SEOSettingsPage() {
-  const [pages, setPages] = useState<PageSEO[]>(mockPageSEO);
-  const [selectedPage, setSelectedPage] = useState<PageSEO>(mockPageSEO[0]);
+  return (
+    <App>
+      <SEOSettingsContent />
+    </App>
+  );
+}
+
+function SEOSettingsContent() {
+  const { message: messageApi } = App.useApp();
+  const [pages, setPages] = useState<PageSEO[]>([]);
+  const [selectedPage, setSelectedPage] = useState<PageSEO | null>(null);
   const [selectedLocale, setSelectedLocale] = useState('tr');
-  const [crawlerSettings, setCrawlerSettings] = useState<CrawlerSettings>(mockCrawlerSettings);
+  const [crawlerSettings, setCrawlerSettings] = useState<CrawlerSettings>({
+    robotsTxt: '',
+    sitemapEnabled: false,
+    googleVerification: '',
+    bingVerification: '',
+    yandexVerification: '',
+  });
   const [form] = Form.useForm();
   const [crawlerForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchSeoSettings();
+  }, []);
+
+  const fetchSeoSettings = async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getSeoSettings();
+      setPages(data.pages || []);
+      if (data.pages && data.pages.length > 0) {
+        setSelectedPage(data.pages[0]);
+      }
+      if (data.crawlerSettings) {
+        setCrawlerSettings(data.crawlerSettings);
+        crawlerForm.setFieldsValue(data.crawlerSettings);
+      }
+    } catch (error: any) {
+      console.error('Failed to load SEO settings:', error);
+      messageApi.error(error.message || 'Failed to load SEO settings');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePageSelect = (page: PageSEO) => {
     setSelectedPage(page);
@@ -207,6 +250,7 @@ export default function SEOSettingsPage() {
 
   const handleLocaleChange = (locale: string) => {
     setSelectedLocale(locale);
+    if (!selectedPage) return;
     const settings = selectedPage.settings[locale] || {
       locale: locale,
       metaTitle: '',
@@ -218,32 +262,37 @@ export default function SEOSettingsPage() {
   };
 
   const handleSave = async (values: any) => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    setPages(pages.map(p => {
-      if (p.id === selectedPage.id) {
-        return {
-          ...p,
-          settings: {
-            ...p.settings,
-            [selectedLocale]: { ...values, locale: selectedLocale },
-          },
-        };
-      }
-      return p;
-    }));
-    
-    message.success('SEO settings saved');
-    setLoading(false);
+    if (!selectedPage) return;
+    setSaving(true);
+    try {
+      const updateData = {
+        pageType: selectedPage.pageType,
+        locale: selectedLocale,
+        ...values,
+      };
+      await adminAPI.updateSeoSettings(updateData);
+      messageApi.success('SEO settings saved successfully');
+      fetchSeoSettings();
+    } catch (error: any) {
+      console.error('Failed to save SEO settings:', error);
+      messageApi.error(error.message || 'Failed to save SEO settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleCrawlerSave = async (values: any) => {
-    setLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setCrawlerSettings(values);
-    message.success('Crawler settings saved');
-    setLoading(false);
+    setSaving(true);
+    try {
+      await adminAPI.updateSeoSettings({ crawlerSettings: values });
+      setCrawlerSettings(values);
+      messageApi.success('Crawler settings saved successfully');
+    } catch (error: any) {
+      console.error('Failed to save crawler settings:', error);
+      messageApi.error(error.message || 'Failed to save crawler settings');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const pageColumns = [
@@ -302,7 +351,7 @@ export default function SEOSettingsPage() {
                   onClick: () => handlePageSelect(record),
                   style: {
                     cursor: 'pointer',
-                    backgroundColor: selectedPage.id === record.id ? '#e6f7ff' : 'transparent',
+                    backgroundColor: selectedPage?.id === record.id ? '#e6f7ff' : 'transparent',
                   },
                 })}
               />
@@ -329,7 +378,6 @@ export default function SEOSettingsPage() {
               <Form
                 form={form}
                 layout="vertical"
-                initialValues={selectedPage.settings[selectedLocale] || {}}
                 onFinish={handleSave}
               >
                 <Form.Item
@@ -364,7 +412,7 @@ export default function SEOSettingsPage() {
                 </Form.Item>
 
                 <Alert
-                  message="Dynamic Variables"
+                  title="Dynamic Variables"
                   description={
                     <Space wrap>
                       <Tag color="blue">{`{{destination}}`}</Tag>
@@ -380,7 +428,7 @@ export default function SEOSettingsPage() {
                 />
 
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
+                  <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
                     Save
                   </Button>
                 </Form.Item>
@@ -397,7 +445,6 @@ export default function SEOSettingsPage() {
         <Form
           form={crawlerForm}
           layout="vertical"
-          initialValues={crawlerSettings}
           onFinish={handleCrawlerSave}
         >
           <Row gutter={24}>
@@ -436,14 +483,30 @@ export default function SEOSettingsPage() {
           </Row>
 
           <Form.Item style={{ marginTop: 16 }}>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
-              Kaydet
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
+              Save
             </Button>
           </Form.Item>
         </Form>
       ),
     },
   ];
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!selectedPage) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Text>No SEO settings found</Text>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -452,10 +515,13 @@ export default function SEOSettingsPage() {
           <SearchOutlined style={{ marginRight: 12 }} />
           SEO Settings
         </Title>
+        <Button icon={<ReloadOutlined />} onClick={fetchSeoSettings}>
+          Refresh
+        </Button>
       </div>
 
       <Alert
-        message="SEO Optimization"
+        title="SEO Optimization"
         description="You can configure separate SEO settings for each page and language. Use variables for dynamic pages."
         type="info"
         showIcon

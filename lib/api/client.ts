@@ -3,7 +3,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5240/a
 
 // Rate limiting için
 import { rateLimiter, apiRateLimiter } from '@/lib/security/rate-limiter';
-import { addCsrfToHeaders } from '@/lib/security/csrf-protection';
+import { getCsrfToken, initCsrfProtection } from '@/lib/security/csrf-protection';
 
 // Helper function to get token
 const getToken = (): string | null => {
@@ -42,6 +42,23 @@ class ApiClient {
     options: RequestInit = {},
     skipRateLimit: boolean = false
   ): Promise<T> {
+    // Token kontrolü - token yoksa login'e yönlendir (ama login sayfasında değilse)
+    if (typeof window !== 'undefined') {
+      const token = getToken();
+      const isLoginEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/register');
+      const isOnLoginPage = window.location.pathname === '/admin/login';
+      
+      // Admin sayfalarındaysa, login sayfasında değilse ve token yoksa login'e yönlendir
+      if (!token && !isLoginEndpoint && !isOnLoginPage && window.location.pathname.startsWith('/admin')) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_refresh_token');
+        localStorage.removeItem('admin_user');
+        document.cookie = 'admin_token=; path=/; max-age=0';
+        window.location.href = '/admin/login';
+        throw new Error('Token bulunamadı. Login sayfasına yönlendiriliyorsunuz.');
+      }
+    }
+
     // Rate limiting kontrolü (login ve public endpointler hariç)
     if (!skipRateLimit && typeof window !== 'undefined') {
       const identifier = getUserIdentifier();
@@ -54,14 +71,27 @@ class ApiClient {
     }
 
     const token = getToken();
-    let headers: HeadersInit = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers,
     };
+
+    // Add any additional headers from options
+    if (options.headers) {
+      if (options.headers instanceof Headers) {
+        options.headers.forEach((value, key) => {
+          headers[key] = value;
+        });
+      } else if (typeof options.headers === 'object') {
+        Object.assign(headers, options.headers);
+      }
+    }
 
     // CSRF protection ekle
     if (typeof window !== 'undefined') {
-      headers = addCsrfToHeaders(headers);
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        headers['X-CSRF-Token'] = csrfToken;
+      }
     }
 
     if (token) {
@@ -79,16 +109,60 @@ class ApiClient {
         localStorage.removeItem('admin_token');
         localStorage.removeItem('admin_refresh_token');
         localStorage.removeItem('admin_user');
+        document.cookie = 'admin_token=; path=/; max-age=0';
         if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
           window.location.href = '/admin/login';
+          // Return a rejected promise to stop execution
+          return Promise.reject(new Error('Session expired. Redirecting to login...'));
         }
       }
 
-      const error = await response.json().catch(() => ({ 
-        message: response.status === 401 ? 'Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.' : 'Bir hata oluştu' 
-      }));
+      // Try to parse error response
+      let errorData;
+      const contentType = response.headers.get('content-type');
       
-      throw new Error(error.message || error.title || `HTTP ${response.status}`);
+      try {
+        if (contentType && contentType.includes('application/json')) {
+          errorData = await response.json();
+        } else {
+          const text = await response.text();
+          errorData = { message: text || `HTTP ${response.status}` };
+        }
+      } catch {
+        errorData = { 
+          message: response.status === 401 
+            ? 'Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.' 
+            : `API Error: ${response.status} ${response.statusText}` 
+        };
+      }
+      
+      // Log detailed error information
+      console.error('❌ API Error:', { 
+        status: response.status, 
+        statusText: response.statusText,
+        endpoint: `${this.baseURL}${endpoint}`, 
+        method: options.method || 'GET',
+        error: errorData,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+      
+      // Handle validation errors (.NET Core format)
+      if (errorData.errors && typeof errorData.errors === 'object') {
+        console.error('🔍 Detailed validation errors:', JSON.stringify(errorData, null, 2));
+        
+        const validationMessages = Object.entries(errorData.errors)
+          .map(([field, messages]) => {
+            const msgArray = Array.isArray(messages) ? messages : [messages];
+            return `${field}: ${msgArray.join(', ')}`;
+          })
+          .join('\n');
+        
+        const error = new Error(validationMessages || errorData.title || 'Validation failed');
+        (error as any).validationErrors = errorData.errors;
+        throw error;
+      }
+      
+      throw new Error(errorData.message || errorData.title || `HTTP ${response.status}`);
     }
 
     const contentType = response.headers.get('content-type');
@@ -112,10 +186,40 @@ class ApiClient {
         url = `${endpoint}?${queryString}`;
       }
     }
+    
+    // Debug log for FAQ and Featured Content endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+      const token = getToken();
+      console.log('🔐 FAQ/Featured Content Request:', {
+        endpoint: url,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
+        fullUrl: `${this.baseURL}${url}`
+      });
+    }
+    
     return this.request<T>(url, { method: 'GET' }, skipRateLimit);
   }
 
   async post<T>(endpoint: string, data?: any, skipRateLimit: boolean = false): Promise<T> {
+    // Log the request body for debugging
+    if (endpoint.includes('/admin/users')) {
+      console.log('🔵 POST Request to:', endpoint);
+      console.log('🔵 Request Body:', JSON.stringify(data, null, 2));
+      console.log('🔵 Role type:', typeof data?.role, 'Value:', data?.role);
+    }
+    
+    // Debug log for FAQ and Featured Content endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+      const token = getToken();
+      console.log('🔐 FAQ/Featured Content POST:', {
+        endpoint,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
+        data: JSON.stringify(data, null, 2)
+      });
+    }
+    
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -123,13 +227,48 @@ class ApiClient {
   }
 
   async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
+    // Log the request body for debugging
+    if (endpoint.includes('/admin/users')) {
+      console.log('🟣 PUT Request to:', endpoint);
+      console.log('🟣 Request Body:', JSON.stringify(data, null, 2));
+      console.log('🟣 Command Role:', data?.command?.role, 'Type:', typeof data?.command?.role);
+    }
+    
+    // Debug log for FAQ and Featured Content endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+      const token = getToken();
+      console.log('🔐 FAQ/Featured Content PUT:', {
+        endpoint,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
+        data: JSON.stringify(data, null, 2)
+      });
+    }
+    
+    const response = await this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
+    
+    if (endpoint.includes('/admin/users')) {
+      console.log('🟣 PUT Response:', JSON.stringify(response, null, 2));
+    }
+    
+    return response;
   }
 
   async patch<T>(endpoint: string, data?: any): Promise<T> {
+    // Debug log for FAQ and Featured Content endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+      const token = getToken();
+      console.log('🔐 FAQ/Featured Content PATCH:', {
+        endpoint,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN',
+        data: JSON.stringify(data, null, 2)
+      });
+    }
+    
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(data),
@@ -137,6 +276,16 @@ class ApiClient {
   }
 
   async delete<T>(endpoint: string): Promise<T> {
+    // Debug log for FAQ and Featured Content endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+      const token = getToken();
+      console.log('🔐 FAQ/Featured Content DELETE:', {
+        endpoint,
+        hasToken: !!token,
+        tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN'
+      });
+    }
+    
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 }
@@ -145,7 +294,16 @@ export const apiClient = new ApiClient(API_BASE_URL);
 
 // Auth API
 export const authAPI = {
-  login: async (email: string, password: string) => {
+  login: async (email: string, password: string): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+    };
+  }> => {
     return apiClient.post('/Auth/login', { email, password });
   },
 
@@ -168,17 +326,147 @@ export const authAPI = {
 
 // Admin APIs
 export const adminAPI = {
-  // Dashboard
-  getDashboard: () => apiClient.get('/admin/dashboard'),
+  // Dashboard - Single endpoint that returns all dashboard data
+  getDashboard: (): Promise<{
+    stats: {
+      totalBookings: number;
+      totalRevenue: number;
+      totalCustomers: number;
+      commission: number;
+      bookingsGrowth: number;
+      revenueGrowth: number;
+    };
+    recentBookings: Array<{
+      id: string;
+      customer: string;
+      type: string;
+      hotel: string;
+      amount: number;
+      status: string;
+      date: string;
+    }>;
+    topDestinations: Array<{
+      name: string;
+      bookings: number;
+      percent: number;
+    }>;
+  }> => apiClient.get('/admin/dashboard'),
 
   // Users
-  getUsers: (params?: { page?: number; pageSize?: number; search?: string }) =>
-    apiClient.get('/admin/users', params),
+  getUsers: (params?: { page?: number; pageSize?: number; search?: string }): Promise<{
+    items: Array<{
+      id: string;
+      name: string;
+      email: string;
+      phone: string;
+      role: number;
+      isActive: boolean;
+      createdAt: string;
+      lastLogin?: string;
+    }>;
+    totalCount: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  }> => apiClient.get('/admin/users', params),
   
-  getUser: (id: string) => apiClient.get(`/admin/users/${id}`),
+  getUser: (id: string): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: 'admin' | 'staff';
+    status: 'active' | 'inactive';
+    createdAt: string;
+    lastLogin: string;
+  }> => apiClient.get(`/admin/users/${id}`),
+
+  // Note: Backend doesn't have create/update/delete endpoints yet
+  // These are placeholders for when they are implemented
+  createUser: (data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    role: 'admin' | 'staff';
+    status?: 'active' | 'inactive';
+  }): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: number;
+    isActive: boolean;
+    createdAt: string;
+    lastLogin?: string;
+  }> => {
+    // Backend expects CreateAdminUserCommand directly (not wrapped in 'command')
+    // UserRole enum: 0=Customer, 1=Staff, 2=Admin, 3=SuperAdmin
+    // Backend validation: Only Admin (2) or SuperAdmin (3) can be assigned for admin users
+    
+    console.log('📥 Received data from form:', data);
+    
+    const roleValue = data.role === 'admin' ? 2 : 3; // 2 for Admin, 3 for SuperAdmin (staff maps to superadmin)
+    
+    const requestData = {
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      phone: data.phone,
+      role: roleValue, // Backend expects direct enum value for POST
+    };
+    
+    console.log('📤 Creating user - sending to backend:', JSON.stringify(requestData, null, 2));
+    console.log('📤 Role mapping:', { input: data.role, output: roleValue, type: typeof roleValue });
+    
+    return apiClient.post('/admin/users', requestData);
+  },
   
-  updateUserStatus: (id: string, data: { isActive: boolean; reason?: string }) =>
-    apiClient.patch(`/admin/users/${id}/status`, data),
+  updateUser: (id: string, data: {
+    name?: string;
+    phone?: string;
+    role?: 'admin' | 'staff';
+    status?: 'active' | 'inactive';
+    newPassword?: string;
+  }): Promise<{
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: number;
+    isActive: boolean;
+    createdAt: string;
+    lastLogin?: string;
+  }> => {
+    // Backend expects UpdateAdminUserCommand wrapped in 'command'
+    // Note: id must be in the command as well
+    // UserRole enum: 0=Customer, 1=Staff, 2=Admin, 3=SuperAdmin
+    const command: any = {
+      id: id, // Required in UpdateAdminUserCommand
+    };
+    
+    if (data.name !== undefined) command.name = data.name;
+    if (data.phone !== undefined) command.phone = data.phone;
+    if (data.role !== undefined) {
+      // Send as number: 2 for Admin, 3 for SuperAdmin
+      command.role = data.role === 'admin' ? 2 : 3;
+    }
+    if (data.status !== undefined) command.isActive = data.status === 'active';
+    if (data.newPassword !== undefined) command.newPassword = data.newPassword;
+    
+    const requestData = { command };
+    
+    console.log('📤 Updating user - sending to backend:', JSON.stringify(requestData, null, 2));
+    
+    return apiClient.put(`/admin/users/${id}`, requestData);
+  },
+
+  deleteUser: (id: string) => apiClient.delete(`/admin/users/${id}`),
+
+
+  // Password reset - uses Auth endpoint
+  sendPasswordReset: (email: string): Promise<{ message: string }> =>
+    apiClient.post('/Auth/forgot-password', { email }),
 
   // Customers
   getCustomers: (params?: { page?: number; pageSize?: number; search?: string; isBlocked?: boolean; sortBy?: string; sortDesc?: boolean }) =>
@@ -219,20 +507,61 @@ export const adminAPI = {
   updateService: (serviceId: string, data: any) => apiClient.put(`/admin/services/${serviceId}`, data),
 
   // Jobs - SunHotels Sync
-  syncSunHotelsAll: () => apiClient.post('/admin/jobs/sunhotels/sync-all'),
+  syncSunHotels: (): Promise<{
+    jobId: string;
+    message: string;
+    status: string;
+  }> => apiClient.post('/admin/services/sunhotels/sync'),
   
-  syncSunHotelsBasic: () => apiClient.post('/admin/jobs/sunhotels/sync-basic'),
+  getJobHistory: (params?: { page?: number; pageSize?: number }): Promise<{
+    items: Array<{
+      id: string;
+      jobType: string;
+      status: string;
+      startTime: string;
+      endTime?: string;
+      duration?: number;
+      message?: string;
+      errorMessage?: string;
+    }>;
+    totalCount: number;
+    page: number;
+    pageSize: number;
+  }> => apiClient.get('/admin/jobs/history', params),
   
-  getSunHotelsStatistics: () => apiClient.get('/sunhotels/statistics'),
+  getSunHotelsStatistics: (): Promise<{
+    destinationCount: number;
+    resortCount: number;
+    mealCount: number;
+    roomTypeCount: number;
+    featureCount: number;
+    themeCount: number;
+    languageCount: number;
+    transferTypeCount: number;
+    noteTypeCount: number;
+    hotelCount: number;
+    roomCount: number;
+    lastSyncTime: string | null;
+  }> => apiClient.get('/sunhotels/statistics'),
 
   // Email Templates
   getEmailTemplates: (params?: { isActive?: boolean }) =>
     apiClient.get('/admin/email-templates', params),
   
-  getEmailTemplate: (code: string) => apiClient.get(`/admin/email-templates/${code}`),
+  getEmailTemplate: (id: string) => apiClient.get(`/admin/email-templates/${id}`),
   
-  updateEmailTemplate: (code: string, data: any) =>
-    apiClient.put(`/admin/email-templates/${code}`, data),
+  getEmailTemplateByCode: (code: string, locale?: string) => 
+    apiClient.get(`/admin/email-templates/by-code/${code}`, { locale }),
+  
+  createEmailTemplate: (data: any) => apiClient.post('/admin/email-templates', data),
+  
+  updateEmailTemplate: (id: string, data: any) =>
+    apiClient.put(`/admin/email-templates/${id}`, data),
+  
+  deleteEmailTemplate: (id: string) => apiClient.delete(`/admin/email-templates/${id}`),
+  
+  toggleEmailTemplateStatus: (id: string) =>
+    apiClient.patch(`/admin/email-templates/${id}/toggle-status`, {}),
   
   sendTestEmail: (code: string, data: { email: string; locale?: string; testVariables?: Record<string, string> }) =>
     apiClient.post(`/admin/email-templates/${code}/test`, data),
@@ -287,6 +616,50 @@ export const adminAPI = {
   // Reports
   getRevenueReport: (params?: { fromDate?: string; toDate?: string }) =>
     apiClient.get('/admin/reports/revenue', params),
+
+  // FAQs
+  getFaqs: (params?: { page?: number; pageSize?: number; category?: string; isActive?: boolean }) =>
+    apiClient.get('/admin/faqs', params),
+
+  getFaq: (id: string) => apiClient.get(`/admin/faqs/${id}`),
+
+  createFaq: (data: any) => apiClient.post('/admin/faqs', data),
+
+  updateFaq: (id: string, data: any) => apiClient.put(`/admin/faqs/${id}`, data),
+
+  deleteFaq: (id: string) => apiClient.delete(`/admin/faqs/${id}`),
+
+  updateFaqOrder: (data: { items: Array<{ id: string; order: number }> }) =>
+    apiClient.patch('/admin/faqs/reorder', data),
+
+  // Featured Content - Hotels
+  getFeaturedHotels: (params?: { page?: number; pageSize?: number; status?: string; season?: string; category?: string }) =>
+    apiClient.get('/admin/featured-content/hotels', params),
+
+  createFeaturedHotel: (data: any) => apiClient.post('/admin/featured-content/hotels', data),
+
+  updateFeaturedHotel: (id: string, data: any) => apiClient.put(`/admin/featured-content/hotels/${id}`, data),
+
+  deleteFeaturedHotel: (id: string) => apiClient.delete(`/admin/featured-content/hotels/${id}`),
+
+  updateFeaturedHotelPriority: (id: string, priority: number) =>
+    apiClient.patch(`/admin/featured-content/hotels/${id}/priority`, { priority }),
+
+  bulkUpdateFeaturedHotelPriority: (data: { items: Array<{ id: string; priority: number }> }) =>
+    apiClient.patch('/admin/featured-content/hotels/bulk-priority', data),
+
+  // Featured Content - Destinations
+  getFeaturedDestinations: (params?: { page?: number; pageSize?: number; status?: string; season?: string }) =>
+    apiClient.get('/admin/featured-content/destinations', params),
+
+  createFeaturedDestination: (data: any) => apiClient.post('/admin/featured-content/destinations', data),
+
+  updateFeaturedDestination: (id: string, data: any) => apiClient.put(`/admin/featured-content/destinations/${id}`, data),
+
+  deleteFeaturedDestination: (id: string) => apiClient.delete(`/admin/featured-content/destinations/${id}`),
+
+  bulkUpdateFeaturedDestinationPriority: (data: { items: Array<{ id: string; priority: number }> }) =>
+    apiClient.patch('/admin/featured-content/destinations/bulk-priority', data),
 };
 
 // Hotels API

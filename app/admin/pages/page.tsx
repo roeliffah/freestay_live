@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -14,10 +14,10 @@ import {
   message,
   Typography,
   Dropdown,
-  Tabs,
   Select,
+  Spin,
 } from 'antd';
-import type { MenuProps, TabsProps } from 'antd';
+import type { MenuProps } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
@@ -25,23 +25,25 @@ import {
   MoreOutlined,
   FileTextOutlined,
   EyeOutlined,
-  GlobalOutlined,
 } from '@ant-design/icons';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+
+interface PageTranslation {
+  locale: string;
+  title: string;
+  content: string;
+  metaTitle: string;
+  metaDescription: string;
+}
 
 interface StaticPage {
   id: string;
   slug: string;
   isActive: boolean;
-  translations: {
-    locale: string;
-    title: string;
-    content: string;
-    metaTitle: string;
-    metaDescription: string;
-  }[];
+  translations: PageTranslation[];
   createdAt: string;
   updatedAt: string;
 }
@@ -58,58 +60,32 @@ const locales = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
 ];
 
-// Mock data
-const mockPages: StaticPage[] = [
-  {
-    id: '1',
-    slug: 'privacy-policy',
-    isActive: true,
-    translations: [
-      { locale: 'tr', title: 'Gizlilik Politikası', content: 'Gizlilik politikası içeriği...', metaTitle: 'Gizlilik Politikası | FreeStays', metaDescription: 'FreeStays gizlilik politikası' },
-      { locale: 'en', title: 'Privacy Policy', content: 'Privacy policy content...', metaTitle: 'Privacy Policy | FreeStays', metaDescription: 'FreeStays privacy policy' },
-    ],
-    createdAt: '2025-01-01',
-    updatedAt: '2025-12-01',
-  },
-  {
-    id: '2',
-    slug: 'terms-and-conditions',
-    isActive: true,
-    translations: [
-      { locale: 'tr', title: 'Kullanım Koşulları', content: 'Kullanım koşulları içeriği...', metaTitle: 'Kullanım Koşulları | FreeStays', metaDescription: 'FreeStays kullanım koşulları' },
-      { locale: 'en', title: 'Terms and Conditions', content: 'Terms and conditions content...', metaTitle: 'Terms and Conditions | FreeStays', metaDescription: 'FreeStays terms and conditions' },
-    ],
-    createdAt: '2025-01-01',
-    updatedAt: '2025-12-01',
-  },
-  {
-    id: '3',
-    slug: 'cookie-policy',
-    isActive: true,
-    translations: [
-      { locale: 'tr', title: 'Çerez Politikası', content: 'Çerez politikası içeriği...', metaTitle: 'Çerez Politikası | FreeStays', metaDescription: 'FreeStays çerez politikası' },
-    ],
-    createdAt: '2025-01-01',
-    updatedAt: '2025-11-15',
-  },
-  {
-    id: '4',
-    slug: 'faq',
-    isActive: false,
-    translations: [
-      { locale: 'tr', title: 'Sıkça Sorulan Sorular', content: 'SSS içeriği...', metaTitle: 'SSS | FreeStays', metaDescription: 'Sıkça sorulan sorular' },
-    ],
-    createdAt: '2025-03-01',
-    updatedAt: '2025-10-20',
-  },
-];
-
 export default function PagesPage() {
-  const [pages, setPages] = useState<StaticPage[]>(mockPages);
+  const [pages, setPages] = useState<StaticPage[]>([]);
+  const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<StaticPage | null>(null);
   const [selectedLocale, setSelectedLocale] = useState('tr');
+  const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
+
+  const fetchPages = async () => {
+    setLoading(true);
+    try {
+      const response: any = await adminAPI.getPages({ isActive: undefined });
+      // Backend paginated response dönüyor, items array'ini al
+      const pagesData = Array.isArray(response) ? response : (response.items || []);
+      setPages(pagesData);
+    } catch (error: any) {
+      message.error(error.message || 'Failed to load pages');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPages();
+  }, []);
 
   const showModal = (page?: StaticPage) => {
     if (page) {
@@ -133,60 +109,57 @@ export default function PagesPage() {
   const handleSave = async () => {
     try {
       const values = await form.validateFields();
+      setSaving(true);
+
+      const translationData = {
+        locale: selectedLocale,
+        title: values.title,
+        content: values.content,
+        metaTitle: values.metaTitle,
+        metaDescription: values.metaDescription,
+      };
       
       if (editingPage) {
-        setPages(pages.map(p => {
-          if (p.id === editingPage.id) {
-            const existingTranslation = p.translations.find(t => t.locale === selectedLocale);
-            const newTranslation = {
-              locale: selectedLocale,
-              title: values.title,
-              content: values.content,
-              metaTitle: values.metaTitle,
-              metaDescription: values.metaDescription,
-            };
-            
-            return {
-              ...p,
-              slug: values.slug,
-              isActive: values.isActive,
-              translations: existingTranslation
-                ? p.translations.map(t => t.locale === selectedLocale ? newTranslation : t)
-                : [...p.translations, newTranslation],
-              updatedAt: new Date().toISOString().split('T')[0],
-            };
-          }
-          return p;
-        }));
-        message.success('Page updated');
-      } else {
-        const newPage: StaticPage = {
-          id: Date.now().toString(),
+        // Mevcut translations'ı güncelle
+        const existingTranslations = editingPage.translations.filter(t => t.locale !== selectedLocale);
+        const updatedTranslations = [...existingTranslations, translationData];
+
+        const updateData = {
           slug: values.slug,
           isActive: values.isActive,
-          translations: [{
-            locale: selectedLocale,
-            title: values.title,
-            content: values.content,
-            metaTitle: values.metaTitle,
-            metaDescription: values.metaDescription,
-          }],
-          createdAt: new Date().toISOString().split('T')[0],
-          updatedAt: new Date().toISOString().split('T')[0],
+          translations: updatedTranslations,
         };
-        setPages([...pages, newPage]);
+
+        await adminAPI.updatePage(editingPage.id, updateData);
+        message.success('Page updated');
+      } else {
+        const createData = {
+          slug: values.slug,
+          isActive: values.isActive,
+          translations: [translationData],
+        };
+
+        await adminAPI.createPage(createData);
         message.success('Page created');
       }
       
       setIsModalOpen(false);
-    } catch (error) {
-      console.error('Validation failed:', error);
+      fetchPages();
+    } catch (error: any) {
+      message.error(error.message || 'Operation failed');
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDelete = (id: string) => {
-    setPages(pages.filter(p => p.id !== id));
-    message.success('Page deleted');
+  const handleDelete = async (id: string) => {
+    try {
+      await adminAPI.deletePage(id);
+      message.success('Page deleted');
+      fetchPages();
+    } catch (error: any) {
+      message.error(error.message || 'Delete operation failed');
+    }
   };
 
   const onLocaleChange = (locale: string) => {
@@ -234,7 +207,7 @@ export default function PagesPage() {
         <Space>
           <FileTextOutlined style={{ fontSize: 20 }} />
           <div>
-            <Text strong>{record.translations[0]?.title}</Text>
+            <Text strong>{record.translations[0]?.title || 'Untitled'}</Text>
             <br />
             <Text type="secondary" code style={{ fontSize: 12 }}>/{record.slug}</Text>
           </div>
@@ -272,9 +245,10 @@ export default function PagesPage() {
       ),
     },
     {
-      title: 'Last Update',
+      title: 'Last Updated',
       dataIndex: 'updatedAt',
       key: 'updatedAt',
+      render: (date: string) => new Date(date).toLocaleDateString('en-US'),
     },
     {
       title: 'Actions',
@@ -288,7 +262,7 @@ export default function PagesPage() {
               if (key === 'delete') {
                 Modal.confirm({
                   title: 'Delete Page',
-                  content: `Are you sure you want to delete page "${record.translations[0]?.title}"?`,
+                  content: `Are you sure you want to delete "${record.translations[0]?.title}" page?`,
                   okText: 'Delete',
                   okType: 'danger',
                   cancelText: 'Cancel',
@@ -318,15 +292,17 @@ export default function PagesPage() {
       </div>
 
       <Card>
-        <Table
-          columns={columns}
-          dataSource={pages}
-          rowKey="id"
-          pagination={{
-            pageSize: 10,
-            showTotal: (total) => `Total ${total} pages`,
-          }}
-        />
+        <Spin spinning={loading}>
+          <Table
+            columns={columns}
+            dataSource={pages}
+            rowKey="id"
+            pagination={{
+              pageSize: 10,
+              showTotal: (total) => `Total ${total} pages`,
+            }}
+          />
+        </Spin>
       </Card>
 
       <Modal
@@ -350,6 +326,7 @@ export default function PagesPage() {
         okText="Save"
         cancelText="Cancel"
         width={800}
+        confirmLoading={saving}
       >
         <Form form={form} layout="vertical" initialValues={{ isActive: true }}>
           <Form.Item
@@ -360,7 +337,7 @@ export default function PagesPage() {
               { pattern: /^[a-z0-9-]+$/, message: 'Use only lowercase letters, numbers and hyphens' },
             ]}
           >
-            <Input addonBefore="freestays.com/" placeholder="privacy-policy" />
+            <Input prefix="freestays.com/" placeholder="privacy-policy" />
           </Form.Item>
 
           <Form.Item

@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { 
   Row, 
   Col, 
@@ -12,11 +13,10 @@ import {
   Progress,
   Space,
   Avatar,
-  List,
+  Spin,
 } from 'antd';
 import {
   CalendarOutlined,
-  UserOutlined,
   DollarOutlined,
   RiseOutlined,
   ShoppingCartOutlined,
@@ -25,156 +25,172 @@ import {
   CarOutlined,
   RocketOutlined,
 } from '@ant-design/icons';
+import { useRouter } from 'next/navigation';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text } = Typography;
 
-// Mock data - API'den gelecek
-const stats = {
-  totalBookings: 1234,
-  totalRevenue: 456789,
-  totalCustomers: 5678,
-  commission: 45678,
-  bookingsGrowth: 12.5,
-  revenueGrowth: 8.3,
-};
-
-const recentBookings = [
-  {
-    key: '1',
-    id: 'BK-001234',
-    customer: 'Ahmet Yılmaz',
-    type: 'hotel',
-    hotel: 'Grand Hotel Antalya',
-    amount: 2450,
-    status: 'confirmed',
-    date: '2025-12-05',
-  },
-  {
-    key: '2',
-    id: 'BK-001235',
-    customer: 'Mehmet Demir',
-    type: 'flight',
-    hotel: 'IST → AYT',
-    amount: 890,
-    status: 'pending',
-    date: '2025-12-05',
-  },
-  {
-    key: '3',
-    id: 'BK-001236',
-    customer: 'Ayşe Kaya',
-    type: 'car',
-    hotel: 'Ekonomik Araç - 3 Gün',
-    amount: 450,
-    status: 'confirmed',
-    date: '2025-12-04',
-  },
-  {
-    key: '4',
-    id: 'BK-001237',
-    customer: 'Fatma Şahin',
-    type: 'hotel',
-    hotel: 'Lara Beach Resort',
-    amount: 3200,
-    status: 'cancelled',
-    date: '2025-12-04',
-  },
-  {
-    key: '5',
-    id: 'BK-001238',
-    customer: 'Ali Öztürk',
-    type: 'hotel',
-    hotel: 'Bodrum Palace',
-    amount: 1890,
-    status: 'confirmed',
-    date: '2025-12-03',
-  },
-];
-
-const topDestinations = [
-  { name: 'Antalya', bookings: 456, percent: 35 },
-  { name: 'İstanbul', bookings: 321, percent: 25 },
-  { name: 'Bodrum', bookings: 234, percent: 18 },
-  { name: 'Marmaris', bookings: 156, percent: 12 },
-  { name: 'Fethiye', bookings: 130, percent: 10 },
-];
-
-const statusColors: Record<string, string> = {
-  confirmed: 'green',
-  pending: 'orange',
-  cancelled: 'red',
-};
-
-const statusLabels: Record<string, string> = {
-  confirmed: 'Confirmed',
-  pending: 'Pending',
-  cancelled: 'Cancelled',
-};
-
-const typeIcons: Record<string, React.ReactNode> = {
-  hotel: <HomeOutlined />,
-  flight: <RocketOutlined />,
-  car: <CarOutlined />,
-};
-
-const typeColors: Record<string, string> = {
-  hotel: 'blue',
-  flight: 'purple',
-  car: 'cyan',
-};
-
-const columns = [
-  {
-    title: 'Booking',
-    dataIndex: 'id',
-    key: 'id',
-    render: (id: string, record: any) => (
-      <Space>
-        <Tag color={typeColors[record.type]} icon={typeIcons[record.type]}>
-          {record.type.toUpperCase()}
-        </Tag>
-        <Text strong>{id}</Text>
-      </Space>
-    ),
-  },
-  {
-    title: 'Customer',
-    dataIndex: 'customer',
-    key: 'customer',
-    render: (name: string) => (
-      <Space>
-        <Avatar size="small" icon={<UserOutlined />} />
-        {name}
-      </Space>
-    ),
-  },
-  {
-    title: 'Details',
-    dataIndex: 'hotel',
-    key: 'hotel',
-  },
-  {
-    title: 'Amount',
-    dataIndex: 'amount',
-    key: 'amount',
-    render: (amount: number) => <Text strong>€{amount.toLocaleString()}</Text>,
-  },
-  {
-    title: 'Status',
-    dataIndex: 'status',
-    key: 'status',
-    render: (status: string) => (
-      <Tag color={statusColors[status]}>{statusLabels[status]}</Tag>
-    ),
-  },
-  {
-    title: 'Date',
-    dataIndex: 'date',
-    key: 'date',
-  },
-];
+interface DashboardData {
+  stats: {
+    totalBookings: number;
+    totalRevenue: number;
+    totalCustomers: number;
+    commission: number;
+    bookingsGrowth: number;
+    revenueGrowth: number;
+  };
+  recentBookings: Array<{
+    id: string;
+    customer: string;
+    type: string;
+    hotel: string;
+    amount: number;
+    status: string;
+    date: string;
+  }>;
+  topDestinations: Array<{
+    name: string;
+    bookings: number;
+    percent: number;
+  }>;
+}
 
 export default function AdminDashboard() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<DashboardData['stats'] | null>(null);
+  const [recentBookings, setRecentBookings] = useState<DashboardData['recentBookings']>([]);
+  const [topDestinations, setTopDestinations] = useState<DashboardData['topDestinations']>([]);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAuthAndLoadData = async () => {
+      // Check if user is authenticated
+      const token = localStorage.getItem('admin_token');
+      if (!token) {
+        router.replace('/admin/login');
+        return;
+      }
+
+      try {
+        // Load dashboard data from single endpoint
+        const dashboardData = await adminAPI.getDashboard();
+        
+        // Backend response kontrolü
+        if (dashboardData && dashboardData.stats) {
+          setStats(dashboardData.stats);
+          setRecentBookings(dashboardData.recentBookings || []);
+          setTopDestinations(dashboardData.topDestinations || []);
+          console.log('✅ Dashboard verileri API\'den yüklendi');
+        } else {
+          throw new Error('Backend invalid response format');
+        }
+      } catch (error: any) {
+        console.error('🚫 Dashboard yükleme hatası:', error);
+        
+        // Don't show error or mock data if session expired - user will be redirected
+        if (error.message?.includes('Session expired')) {
+          return;
+        }
+        
+        // For other errors, redirect to login as well for security
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_refresh_token');
+        localStorage.removeItem('admin_user');
+        document.cookie = 'admin_token=; path=/; max-age=0';
+        router.replace('/admin/login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuthAndLoadData();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!stats) {
+    return (
+      <div style={{ textAlign: 'center', padding: '50px' }}>
+        <Text type="danger">Failed to load dashboard data</Text>
+      </div>
+    );
+  }
+
+  const { stats: statsData, recentBookings: bookingsData, topDestinations: destinationsData } = {
+    stats,
+    recentBookings,
+    topDestinations,
+  };
+
+  const bookingColumns = [
+    {
+      title: 'Booking ID',
+      dataIndex: 'id',
+      key: 'id',
+      render: (id: string) => <Text code>{id}</Text>,
+    },
+    {
+      title: 'Customer',
+      dataIndex: 'customer',
+      key: 'customer',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      key: 'type',
+      render: (type: string) => {
+        const icons = {
+          hotel: <HomeOutlined />,
+          flight: <RocketOutlined />,
+          car: <CarOutlined />,
+        };
+        return (
+          <Space>
+            {icons[type as keyof typeof icons] || <CalendarOutlined />}
+            <Text style={{ textTransform: 'capitalize' }}>{type}</Text>
+          </Space>
+        );
+      },
+    },
+    {
+      title: 'Service',
+      dataIndex: 'hotel',
+      key: 'hotel',
+    },
+    {
+      title: 'Amount',
+      dataIndex: 'amount',
+      key: 'amount',
+      render: (amount: number) => <Text strong>₺{amount.toLocaleString()}</Text>,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        const statusConfig = {
+          confirmed: { color: 'green', text: 'Confirmed' },
+          pending: { color: 'orange', text: 'Pending' },
+          cancelled: { color: 'red', text: 'Cancelled' },
+        };
+        const config = statusConfig[status as keyof typeof statusConfig] || { color: 'default', text: status };
+        return <Tag color={config.color}>{config.text}</Tag>;
+      },
+    },
+    {
+      title: 'Date',
+      dataIndex: 'date',
+      key: 'date',
+      render: (date: string) => new Date(date).toLocaleDateString('tr-TR'),
+    },
+  ];
+
   return (
     <div>
       <Title level={2} style={{ marginBottom: 24 }}>Dashboard</Title>
@@ -185,11 +201,11 @@ export default function AdminDashboard() {
           <Card>
             <Statistic
               title="Total Bookings"
-              value={stats.totalBookings}
+              value={statsData.totalBookings}
               prefix={<CalendarOutlined style={{ color: '#6366f1' }} />}
               suffix={
                 <Text type="success" style={{ fontSize: 14 }}>
-                  <RiseOutlined /> {stats.bookingsGrowth}%
+                  <RiseOutlined /> {statsData.bookingsGrowth}%
                 </Text>
               }
             />
@@ -199,7 +215,7 @@ export default function AdminDashboard() {
           <Card>
             <Statistic
               title="Total Revenue"
-              value={stats.totalRevenue}
+              value={statsData.totalRevenue}
               prefix={<DollarOutlined style={{ color: '#10b981' }} />}
               suffix="€"
               styles={{ content: { color: '#10b981' } }}
@@ -210,7 +226,7 @@ export default function AdminDashboard() {
           <Card>
             <Statistic
               title="Total Customers"
-              value={stats.totalCustomers}
+              value={statsData.totalCustomers}
               prefix={<TeamOutlined style={{ color: '#f59e0b' }} />}
             />
           </Card>
@@ -219,7 +235,7 @@ export default function AdminDashboard() {
           <Card>
             <Statistic
               title="Commission Revenue"
-              value={stats.commission}
+              value={statsData.commission}
               prefix={<ShoppingCartOutlined style={{ color: '#ec4899' }} />}
               suffix="€"
               styles={{ content: { color: '#ec4899' } }}
@@ -234,13 +250,14 @@ export default function AdminDashboard() {
         <Col xs={24} lg={16}>
           <Card 
             title="Recent Bookings" 
-            extra={<a href="/admin/bookings">View All</a>}
+            extra={<Link href="/admin/bookings">View All</Link>}
           >
             <Table 
-              columns={columns} 
-              dataSource={recentBookings} 
+              columns={bookingColumns} 
+              dataSource={bookingsData} 
               pagination={false}
               size="small"
+              rowKey="id"
             />
           </Card>
         </Col>
@@ -249,7 +266,7 @@ export default function AdminDashboard() {
         <Col xs={24} lg={8}>
           <Card title="Popular Destinations">
             <div className="space-y-4">
-              {topDestinations.map((item, index) => (
+              {destinationsData.map((item, index) => (
                 <div key={index}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                     <Text strong>{item.name}</Text>
@@ -276,11 +293,11 @@ export default function AdminDashboard() {
               <Space>
                 <Avatar style={{ backgroundColor: '#3b82f6' }} icon={<HomeOutlined />} />
                 <div>
-                  <Text type="secondary">Hotel Bookings</Text>
-                  <Title level={4} style={{ margin: 0 }}>892</Title>
+                  <Text strong>Hotel Bookings</Text>
+                  <br />
+                  <Text type="secondary">Most popular service</Text>
                 </div>
               </Space>
-              <Progress percent={72} strokeColor="#3b82f6" />
             </Space>
           </Card>
         </Col>
@@ -288,13 +305,13 @@ export default function AdminDashboard() {
           <Card>
             <Space orientation="vertical" style={{ width: '100%' }}>
               <Space>
-                <Avatar style={{ backgroundColor: '#8b5cf6' }} icon={<RocketOutlined />} />
+                <Avatar style={{ backgroundColor: '#10b981' }} icon={<RocketOutlined />} />
                 <div>
-                  <Text type="secondary">Flight Bookings</Text>
-                  <Title level={4} style={{ margin: 0 }}>256</Title>
+                  <Text strong>Flight Bookings</Text>
+                  <br />
+                  <Text type="secondary">Growing rapidly</Text>
                 </div>
               </Space>
-              <Progress percent={21} strokeColor="#8b5cf6" />
             </Space>
           </Card>
         </Col>
@@ -302,13 +319,13 @@ export default function AdminDashboard() {
           <Card>
             <Space orientation="vertical" style={{ width: '100%' }}>
               <Space>
-                <Avatar style={{ backgroundColor: '#06b6d4' }} icon={<CarOutlined />} />
+                <Avatar style={{ backgroundColor: '#f59e0b' }} icon={<CarOutlined />} />
                 <div>
-                  <Text type="secondary">Car Rentals</Text>
-                  <Title level={4} style={{ margin: 0 }}>86</Title>
+                  <Text strong>Car Rentals</Text>
+                  <br />
+                  <Text type="secondary">Steady demand</Text>
                 </div>
               </Space>
-              <Progress percent={7} strokeColor="#06b6d4" />
             </Space>
           </Card>
         </Col>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Card,
@@ -19,7 +19,8 @@ import {
   Input,
   Timeline,
   Divider,
-  message,
+  Spin,
+  App,
 } from 'antd';
 import type { MenuProps, TabsProps } from 'antd';
 import {
@@ -39,8 +40,10 @@ import {
   ClockCircleOutlined,
   CloseCircleOutlined,
   ExclamationCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
@@ -187,19 +190,53 @@ const statusConfig: Record<string, { color: string; icon: React.ReactNode; label
 };
 
 export default function BookingsPage() {
-  const [bookings, setBookings] = useState<Booking[]>(mockBookings);
+  return (
+    <App>
+      <BookingsContent />
+    </App>
+  );
+}
+
+function BookingsContent() {
+  const { message: messageApi } = App.useApp();
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [currentPage, pageSize]);
+
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getBookings({ page: currentPage, pageSize });
+      // Backend might return { items: [...] } or { data: [...] } or just [...]
+      const bookingsArray = Array.isArray(data) ? data : (data?.items || data?.data || []);
+      setBookings(bookingsArray);
+      setTotalCount(data?.totalCount || bookingsArray.length);
+    } catch (error: any) {
+      console.error('Failed to load bookings:', error);
+      messageApi.error(error.message || 'Failed to load bookings');
+      setBookings([]); // Set empty array on error
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showBookingDetail = (booking: Booking) => {
     setSelectedBooking(booking);
     setDrawerOpen(true);
   };
 
-  const cancelBooking = (booking: Booking) => {
+  const cancelBooking = async (booking: Booking) => {
     Modal.confirm({
       title: 'Cancel Booking',
       icon: <ExclamationCircleOutlined />,
@@ -213,12 +250,16 @@ export default function BookingsPage() {
       okText: 'Cancel Booking',
       okType: 'danger',
       cancelText: 'Go Back',
-      onOk: () => {
-        setBookings(bookings.map(b => 
-          b.id === booking.id ? { ...b, status: 'cancelled' as const } : b
-        ));
-        message.success('Booking cancelled');
-        setDrawerOpen(false);
+      onOk: async () => {
+        try {
+          await adminAPI.updateBookingStatus(booking.id, { status: 3, notes: 'Cancelled by admin' });
+          messageApi.success('Booking cancelled successfully');
+          setDrawerOpen(false);
+          fetchBookings();
+        } catch (error: any) {
+          console.error('Failed to cancel booking:', error);
+          messageApi.error(error.message || 'Failed to cancel booking');
+        }
       },
     });
   };
@@ -356,7 +397,7 @@ export default function BookingsPage() {
     },
   ];
 
-  const filteredBookings = bookings.filter(booking => {
+  const filteredBookings = Array.isArray(bookings) ? bookings.filter(booking => {
     const matchesSearch = 
       booking.id.toLowerCase().includes(searchText.toLowerCase()) ||
       booking.customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -366,7 +407,7 @@ export default function BookingsPage() {
     const matchesStatus = !statusFilter || booking.status === statusFilter;
     
     return matchesSearch && matchesType && matchesStatus;
-  });
+  }) : [];
 
   const renderBookingDetails = () => {
     if (!selectedBooking) return null;
@@ -485,10 +526,21 @@ export default function BookingsPage() {
     },
   ];
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>Bookings</Title>
+        <Button icon={<ReloadOutlined />} onClick={fetchBookings}>
+          Refresh
+        </Button>
       </div>
 
       <Card>
@@ -535,9 +587,18 @@ export default function BookingsPage() {
           dataSource={filteredBookings}
           rowKey="id"
           pagination={{
-            pageSize: 10,
+            current: currentPage,
+            pageSize: pageSize,
+            total: totalCount,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} bookings`,
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              if (size !== pageSize) {
+                setPageSize(size);
+                setCurrentPage(1);
+              }
+            },
           }}
         />
       </Card>
@@ -554,7 +615,7 @@ export default function BookingsPage() {
         placement="right"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
-        width={550}
+        size="large"
         extra={
           <Space>
             <Button icon={<PrinterOutlined />}>Print</Button>

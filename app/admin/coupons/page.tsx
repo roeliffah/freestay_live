@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   Card,
@@ -14,7 +14,6 @@ import {
   Select,
   DatePicker,
   Switch,
-  message,
   Typography,
   Dropdown,
   Statistic,
@@ -22,6 +21,8 @@ import {
   Col,
   Tooltip,
   Popconfirm,
+  Spin,
+  App,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import {
@@ -36,8 +37,10 @@ import {
   DollarOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { adminAPI } from '@/lib/api/client';
 
 const { Title, Text } = Typography;
 
@@ -49,82 +52,56 @@ interface Coupon {
   maxUses: number;
   usedCount: number;
   minBookingAmount: number;
-  validFrom: string;
-  validUntil: string;
+  usageType: 'single' | 'annual';
+  validFrom?: string;
+  validUntil?: string;
   isActive: boolean;
   createdAt: string;
 }
 
-// Mock data
-const mockCoupons: Coupon[] = [
-  {
-    id: '1',
-    code: 'WINTER25',
-    discountType: 'percentage',
-    discountValue: 25,
-    maxUses: 100,
-    usedCount: 45,
-    minBookingAmount: 500,
-    validFrom: '2025-12-01',
-    validUntil: '2025-12-31',
-    isActive: true,
-    createdAt: '2025-11-25',
-  },
-  {
-    id: '2',
-    code: 'NEWYEAR50',
-    discountType: 'fixed',
-    discountValue: 50,
-    maxUses: 200,
-    usedCount: 12,
-    minBookingAmount: 300,
-    validFrom: '2025-12-25',
-    validUntil: '2026-01-05',
-    isActive: true,
-    createdAt: '2025-12-01',
-  },
-  {
-    id: '3',
-    code: 'WELCOME10',
-    discountType: 'percentage',
-    discountValue: 10,
-    maxUses: -1, // Unlimited
-    usedCount: 234,
-    minBookingAmount: 0,
-    validFrom: '2025-01-01',
-    validUntil: '2025-12-31',
-    isActive: true,
-    createdAt: '2025-01-01',
-  },
-  {
-    id: '4',
-    code: 'SUMMER20',
-    discountType: 'percentage',
-    discountValue: 20,
-    maxUses: 500,
-    usedCount: 500,
-    minBookingAmount: 1000,
-    validFrom: '2025-06-01',
-    validUntil: '2025-08-31',
-    isActive: false,
-    createdAt: '2025-05-15',
-  },
-];
-
 export default function CouponsPage() {
-  const [coupons, setCoupons] = useState<Coupon[]>(mockCoupons);
+  return (
+    <App>
+      <CouponsContent />
+    </App>
+  );
+}
+
+function CouponsContent() {
+  const { message: messageApi } = App.useApp();
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, []);
+
+  const fetchCoupons = async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getCoupons();
+      setCoupons(data);
+    } catch (error: any) {
+      console.error('Failed to load coupons:', error);
+      messageApi.error(error.message || 'Failed to load coupons');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const showModal = (coupon?: Coupon) => {
     if (coupon) {
       setEditingCoupon(coupon);
-      form.setFieldsValue({
-        ...coupon,
-        dateRange: [dayjs(coupon.validFrom), dayjs(coupon.validUntil)],
-      });
+      const formValues: any = { ...coupon };
+      if (coupon.validFrom && coupon.validUntil) {
+        formValues.dateRange = [dayjs(coupon.validFrom), dayjs(coupon.validUntil)];
+      }
+      form.setFieldsValue(formValues);
     } else {
       setEditingCoupon(null);
       form.resetFields();
@@ -133,53 +110,71 @@ export default function CouponsPage() {
   };
 
   const handleOk = async () => {
+    setSaving(true);
     try {
       const values = await form.validateFields();
-      const [validFrom, validUntil] = values.dateRange;
       
-      const couponData = {
-        ...values,
-        validFrom: validFrom.format('YYYY-MM-DD'),
-        validUntil: validUntil.format('YYYY-MM-DD'),
-        dateRange: undefined,
+      const couponData: any = {
+        code: values.code,
+        discountType: values.discountType,
+        discountValue: values.discountValue,
+        maxUses: values.maxUses,
+        minBookingAmount: values.minBookingAmount,
+        usageType: values.usageType,
+        isActive: values.isActive,
       };
 
+      // Tarih alanları girilmişse ekle
+      if (values.dateRange && values.dateRange.length === 2) {
+        const [validFrom, validUntil] = values.dateRange;
+        couponData.validFrom = validFrom.format('YYYY-MM-DD');
+        couponData.validUntil = validUntil.format('YYYY-MM-DD');
+      }
+
       if (editingCoupon) {
-        setCoupons(coupons.map(c => c.id === editingCoupon.id ? { ...c, ...couponData } : c));
-        message.success('Coupon updated');
+        await adminAPI.updateCoupon(editingCoupon.id, couponData);
+        messageApi.success('Coupon updated successfully');
       } else {
-        const newCoupon: Coupon = {
-          ...couponData,
-          id: Date.now().toString(),
-          usedCount: 0,
-          createdAt: new Date().toISOString().split('T')[0],
-        };
-        setCoupons([...coupons, newCoupon]);
-        message.success('Coupon created');
+        await adminAPI.createCoupon(couponData);
+        messageApi.success('Coupon created successfully');
       }
 
       setIsModalOpen(false);
       form.resetFields();
-    } catch (error) {
-      console.error('Validation failed:', error);
+      fetchCoupons();
+    } catch (error: any) {
+      console.error('Failed to save coupon:', error);
+      messageApi.error(error.message || 'Failed to save coupon');
+    } finally {
+      setSaving(false);
     }
   };
 
-const handleDelete = (id: string) => {
-    setCoupons(coupons.filter(c => c.id !== id));
-    message.success('Coupon deleted');
+const handleDelete = async (id: string) => {
+    try {
+      await adminAPI.deleteCoupon(id);
+      messageApi.success('Coupon deleted successfully');
+      fetchCoupons();
+    } catch (error: any) {
+      console.error('Failed to delete coupon:', error);
+      messageApi.error(error.message || 'Failed to delete coupon');
+    }
   };
 
-  const toggleActive = (coupon: Coupon) => {
-    setCoupons(coupons.map(c => 
-      c.id === coupon.id ? { ...c, isActive: !c.isActive } : c
-    ));
-    message.success(coupon.isActive ? 'Coupon deactivated' : 'Coupon activated');
+  const toggleActive = async (coupon: Coupon) => {
+    try {
+      await adminAPI.updateCoupon(coupon.id, { isActive: !coupon.isActive });
+      messageApi.success(coupon.isActive ? 'Coupon deactivated successfully' : 'Coupon activated successfully');
+      fetchCoupons();
+    } catch (error: any) {
+      console.error('Failed to toggle coupon:', error);
+      messageApi.error(error.message || 'Failed to toggle coupon status');
+    }
   };
 
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
-    message.success('Coupon code copied');
+    messageApi.success('Coupon code copied to clipboard');
   };
 
   const getActionItems = (record: Coupon): MenuProps['items'] => [
@@ -246,6 +241,15 @@ const handleDelete = (id: string) => {
       ),
     },
     {
+      title: 'Usage Type',
+      key: 'usageType',
+      render: (_: any, record: Coupon) => (
+        <Tag color={record.usageType === 'single' ? 'blue' : 'green'}>
+          {record.usageType === 'single' ? 'Single Use' : 'Annual'}
+        </Tag>
+      ),
+    },
+    {
       title: 'Usage',
       key: 'usage',
       render: (_: any, record: Coupon) => {
@@ -272,6 +276,9 @@ const handleDelete = (id: string) => {
       title: 'Validity',
       key: 'validity',
       render: (_: any, record: Coupon) => {
+        if (!record.validFrom || !record.validUntil) {
+          return <Tag color="cyan">No Expiry</Tag>;
+        }
         const isExpired = dayjs(record.validUntil).isBefore(dayjs());
         const isNotStarted = dayjs(record.validFrom).isAfter(dayjs());
         return (
@@ -334,13 +341,29 @@ const handleDelete = (id: string) => {
   const activeCoupons = coupons.filter(c => c.isActive).length;
   const totalUsage = coupons.reduce((sum, c) => sum + c.usedCount, 0);
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>Coupons</Title>
-        <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-          New Coupon
-        </Button>
+        <Title level={2} style={{ margin: 0 }}>
+          <GiftOutlined style={{ marginRight: 12 }} />
+          Coupons
+        </Title>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={fetchCoupons}>
+            Refresh
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
+            New Coupon
+          </Button>
+        </Space>
       </div>
 
       {/* Stats */}
@@ -417,6 +440,7 @@ const handleDelete = (id: string) => {
         }}
         okText={editingCoupon ? 'Update' : 'Create'}
         cancelText="Cancel"
+        confirmLoading={saving}
         width={550}
       >
         <Form
@@ -426,6 +450,7 @@ const handleDelete = (id: string) => {
             discountType: 'percentage',
             maxUses: 100,
             minBookingAmount: 0,
+            usageType: 'single',
             isActive: true,
           }}
         >
@@ -468,6 +493,17 @@ const handleDelete = (id: string) => {
             </Col>
           </Row>
 
+          <Form.Item
+            name="usageType"
+            label="Usage Type"
+            rules={[{ required: true, message: 'Usage type is required' }]}
+          >
+            <Select>
+              <Select.Option value="single">Single Use</Select.Option>
+              <Select.Option value="annual">Annual</Select.Option>
+            </Select>
+          </Form.Item>
+
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
@@ -490,8 +526,8 @@ const handleDelete = (id: string) => {
 
           <Form.Item
             name="dateRange"
-            label="Validity Period"
-            rules={[{ required: true, message: 'Date range is required' }]}
+            label="Validity Period (Optional)"
+            tooltip="Leave empty for no expiry"
           >
             <DatePicker.RangePicker style={{ width: '100%' }} />
           </Form.Item>

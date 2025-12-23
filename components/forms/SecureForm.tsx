@@ -13,7 +13,7 @@ import { rateLimiter, formRateLimiter } from '@/lib/security/rate-limiter';
 import { initCsrfProtection } from '@/lib/security/csrf-protection';
 import { createHoneypot, validateHoneypot, honeypotClassName } from '@/lib/security/honeypot';
 
-interface SecureFormProps extends FormProps {
+interface SecureFormProps extends Omit<FormProps, 'children'> {
   onSecureFinish: (values: any) => Promise<void> | void;
   identifier?: string; // Rate limiting için unique identifier (email, username, vb.)
   enableRateLimit?: boolean;
@@ -24,6 +24,7 @@ interface SecureFormProps extends FormProps {
     windowMs: number;
     blockDurationMs: number;
   };
+  children?: React.ReactNode;
 }
 
 /**
@@ -58,7 +59,7 @@ export default function SecureForm({
   customRateLimitConfig,
   children,
   ...formProps
-}: SecureFormProps) {
+}: SecureFormProps): React.JSX.Element {
   const [form] = Form.useForm(formProps.form as FormInstance);
   const [honeypot] = useState(createHoneypot());
   const [blocked, setBlocked] = useState(false);
@@ -99,7 +100,7 @@ export default function SecureForm({
           form.setFields([
             {
               name: 'general',
-              errors: ['Geçersiz istek. Lütfen tekrar deneyin.'],
+              errors: ['Invalid request. Please try again.'],
             },
           ]);
           return;
@@ -119,7 +120,7 @@ export default function SecureForm({
             {
               name: 'general',
               errors: [
-                `Çok fazla deneme! Lütfen ${minutesLeft} dakika sonra tekrar deneyin.`,
+                `Too many attempts! Please try again in ${minutesLeft} minute(s).`,
               ],
             },
           ]);
@@ -155,7 +156,7 @@ export default function SecureForm({
         form.setFields([
           {
             name: 'general',
-            errors: [error.message || 'Bir hata oluştu. Lütfen tekrar deneyin.'],
+            errors: [error.message || 'An error occurred. Please try again.'],
           },
         ]);
       } finally {
@@ -176,7 +177,7 @@ export default function SecureForm({
   const getBlockMessage = () => {
     if (!blockTime) return '';
     const minutesLeft = Math.ceil((blockTime - Date.now()) / 60000);
-    return `Form geçici olarak kilitlendi. ${minutesLeft} dakika sonra tekrar deneyin.`;
+    return `Form temporarily locked. Please try again in ${minutesLeft} minute(s).`;
   };
 
   return (
@@ -199,7 +200,7 @@ export default function SecureForm({
       {/* Rate Limit Alerts */}
       {blocked && (
         <Alert
-          message="Form Kilitli"
+          title="Form Locked"
           description={getBlockMessage()}
           type="error"
           icon={<ClockCircleOutlined />}
@@ -211,8 +212,8 @@ export default function SecureForm({
 
       {!blocked && remainingAttempts !== null && remainingAttempts < 3 && (
         <Alert
-          message="Uyarı"
-          description={`Kalan deneme hakkınız: ${remainingAttempts}`}
+          title="Warning"
+          description={`Remaining attempts: ${remainingAttempts}`}
           type="warning"
           icon={<WarningOutlined />}
           showIcon
@@ -228,18 +229,6 @@ export default function SecureForm({
         onFinish={handleFinish}
         disabled={blocked || submitting || formProps.disabled}
       >
-        {/* Honeypot field */}
-        {enableHoneypot && (
-          <Form.Item name="website" className={honeypotClassName} hidden>
-            <input type="text" tabIndex={-1} autoComplete="off" />
-          </Form.Item>
-        )}
-
-        {/* General error field */}
-        <Form.Item name="general" hidden>
-          <input type="hidden" />
-        </Form.Item>
-
         {children}
       </Form>
     </>

@@ -4,6 +4,7 @@ Modern tatil rezervasyon platformu. SunHotels API entegrasyonu ile 9 dilde hizme
 
 ## 🌟 Özellikler
 
+### Frontend
 - ✅ **9 Dil Desteği**: TR, EN, DE, NL, IT, EL, RU, ES, FR
 - ✅ **SunHotels API Entegrasyonu**: Canlı otel verisi (fallback: mock data)
 - ✅ **Modern Tasarım**: Tatilsepeti/Jollytur/Etstur tarzı arayüz
@@ -11,6 +12,14 @@ Modern tatil rezervasyon platformu. SunHotels API entegrasyonu ile 9 dilde hizme
 - ✅ **Gelişmiş Filtreleme**: Fiyat, yıldız, sıralama
 - ✅ **Responsive Design**: Mobil, tablet ve desktop uyumlu
 - ✅ **XML Parser**: Fast-xml-parser ile SOAP yanıtları
+
+### Admin Dashboard 🔐
+- ✅ **Token-based Authentication**: JWT ile güvenli giriş
+- ✅ **Middleware Protection**: Token olmadan erişim engellenir
+- ✅ **API Integration**: Backend API ile tam entegre
+- ✅ **Fallback Mechanism**: API erişilemezse mock data
+- ✅ **Dashboard Analytics**: İstatistikler, grafikler, tablolar
+- ✅ **Modern Admin UI**: Ant Design components
 
 ## 🚀 Başlangıç
 
@@ -29,15 +38,21 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ## 🔧 API Konfigürasyonu
 
-`.env.local` dosyasını oluşturun ve SunHotels API bilgilerinizi ekleyin:
+`.env.local` dosyasını oluşturun:
 
 ```env
+# Backend API (Admin Dashboard)
+NEXT_PUBLIC_API_URL=http://localhost:5240/api/v1
+
+# SunHotels API
 NEXT_PUBLIC_SUNHOTELS_API_URL=http://xml.sunhotels.net/15/PostGet/NonStaticXMLAPI.asmx
 NEXT_PUBLIC_SUNHOTELS_USERNAME=your_username
 NEXT_PUBLIC_SUNHOTELS_PASSWORD=your_password
 ```
 
-**Not**: Test hesabı ile API bağlantı hatası durumunda otomatik olarak mock data kullanılır.
+**Admin Panel**: Token tabanlı authentication ile korumalı. Detaylar için [ADMIN_API_INTEGRATION.md](docs/ADMIN_API_INTEGRATION.md) dosyasına bakın.
+
+**SunHotels**: Test hesabı ile API bağlantı hatası durumunda otomatik olarak mock data kullanılır.
 
 ## 🌐 API Entegrasyonu
 

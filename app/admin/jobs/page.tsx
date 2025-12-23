@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, Button, Space, Typography, Alert, Spin, Table, Tag, Divider, message, Modal, Row, Col, Statistic } from 'antd';
+import { Card, Button, Space, Typography, Alert, Spin, Table, Tag, Divider, App, Row, Col, Statistic, Popconfirm } from 'antd';
 import { 
   SyncOutlined, 
   CloudSyncOutlined, 
@@ -47,168 +47,134 @@ interface SunHotelsStats {
 }
 
 export default function JobsPage() {
+  return (
+    <App>
+      <JobsContent />
+    </App>
+  );
+}
+
+function JobsContent() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState<string | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [jobLogs, setJobLogs] = useState<JobLog[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [stats, setStats] = useState<SunHotelsStats | null>(null);
 
   // Load statistics on mount
   useEffect(() => {
     loadStatistics();
-  }, []);
+    loadJobHistory();
+  }, [currentPage, pageSize]);
+
+  // Auto-refresh job history when there are running jobs
+  useEffect(() => {
+    const hasRunningJobs = jobLogs.some(job => job.status === 'running');
+    
+    if (hasRunningJobs) {
+      const intervalId = setInterval(() => {
+        loadJobHistory();
+        loadStatistics();
+      }, 5000); // Refresh every 5 seconds
+      
+      return () => clearInterval(intervalId);
+    }
+  }, [jobLogs]);
 
   const loadStatistics = async () => {
     setStatsLoading(true);
     try {
       const response = await adminAPI.getSunHotelsStatistics();
+      console.log('📊 SunHotels Statistics:', response);
       setStats(response);
     } catch (error: any) {
-      console.error('Failed to load statistics:', error);
-      // Don't show error message on mount, just log it
+      console.error('❌ Failed to load statistics:', error);
+      message.error(error.message || 'Failed to load statistics');
     } finally {
       setStatsLoading(false);
     }
   };
 
-  const handleSyncAll = async () => {
-    Modal.confirm({
-      title: 'Full Sync Confirmation',
-      content: 'This will sync ALL data from SunHotels API including destinations, resorts, hotels, rooms, features, etc. This may take several minutes. Continue?',
-      okText: 'Yes, Start Sync',
-      okType: 'primary',
-      cancelText: 'Cancel',
-      icon: <InfoCircleOutlined />,
-      async onOk() {
-        setLoading('sync-all');
-        const startTime = new Date().toISOString();
-        
-        // Add pending log
-        const tempLog: JobLog = {
-          id: `temp-${Date.now()}`,
-          jobType: 'Full Sync',
-          status: 'running',
-          startTime,
-        };
-        setJobLogs(prev => [tempLog, ...prev]);
-
-        try {
-          const response = await adminAPI.syncSunHotelsAll();
-          
-          // Update log with success
-          setJobLogs(prev => prev.map(log => 
-            log.id === tempLog.id 
-              ? {
-                  ...log,
-                  id: response.jobId || log.id,
-                  status: 'success',
-                  endTime: new Date().toISOString(),
-                  duration: calculateDuration(startTime, new Date().toISOString()),
-                  message: response.message || 'Full sync completed successfully',
-                  details: response,
-                }
-              : log
-          ));
-          
-          message.success('Full sync completed successfully!');
-          
-          // Reload statistics after successful sync
-          setTimeout(() => {
-            loadStatistics();
-          }, 2000);
-        } catch (error: any) {
-          console.error('Sync error:', error);
-          
-          // Update log with failure
-          setJobLogs(prev => prev.map(log => 
-            log.id === tempLog.id 
-              ? {
-                  ...log,
-                  status: 'failed',
-                  endTime: new Date().toISOString(),
-                  duration: calculateDuration(startTime, new Date().toISOString()),
-                  message: error.message || 'Sync failed',
-                }
-              : log
-          ));
-          
-          message.error({
-            content: error.message || 'Senkronizasyon başlatılamadı',
-            duration: 5,
-          });
-        } finally {
-          setLoading(null);
-        }
-      },
-    });
+  const loadJobHistory = async () => {
+    try {
+      const response = await adminAPI.getJobHistory({ page: currentPage, pageSize });
+      console.log('📋 Job History:', response);
+      
+      // Map API response to UI format
+      const mappedJobs: JobLog[] = response.items.map(item => ({
+        id: item.id,
+        jobType: item.jobType,
+        status: item.status as 'running' | 'success' | 'failed' | 'pending',
+        startTime: item.startTime,
+        endTime: item.endTime,
+        duration: item.duration ? formatDuration(item.duration) : undefined,
+        message: item.message || item.errorMessage,
+      }));
+      
+      setJobLogs(mappedJobs);
+      setTotalCount(response.totalCount || mappedJobs.length);
+    } catch (error: any) {
+      console.error('❌ Failed to load job history:', error);
+      // Don't show error to user on initial load
+    }
   };
 
-  const handleSyncBasic = async () => {
-    Modal.confirm({
-      title: 'Basic Sync Confirmation',
-      content: 'This will sync basic reference data (destinations, resorts, meals, room types, features, themes, languages). This is faster than full sync. Continue?',
-      okText: 'Yes, Start Sync',
-      okType: 'primary',
-      cancelText: 'Cancel',
-      icon: <InfoCircleOutlined />,
-      async onOk() {
-        setLoading('sync-basic');
-        const startTime = new Date().toISOString();
-        
-        const tempLog: JobLog = {
-          id: `temp-${Date.now()}`,
-          jobType: 'Basic Sync',
-          status: 'running',
-          startTime,
-        };
-        setJobLogs(prev => [tempLog, ...prev]);
+  const formatDuration = (seconds: number): string => {
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
 
-        try {
-          const response = await adminAPI.syncSunHotelsBasic();
-          
-          setJobLogs(prev => prev.map(log => 
-            log.id === tempLog.id 
-              ? {
-                  ...log,
-                  id: response.jobId || log.id,
-                  status: 'success',
-                  endTime: new Date().toISOString(),
-                  duration: calculateDuration(startTime, new Date().toISOString()),
-                  message: response.message || 'Basic sync completed successfully',
-                  details: response,
-                }
-              : log
-          ));
-          
-          message.success('Basic sync completed successfully!');
-          
-          // Reload statistics after successful sync
-          setTimeout(() => {
-            loadStatistics();
-          }, 1000);
-        } catch (error: any) {
-          console.error('Sync error:', error);
-          
-          setJobLogs(prev => prev.map(log => 
-            log.id === tempLog.id 
-              ? {
-                  ...log,
-                  status: 'failed',
-                  endTime: new Date().toISOString(),
-                  duration: calculateDuration(startTime, new Date().toISOString()),
-                  message: error.message || 'Sync failed',
-                }
-              : log
-          ));
-          
-          message.error({
-            content: error.message || 'Senkronizasyon başlatılamadı',
-            duration: 5,
-          });
-        } finally {
-          setLoading(null);
-        }
-      },
-    });
+  const handleSyncAll = async () => {
+    setLoading('sync-all');
+    const startTime = new Date().toISOString();
+    
+    // Add pending log
+    const tempLog: JobLog = {
+      id: `temp-${Date.now()}`,
+      jobType: 'SunHotels Full Sync',
+      status: 'running',
+      startTime,
+    };
+    setJobLogs(prev => [tempLog, ...prev]);
+
+    try {
+      const response = await adminAPI.syncSunHotels();
+      
+      message.success(response.message || 'Sync job started successfully!');
+      
+      // Reload job history and statistics after starting
+      setTimeout(() => {
+        loadJobHistory();
+        loadStatistics();
+      }, 2000);
+    } catch (error: any) {
+      console.error('Sync error:', error);
+      
+      // Update log with failure
+      setJobLogs(prev => prev.map(log => 
+        log.id === tempLog.id 
+          ? {
+              ...log,
+              status: 'failed',
+              endTime: new Date().toISOString(),
+              duration: calculateDuration(startTime, new Date().toISOString()),
+              message: error.message || 'Failed to start sync',
+            }
+          : log
+      ));
+      
+      message.error({
+        content: error.message || 'Failed to start synchronization',
+        duration: 5,
+      });
+    } finally {
+      setLoading(null);
+    }
   };
 
   const calculateDuration = (start: string, end: string): string => {
@@ -284,61 +250,65 @@ export default function JobsPage() {
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
                   title="Hotels" 
-                  value={stats.hotelCount} 
+                  value={stats.hotelCount || 0} 
                   prefix={<ShopOutlined />}
-                  valueStyle={{ color: '#3f8600' }}
+                  styles={{ content: { color: '#3f8600' } }}
                 />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
                   title="Rooms" 
-                  value={stats.roomCount} 
+                  value={stats.roomCount || 0} 
                   prefix={<HomeOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
+                  styles={{ content: { color: '#1890ff' } }}
                 />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
                   title="Destinations" 
-                  value={stats.destinationCount} 
+                  value={stats.destinationCount || 0} 
                   prefix={<GlobalOutlined />}
+                  styles={{ content: { color: '#722ed1' } }}
                 />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
                   title="Resorts" 
-                  value={stats.resortCount} 
-                />
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Statistic 
-                  title="Meal Types" 
-                  value={stats.mealCount} 
-                />
-              </Col>
-              <Col xs={12} sm={8} md={6}>
-                <Statistic 
-                  title="Room Types" 
-                  value={stats.roomTypeCount} 
+                  value={stats.resortCount || 0} 
+                  prefix={<DatabaseOutlined />}
+                  styles={{ content: { color: '#eb2f96' } }}
                 />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
                   title="Features" 
-                  value={stats.featureCount} 
+                  value={stats.featureCount || 0} 
+                  prefix={<CheckCircleOutlined />}
+                  styles={{ content: { color: '#13c2c2' } }}
                 />
               </Col>
               <Col xs={12} sm={8} md={6}>
                 <Statistic 
-                  title="Themes" 
-                  value={stats.themeCount} 
+                  title="Room Types" 
+                  value={stats.roomTypeCount || 0} 
+                  prefix={<DatabaseOutlined />}
+                  styles={{ content: { color: '#fa8c16' } }}
                 />
               </Col>
             </Row>
             {stats.lastSyncTime && (
               <Alert
-                message={`Last synchronized: ${new Date(stats.lastSyncTime).toLocaleString()}`}
+                title={`Last synchronized: ${new Date(stats.lastSyncTime).toLocaleString()}`}
                 type="success"
+                showIcon
+                style={{ marginTop: 16 }}
+              />
+            )}
+            {!stats.lastSyncTime && (
+              <Alert
+                title="No synchronization performed yet"
+                description="Click one of the sync buttons below to start synchronizing data"
+                type="warning"
                 showIcon
                 style={{ marginTop: 16 }}
               />
@@ -346,7 +316,7 @@ export default function JobsPage() {
           </>
         ) : (
           <Alert
-            message="No data available"
+            title="No data available"
             description="Run a sync job to populate the cache"
             type="warning"
             showIcon
@@ -355,7 +325,7 @@ export default function JobsPage() {
       </Card>
 
       <Alert
-        message="Important Information"
+        title="Important Information"
         description="These jobs synchronize hotel data from SunHotels API. Full sync includes all hotels and rooms which may take several minutes. Basic sync only updates reference data (destinations, meal types, etc.) and is much faster."
         type="info"
         icon={<InfoCircleOutlined />}
@@ -373,95 +343,83 @@ export default function JobsPage() {
         }
         style={{ marginBottom: 24 }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          {/* Full Sync */}
-          <Card 
-            type="inner" 
-            title={
-              <Space>
-                <DatabaseOutlined />
-                <span>Full Data Sync</span>
-              </Space>
-            }
+        <Card 
+          type="inner" 
+          title={
+            <Space>
+              <DatabaseOutlined />
+              <span>Full Data Sync</span>
+            </Space>
+          }
+        >
+          <Paragraph>
+            Synchronizes all data from SunHotels API including:
+          </Paragraph>
+          <ul style={{ marginLeft: 20, marginBottom: 16 }}>
+            <li>Destinations and Resorts</li>
+            <li>Hotels with full details</li>
+            <li>Room Types and Features</li>
+            <li>Meal Types and Themes</li>
+            <li>Languages and Transfer Types</li>
+          </ul>
+          <Alert
+            title="This operation runs in the background and may take several minutes"
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+          <Popconfirm
+            title="Start Synchronization"
+            description="This will sync all data from SunHotels API. The job will run in the background. Continue?"
+            onConfirm={handleSyncAll}
+            okText="Yes, Start Sync"
+            cancelText="Cancel"
+            disabled={loading !== null}
           >
-            <Paragraph>
-              Synchronizes all data from SunHotels API including:
-            </Paragraph>
-            <ul style={{ marginLeft: 20, marginBottom: 16 }}>
-              <li>Destinations and Resorts</li>
-              <li>Hotels with full details</li>
-              <li>Room Types and Features</li>
-              <li>Meal Types and Themes</li>
-              <li>Languages and Transfer Types</li>
-            </ul>
-            <Alert
-              message="This operation may take 5-10 minutes depending on data volume"
-              type="warning"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
             <Button
               type="primary"
               size="large"
               icon={loading === 'sync-all' ? <Spin /> : <PlayCircleOutlined />}
-              onClick={handleSyncAll}
               loading={loading === 'sync-all'}
               disabled={loading !== null}
             >
-              Start Full Sync
+              Start Synchronization
             </Button>
-          </Card>
-
-          <Divider />
-
-          {/* Basic Sync */}
-          <Card 
-            type="inner"
-            title={
-              <Space>
-                <ThunderboltOutlined />
-                <span>Basic Reference Data Sync</span>
-              </Space>
-            }
-          >
-            <Paragraph>
-              Synchronizes only reference/lookup data:
-            </Paragraph>
-            <ul style={{ marginLeft: 20, marginBottom: 16 }}>
-              <li>Destinations and Resorts</li>
-              <li>Meal Types</li>
-              <li>Room Types</li>
-              <li>Features and Themes</li>
-              <li>Languages</li>
-              <li>Transfer and Note Types</li>
-            </ul>
-            <Alert
-              message="Faster operation, typically completes in 1-2 minutes"
-              type="info"
-              showIcon
-              style={{ marginBottom: 16 }}
-            />
-            <Button
-              type="default"
-              size="large"
-              icon={loading === 'sync-basic' ? <Spin /> : <PlayCircleOutlined />}
-              onClick={handleSyncBasic}
-              loading={loading === 'sync-basic'}
-              disabled={loading !== null}
-            >
-              Start Basic Sync
-            </Button>
-          </Card>
-        </Space>
+          </Popconfirm>
+        </Card>
       </Card>
 
       {/* Job History */}
-      <Card title="Job History" style={{ marginTop: 24 }}>
+      <Card 
+        title="Job History" 
+        style={{ marginTop: 24 }}
+        extra={
+          <Button
+            icon={<SyncOutlined />}
+            onClick={loadJobHistory}
+            size="small"
+          >
+            Refresh
+          </Button>
+        }
+      >
         <Table
           columns={columns}
           dataSource={jobLogs}
           rowKey="id"
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            total: totalCount,
+            showSizeChanger: true,
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              if (size !== pageSize) {
+                setPageSize(size);
+                setCurrentPage(1);
+              }
+            },
+          }}
           locale={{
             emptyText: 'No jobs have been executed yet',
           }}

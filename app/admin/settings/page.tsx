@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   Form,
   Input,
   Button,
   Space,
-  message,
   Typography,
   Tabs,
   Upload,
@@ -17,18 +16,17 @@ import {
   Col,
   Select,
   TimePicker,
-  InputNumber,
-  ColorPicker,
   Alert,
+  Spin,
+  App,
 } from 'antd';
-import type { TabsProps, UploadFile } from 'antd';
+import type { TabsProps } from 'antd';
 import {
   SaveOutlined,
   SettingOutlined,
   GlobalOutlined,
   MailOutlined,
   PhoneOutlined,
-  EnvironmentOutlined,
   FacebookOutlined,
   TwitterOutlined,
   InstagramOutlined,
@@ -36,106 +34,204 @@ import {
   LinkedinOutlined,
   UploadOutlined,
   CrownOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { adminAPI } from '@/lib/api/client';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { TextArea } = Input;
 
-interface GeneralSettings {
-  siteName: string;
-  tagline: string;
-  email: string;
-  phone: string;
-  address: string;
-  timezone: string;
-  currency: string;
-  defaultLocale: string;
-  maintenanceMode: boolean;
-  maintenanceMessage: string;
+interface SiteSettings {
+  siteName?: string;
+  tagline?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  timezone?: string;
+  currency?: string;
+  defaultLocale?: string;
+  maintenanceMode?: boolean;
+  maintenanceMessage?: string;
+  // Social Media
+  facebook?: string;
+  twitter?: string;
+  instagram?: string;
+  youtube?: string;
+  linkedin?: string;
+  tiktok?: string;
+  // Branding
+  logo?: string;
+  favicon?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  // Contact
+  supportEmail?: string;
+  salesEmail?: string;
+  supportPhone?: string;
+  workingHoursStart?: string;
+  workingHoursEnd?: string;
+  workingDays?: string[];
 }
-
-interface SocialSettings {
-  facebook: string;
-  twitter: string;
-  instagram: string;
-  youtube: string;
-  linkedin: string;
-  tiktok: string;
-}
-
-interface BrandingSettings {
-  logo: string;
-  favicon: string;
-  primaryColor: string;
-  secondaryColor: string;
-}
-
-interface ContactSettings {
-  supportEmail: string;
-  salesEmail: string;
-  supportPhone: string;
-  workingHoursStart: string;
-  workingHoursEnd: string;
-  workingDays: string[];
-}
-
-// Mock data
-const mockGeneralSettings: GeneralSettings = {
-  siteName: 'FreeStays',
-  tagline: 'En İyi Otel Fırsatları',
-  email: 'info@freestays.com',
-  phone: '+90 212 555 0000',
-  address: 'İstanbul, Türkiye',
-  timezone: 'Europe/Istanbul',
-  currency: 'EUR',
-  defaultLocale: 'tr',
-  maintenanceMode: false,
-  maintenanceMessage: 'Site bakım modundadır. Lütfen daha sonra tekrar deneyin.',
-};
-
-const mockSocialSettings: SocialSettings = {
-  facebook: 'https://facebook.com/freestays',
-  twitter: 'https://twitter.com/freestays',
-  instagram: 'https://instagram.com/freestays',
-  youtube: 'https://youtube.com/@freestays',
-  linkedin: 'https://linkedin.com/company/freestays',
-  tiktok: 'https://tiktok.com/@freestays',
-};
-
-const mockBrandingSettings: BrandingSettings = {
-  logo: '/images/logo.png',
-  favicon: '/favicon.ico',
-  primaryColor: '#1890ff',
-  secondaryColor: '#52c41a',
-};
-
-const mockContactSettings: ContactSettings = {
-  supportEmail: 'support@freestays.com',
-  salesEmail: 'sales@freestays.com',
-  supportPhone: '+90 212 555 0001',
-  workingHoursStart: '09:00',
-  workingHoursEnd: '18:00',
-  workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
-};
 
 export default function SettingsPage() {
+  return (
+    <App>
+      <SettingsContent />
+    </App>
+  );
+}
+
+function SettingsContent() {
+  const { message: messageApi } = App.useApp();
   const [generalForm] = Form.useForm();
   const [socialForm] = Form.useForm();
   const [brandingForm] = Form.useForm();
   const [contactForm] = Form.useForm();
   
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [settings, setSettings] = useState<SiteSettings>({});
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    try {
+      const data = await adminAPI.getSiteSettings();
+      console.log('📥 Received settings from API:', data);
+      setSettings(data);
+    } catch (error: any) {
+      console.error('Failed to load settings:', error);
+      messageApi.error(error.message || 'Failed to load settings');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update forms when settings change
+  useEffect(() => {
+    if (settings && Object.keys(settings).length > 0) {
+      console.log('🔄 Updating forms with settings:', settings);
+      
+      generalForm.setFieldsValue({
+        siteName: settings.siteName,
+        tagline: settings.tagline,
+        email: settings.supportEmail || settings.email,
+        phone: settings.supportPhone || settings.phone,
+        address: settings.address,
+        timezone: settings.timezone,
+        currency: settings.defaultCurrency || settings.currency,
+        defaultLocale: settings.defaultLocale,
+        maintenanceMode: settings.maintenanceMode,
+        maintenanceMessage: settings.maintenanceMessage,
+      });
+
+      socialForm.setFieldsValue({
+        facebook: settings.socialLinks?.facebook || settings.facebook,
+        twitter: settings.socialLinks?.twitter || settings.twitter,
+        instagram: settings.socialLinks?.instagram || settings.instagram,
+        youtube: settings.socialLinks?.youTube || settings.youtube,
+        linkedin: settings.socialLinks?.linkedIn || settings.linkedin,
+        tiktok: settings.tiktok,
+      });
+
+      brandingForm.setFieldsValue({
+        logo: settings.logoUrl || settings.logo,
+        favicon: settings.favicon,
+        primaryColor: settings.primaryColor,
+        secondaryColor: settings.secondaryColor,
+      });
+
+      contactForm.setFieldsValue({
+        supportEmail: settings.supportEmail,
+        salesEmail: settings.salesEmail,
+        supportPhone: settings.supportPhone,
+        workingHoursStart: settings.workingHoursStart ? dayjs(settings.workingHoursStart, 'HH:mm') : undefined,
+        workingHoursEnd: settings.workingHoursEnd ? dayjs(settings.workingHoursEnd, 'HH:mm') : undefined,
+        workingDays: settings.workingDays,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
 
   const handleSave = async (formName: string, values: any) => {
-    setLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log(`Saving ${formName}:`, values);
-    message.success('Settings saved');
-    setLoading(false);
+    setSaving(true);
+    try {
+      console.log('💾 Saving settings for tab:', formName);
+      console.log('📝 Form values:', values);
+      console.log('📦 Current settings:', settings);
+
+      // Prepare complete data structure preserving all existing settings
+      const updateData: any = {
+        siteName: settings.siteName,
+        supportEmail: settings.supportEmail || settings.email,
+        supportPhone: settings.supportPhone || settings.phone,
+        defaultLocale: settings.defaultLocale,
+        availableLocales: settings.availableLocales || (settings.defaultLocale ? [settings.defaultLocale] : undefined),
+        defaultCurrency: settings.defaultCurrency || settings.currency,
+        availableCurrencies: settings.availableCurrencies || (settings.currency ? [settings.currency] : undefined),
+        maintenanceMode: settings.maintenanceMode || false,
+        logoUrl: settings.logoUrl || settings.logo,
+        socialLinks: {
+          facebook: settings.facebook || (settings.socialLinks?.facebook),
+          twitter: settings.twitter || (settings.socialLinks?.twitter),
+          instagram: settings.instagram || (settings.socialLinks?.instagram),
+          linkedIn: settings.linkedin || (settings.socialLinks?.linkedIn),
+          youTube: settings.youtube || (settings.socialLinks?.youTube),
+        },
+      };
+
+      // Update with new values from the current tab
+      if (formName === 'general') {
+        updateData.siteName = values.siteName;
+        updateData.supportEmail = values.email;
+        updateData.supportPhone = values.phone;
+        updateData.defaultLocale = values.defaultLocale;
+        updateData.availableLocales = values.defaultLocale ? [values.defaultLocale] : undefined;
+        updateData.defaultCurrency = values.currency;
+        updateData.availableCurrencies = values.currency ? [values.currency] : undefined;
+        updateData.maintenanceMode = values.maintenanceMode;
+      } else if (formName === 'social') {
+        updateData.socialLinks = {
+          facebook: values.facebook || '',
+          twitter: values.twitter || '',
+          instagram: values.instagram || '',
+          linkedIn: values.linkedin || '',
+          youTube: values.youtube || '',
+        };
+      } else if (formName === 'branding') {
+        if (values.logo) {
+          updateData.logoUrl = values.logo;
+        }
+      } else if (formName === 'contact') {
+        updateData.supportEmail = values.supportEmail;
+        updateData.supportPhone = values.supportPhone;
+      }
+
+      console.log('📤 Sending to API:', JSON.stringify(updateData, null, 2));
+
+      await adminAPI.updateSiteSettings(updateData);
+      messageApi.success('Settings saved successfully');
+      await fetchSettings(); // Reload to get updated values
+    } catch (error: any) {
+      console.error('❌ Failed to save settings:', error);
+      messageApi.error(error.message || 'Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '100px 0' }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   const timezones = [
     { value: 'Europe/Istanbul', label: 'Istanbul (UTC+3)' },
@@ -177,7 +273,6 @@ export default function SettingsPage() {
         <Form
           form={generalForm}
           layout="vertical"
-          initialValues={mockGeneralSettings}
           onFinish={(values) => handleSave('general', values)}
         >
           <Row gutter={24}>
@@ -245,7 +340,7 @@ export default function SettingsPage() {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
               Save
             </Button>
           </Form.Item>
@@ -259,7 +354,6 @@ export default function SettingsPage() {
         <Form
           form={socialForm}
           layout="vertical"
-          initialValues={mockSocialSettings}
           onFinish={(values) => handleSave('social', values)}
         >
           <Row gutter={24}>
@@ -302,7 +396,7 @@ export default function SettingsPage() {
           </Row>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
               Save
             </Button>
           </Form.Item>
@@ -316,7 +410,6 @@ export default function SettingsPage() {
         <Form
           form={brandingForm}
           layout="vertical"
-          initialValues={mockBrandingSettings}
           onFinish={(values) => handleSave('branding', values)}
         >
           <Row gutter={24}>
@@ -362,7 +455,7 @@ export default function SettingsPage() {
           </Row>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
               Save
             </Button>
           </Form.Item>
@@ -376,11 +469,6 @@ export default function SettingsPage() {
         <Form
           form={contactForm}
           layout="vertical"
-          initialValues={{
-            ...mockContactSettings,
-            workingHoursStart: dayjs(mockContactSettings.workingHoursStart, 'HH:mm'),
-            workingHoursEnd: dayjs(mockContactSettings.workingHoursEnd, 'HH:mm'),
-          }}
           onFinish={(values) => handleSave('contact', values)}
         >
           <Divider><Text strong>Email Addresses</Text></Divider>
@@ -422,7 +510,7 @@ export default function SettingsPage() {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={loading}>
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
               Save
             </Button>
           </Form.Item>
