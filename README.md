@@ -42,7 +42,7 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ```env
 # Backend API (Admin Dashboard)
-NEXT_PUBLIC_API_URL=http://localhost:5240/api/v1
+NEXT_PUBLIC_API_URL=https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1
 
 # SunHotels API
 NEXT_PUBLIC_SUNHOTELS_API_URL=http://xml.sunhotels.net/15/PostGet/NonStaticXMLAPI.asmx

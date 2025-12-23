@@ -91,7 +91,7 @@ Backend'in bu endpoint'ten döndürmesi gereken format:
 ### 1. Backend Kontrolü
 ```bash
 # Backend çalışıyor mu?
-curl http://localhost:5240/api/v1/admin/dashboard
+curl https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/admin/dashboard
 
 # Beklenen: 401 Unauthorized (token yok)
 ```
@@ -99,7 +99,7 @@ curl http://localhost:5240/api/v1/admin/dashboard
 ### 2. Login Test
 ```bash
 # Login yapıp token al
-curl -X POST http://localhost:5240/api/v1/Auth/login \
+curl -X POST https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/Auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@freestays.com","password":"Admin123!"}'
 ```
@@ -107,7 +107,7 @@ curl -X POST http://localhost:5240/api/v1/Auth/login \
 ### 3. Dashboard Test
 ```bash
 # Token ile dashboard'a istek at
-curl http://localhost:5240/api/v1/admin/dashboard \
+curl https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/admin/dashboard \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
@@ -130,4 +130,4 @@ curl http://localhost:5240/api/v1/admin/dashboard \
 **Çözüm:** Console'dan response'u kontrol et, TypeScript type'ları güncelle
 
 ## Swagger URL
-http://localhost:5240/swagger/index.html
+https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/swagger/index.html

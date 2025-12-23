@@ -26,7 +26,7 @@ export const securityHeaders = {
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: https: blob:",
-    "connect-src 'self' http://localhost:5240 https://www.google.com",
+    "connect-src 'self' https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me https://www.google.com",
     "frame-src https://www.google.com",
   ].join('; '),
 };

@@ -219,8 +219,8 @@ NEXT_PUBLIC_API_URL=https://api.freestays.com/api/v1
 4. Rate limiting aktif olduğundan emin olun
 
 ### Development'ta
-1. Backend'i çalıştırın: `http://localhost:5240`
-2. Swagger'a erişin: `http://localhost:5240/swagger`
+1. Backend'i çalıştırın: `https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me`
+2. Swagger'a erişin: `https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/swagger`
 3. Frontend'i çalıştırın: `npm run dev`
 4. Test credentials ile login yapın
 

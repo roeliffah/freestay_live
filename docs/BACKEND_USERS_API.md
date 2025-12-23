@@ -373,19 +373,19 @@ public async Task<IActionResult> DeleteUser(Guid id)
 ## Testing the API
 
 ### Using Swagger UI
-Visit: `http://localhost:5240/swagger/index.html`
+Visit: `https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/swagger/index.html`
 
 ### Example cURL Commands
 
 **List Users:**
 ```bash
-curl -X GET "http://localhost:5240/api/v1/admin/users?page=1&pageSize=20" \
+curl -X GET "https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/admin/users?page=1&pageSize=20" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
 **Update Status:**
 ```bash
-curl -X PATCH "http://localhost:5240/api/v1/admin/users/{id}/status" \
+curl -X PATCH "https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/admin/users/{id}/status" \
   -H "Authorization: Bearer YOUR_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"isActive": false, "reason": "Account suspended"}'
@@ -393,7 +393,7 @@ curl -X PATCH "http://localhost:5240/api/v1/admin/users/{id}/status" \
 
 **Send Password Reset:**
 ```bash
-curl -X POST "http://localhost:5240/api/v1/Auth/forgot-password" \
+curl -X POST "https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/Auth/forgot-password" \
   -H "Content-Type: application/json" \
   -d '{"email": "user@example.com"}'
 ```

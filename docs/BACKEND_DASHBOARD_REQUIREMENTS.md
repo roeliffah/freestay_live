@@ -238,7 +238,7 @@ public async Task<ActionResult<DashboardResponse>> GetDashboard()
 
 ```bash
 # 1. Login yap ve token al
-curl -X POST http://localhost:5240/api/v1/Auth/login \
+curl -X POST https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/Auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "email": "admin@freestays.com",
@@ -246,7 +246,7 @@ curl -X POST http://localhost:5240/api/v1/Auth/login \
   }'
 
 # 2. Token ile dashboard'a istek at
-curl http://localhost:5240/api/v1/admin/dashboard \
+curl https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1/admin/dashboard \
   -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 

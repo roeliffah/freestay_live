@@ -25,7 +25,7 @@ Admin dashboard artık tamamen API tabanlı çalışmaktadır. Token olmadan adm
 
 ## 📡 API Endpoints
 
-Backend URL (varsayılan): `http://localhost:5240/api/v1`
+Backend URL (varsayılan): `https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1`
 
 ### Dashboard Endpoints
 
@@ -69,7 +69,7 @@ Bu sayede:
 
 ```env
 # Backend API
-NEXT_PUBLIC_API_URL=http://localhost:5240/api/v1
+NEXT_PUBLIC_API_URL=https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/api/v1
 
 # SunHotels API
 NEXT_PUBLIC_SUNHOTELS_API_URL=http://xml.sunhotels.net/15/PostGet/NonStaticXMLAPI.asmx
@@ -81,7 +81,7 @@ NEXT_PUBLIC_SUNHOTELS_PASSWORD=your_password
 
 Backend API dokümantasyonuna erişim:
 ```
-http://localhost:5240/swagger
+https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/swagger
 ```
 
 ## 🧪 Test Etme

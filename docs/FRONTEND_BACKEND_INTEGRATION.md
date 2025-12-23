@@ -2,7 +2,7 @@
 
 ## 📊 Backend API Analizi Tamamlandı
 
-Backend Swagger API (`http://localhost:5240/swagger/v1/swagger.json`) analiz edildi.
+Backend Swagger API (`https://freestays-frontend-xi1vzy-ed390a-3-72-175-63.traefik.me/swagger/v1/swagger.json`) analiz edildi.
 
 ### ✅ Mevcut API Endpoints
 
