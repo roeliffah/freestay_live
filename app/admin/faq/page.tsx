@@ -92,9 +92,9 @@ function FAQContent() {
     setLoading(true);
     try {
       const data = await adminAPI.getFaqs({ page: currentPage, pageSize });
-      const faqsArray = Array.isArray(data) ? data : (data?.items || data?.data || []);
+      const faqsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
       setFaqs(faqsArray);
-      setTotalCount(data?.totalCount || faqsArray.length);
+      setTotalCount((data as any)?.totalCount || faqsArray.length);
     } catch (error: any) {
       console.error('Failed to load FAQs:', error);
       messageApi.error(error.message || 'Failed to load FAQs');

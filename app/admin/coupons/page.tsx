@@ -85,7 +85,7 @@ function CouponsContent() {
     setLoading(true);
     try {
       const data = await adminAPI.getCoupons();
-      setCoupons(data);
+      setCoupons(data as any);
     } catch (error: any) {
       console.error('Failed to load coupons:', error);
       messageApi.error(error.message || 'Failed to load coupons');

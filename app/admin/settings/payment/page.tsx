@@ -96,12 +96,12 @@ function PaymentSettingsContent() {
     setLoading(true);
     try {
       const data = await adminAPI.getPaymentSettings();
-      if (data.stripeSettings) {
-        setStripeSettings(data.stripeSettings);
-        stripeForm.setFieldsValue(data.stripeSettings);
+      if ((data as any).stripeSettings) {
+        setStripeSettings((data as any).stripeSettings);
+        stripeForm.setFieldsValue((data as any).stripeSettings);
       }
-      if (data.transactions) {
-        setTransactions(data.transactions);
+      if ((data as any).transactions) {
+        setTransactions((data as any).transactions);
       }
     } catch (error: any) {
       console.error('Failed to load payment settings:', error);

@@ -186,9 +186,9 @@ function FeaturedHotelsTab({ messageApi }: any) {
       if (categoryFilter !== 'all') params.category = categoryFilter;
 
       const data = await adminAPI.getFeaturedHotels(params);
-      const hotelsArray = Array.isArray(data) ? data : (data?.items || data?.data || []);
+      const hotelsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
       setHotels(hotelsArray);
-      setTotalCount(data?.totalCount || hotelsArray.length);
+      setTotalCount((data as any)?.totalCount || hotelsArray.length);
     } catch (error: any) {
       console.error('Failed to load featured hotels:', error);
       messageApi.error(error.message || 'Failed to load featured hotels');
@@ -550,9 +550,9 @@ function FeaturedDestinationsTab({ messageApi }: any) {
       if (seasonFilter !== 'all') params.season = seasonFilter;
 
       const data = await adminAPI.getFeaturedDestinations(params);
-      const destinationsArray = Array.isArray(data) ? data : (data?.items || data?.data || []);
+      const destinationsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
       setDestinations(destinationsArray);
-      setTotalCount(data?.totalCount || destinationsArray.length);
+      setTotalCount((data as any)?.totalCount || destinationsArray.length);
     } catch (error: any) {
       console.error('Failed to load featured destinations:', error);
       messageApi.error(error.message || 'Failed to load featured destinations');

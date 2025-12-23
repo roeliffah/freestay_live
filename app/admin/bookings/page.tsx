@@ -275,13 +275,13 @@ function BookingsContent() {
       key: 'print',
       icon: <PrinterOutlined />,
       label: 'Print Invoice',
-      onClick: () => message.info('Printing invoice...'),
+      onClick: () => messageApi.info('Printing invoice...'),
     },
     {
       key: 'email',
       icon: <MailOutlined />,
       label: 'Send Email',
-      onClick: () => message.info('Sending email...'),
+      onClick: () => messageApi.info('Sending email...'),
     },
     ...(record.status === 'confirmed' || record.status === 'pending' ? [
       { type: 'divider' as const },

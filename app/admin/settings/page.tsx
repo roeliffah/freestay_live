@@ -103,7 +103,7 @@ function SettingsContent() {
     try {
       const data = await adminAPI.getSiteSettings();
       console.log('📥 Received settings from API:', data);
-      setSettings(data);
+      setSettings(data as any);
     } catch (error: any) {
       console.error('Failed to load settings:', error);
       messageApi.error(error.message || 'Failed to load settings');
@@ -124,35 +124,35 @@ function SettingsContent() {
         phone: settings.supportPhone || settings.phone,
         address: settings.address,
         timezone: settings.timezone,
-        currency: settings.defaultCurrency || settings.currency,
+        currency: (settings as any).defaultCurrency || (settings as any).currency,
         defaultLocale: settings.defaultLocale,
         maintenanceMode: settings.maintenanceMode,
         maintenanceMessage: settings.maintenanceMessage,
       });
 
       socialForm.setFieldsValue({
-        facebook: settings.socialLinks?.facebook || settings.facebook,
-        twitter: settings.socialLinks?.twitter || settings.twitter,
-        instagram: settings.socialLinks?.instagram || settings.instagram,
-        youtube: settings.socialLinks?.youTube || settings.youtube,
-        linkedin: settings.socialLinks?.linkedIn || settings.linkedin,
-        tiktok: settings.tiktok,
+        facebook: (settings as any).socialLinks?.facebook || (settings as any).facebook,
+        twitter: (settings as any).socialLinks?.twitter || (settings as any).twitter,
+        instagram: (settings as any).socialLinks?.instagram || (settings as any).instagram,
+        youtube: (settings as any).socialLinks?.youTube || (settings as any).youtube,
+        linkedin: (settings as any).socialLinks?.linkedIn || (settings as any).linkedin,
+        tiktok: (settings as any).tiktok,
       });
 
       brandingForm.setFieldsValue({
-        logo: settings.logoUrl || settings.logo,
-        favicon: settings.favicon,
-        primaryColor: settings.primaryColor,
-        secondaryColor: settings.secondaryColor,
+        logo: (settings as any).logoUrl || (settings as any).logo,
+        favicon: (settings as any).favicon,
+        primaryColor: (settings as any).primaryColor,
+        secondaryColor: (settings as any).secondaryColor,
       });
 
       contactForm.setFieldsValue({
-        supportEmail: settings.supportEmail,
-        salesEmail: settings.salesEmail,
-        supportPhone: settings.supportPhone,
-        workingHoursStart: settings.workingHoursStart ? dayjs(settings.workingHoursStart, 'HH:mm') : undefined,
-        workingHoursEnd: settings.workingHoursEnd ? dayjs(settings.workingHoursEnd, 'HH:mm') : undefined,
-        workingDays: settings.workingDays,
+        supportEmail: (settings as any).supportEmail,
+        salesEmail: (settings as any).salesEmail,
+        supportPhone: (settings as any).supportPhone,
+        workingHoursStart: (settings as any).workingHoursStart ? dayjs((settings as any).workingHoursStart, 'HH:mm') : undefined,
+        workingHoursEnd: (settings as any).workingHoursEnd ? dayjs((settings as any).workingHoursEnd, 'HH:mm') : undefined,
+        workingDays: (settings as any).workingDays,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -168,20 +168,20 @@ function SettingsContent() {
       // Prepare complete data structure preserving all existing settings
       const updateData: any = {
         siteName: settings.siteName,
-        supportEmail: settings.supportEmail || settings.email,
-        supportPhone: settings.supportPhone || settings.phone,
+        supportEmail: settings.supportEmail || (settings as any).email,
+        supportPhone: (settings as any).supportPhone || (settings as any).phone,
         defaultLocale: settings.defaultLocale,
-        availableLocales: settings.availableLocales || (settings.defaultLocale ? [settings.defaultLocale] : undefined),
-        defaultCurrency: settings.defaultCurrency || settings.currency,
-        availableCurrencies: settings.availableCurrencies || (settings.currency ? [settings.currency] : undefined),
+        availableLocales: (settings as any).availableLocales || (settings.defaultLocale ? [settings.defaultLocale] : undefined),
+        defaultCurrency: (settings as any).defaultCurrency || (settings as any).currency,
+        availableCurrencies: (settings as any).availableCurrencies || ((settings as any).currency ? [(settings as any).currency] : undefined),
         maintenanceMode: settings.maintenanceMode || false,
-        logoUrl: settings.logoUrl || settings.logo,
+        logoUrl: (settings as any).logoUrl || (settings as any).logo,
         socialLinks: {
-          facebook: settings.facebook || (settings.socialLinks?.facebook),
-          twitter: settings.twitter || (settings.socialLinks?.twitter),
-          instagram: settings.instagram || (settings.socialLinks?.instagram),
-          linkedIn: settings.linkedin || (settings.socialLinks?.linkedIn),
-          youTube: settings.youtube || (settings.socialLinks?.youTube),
+          facebook: (settings as any).facebook || ((settings as any).socialLinks?.facebook),
+          twitter: (settings as any).twitter || ((settings as any).socialLinks?.twitter),
+          instagram: (settings as any).instagram || ((settings as any).socialLinks?.instagram),
+          linkedIn: (settings as any).linkedin || ((settings as any).socialLinks?.linkedIn),
+          youTube: (settings as any).youtube || ((settings as any).socialLinks?.youTube),
         },
       };
 

@@ -220,13 +220,13 @@ function SEOSettingsContent() {
     setLoading(true);
     try {
       const data = await adminAPI.getSeoSettings();
-      setPages(data.pages || []);
-      if (data.pages && data.pages.length > 0) {
-        setSelectedPage(data.pages[0]);
+      setPages((data as any).pages || []);
+      if ((data as any).pages && (data as any).pages.length > 0) {
+        setSelectedPage((data as any).pages[0]);
       }
-      if (data.crawlerSettings) {
-        setCrawlerSettings(data.crawlerSettings);
-        crawlerForm.setFieldsValue(data.crawlerSettings);
+      if ((data as any).crawlerSettings) {
+        setCrawlerSettings((data as any).crawlerSettings);
+        crawlerForm.setFieldsValue((data as any).crawlerSettings);
       }
     } catch (error: any) {
       console.error('Failed to load SEO settings:', error);
@@ -361,7 +361,7 @@ function SEOSettingsContent() {
             <Card 
               title={
                 <Space>
-                  <Text strong>{selectedPage.pageName} SEO Settings</Text>
+                  <Text strong>{selectedPage?.pageName} SEO Settings</Text>
                   <Select
                     value={selectedLocale}
                     onChange={handleLocaleChange}

@@ -166,7 +166,7 @@ function CustomersContent() {
       });
 
       // Map API response to UI format
-      const mappedCustomers: Customer[] = response.items.map((item: ApiCustomer) => ({
+      const mappedCustomers: Customer[] = (response as any).items.map((item: ApiCustomer) => ({
         id: item.id,
         name: item.name,
         email: item.email,
@@ -183,7 +183,7 @@ function CustomersContent() {
       setCustomers(mappedCustomers);
       setPagination(prev => ({
         ...prev,
-        total: response.totalCount,
+        total: (response as any).totalCount,
       }));
     } catch (error: any) {
       console.error('❌ Load customers error:', error);
@@ -197,7 +197,7 @@ function CustomersContent() {
     try {
       setLoadingBookings(true);
       const response = await adminAPI.getCustomerBookings(customerId);
-      setCustomerBookings(response.items || []);
+      setCustomerBookings((response as any).items || []);
     } catch (error: any) {
       console.error('❌ Load bookings error:', error);
       message.error('Failed to load customer bookings');
