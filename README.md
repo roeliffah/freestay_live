@@ -121,12 +121,38 @@ npm start
 
 ## 📦 Production
 
+### Normal Deployment
 ```bash
 npm run build
 npm start
 ```
 
-Environment variables'ı production ortamınızda (Vercel, etc.) ayarlayın.
+### Docker Deployment
+
+#### Development
+```bash
+# Build Docker image
+docker build -t freestays:latest .
+
+# Run container
+docker run -p 4830:4830 --env-file .env.production freestays:latest
+```
+
+#### Production with Docker Compose
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Uygulama **4830** portunda çalışacaktır: `http://localhost:4830`
+
+Environment variables'ı production ortamınızda (Vercel, Docker, etc.) ayarlayın.
 
 ## 📝 Not
 

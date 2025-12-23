@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  freestays:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: freestays-app
+    ports:
+      - "4830:4830"
+    environment:
+      - NODE_ENV=production
+      - PORT=4830
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_INTL_DEFAULT_TIMEZONE=${NEXT_INTL_DEFAULT_TIMEZONE:-Europe/Istanbul}
+    restart: unless-stopped
+    networks:
+      - freestays-network
+
+networks:
+  freestays-network:
+    driver: bridge
