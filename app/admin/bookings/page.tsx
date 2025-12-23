@@ -219,9 +219,9 @@ function BookingsContent() {
     try {
       const data = await adminAPI.getBookings({ page: currentPage, pageSize });
       // Backend might return { items: [...] } or { data: [...] } or just [...]
-      const bookingsArray = Array.isArray(data) ? data : (data?.items || data?.data || []);
+      const bookingsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
       setBookings(bookingsArray);
-      setTotalCount(data?.totalCount || bookingsArray.length);
+      setTotalCount((data as any)?.totalCount || bookingsArray.length);
     } catch (error: any) {
       console.error('Failed to load bookings:', error);
       messageApi.error(error.message || 'Failed to load bookings');
