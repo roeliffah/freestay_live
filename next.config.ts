@@ -5,9 +5,6 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-  turbopack: {
-    root: '/Users/halityilmaz/Programlar/Web/freestays',
-  },
   images: {
     remotePatterns: [
       {
