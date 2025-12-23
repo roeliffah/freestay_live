@@ -209,6 +209,17 @@ class ApiClient {
       console.log('🔵 Role type:', typeof data?.role, 'Value:', data?.role);
     }
     
+    // Debug log for Auth endpoints
+    if (endpoint.includes('/Auth/login')) {
+      console.log('🔐 Auth/login Request:', {
+        endpoint: `${this.baseURL}${endpoint}`,
+        body: JSON.stringify(data, null, 2),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+    }
+    
     // Debug log for FAQ and Featured Content endpoints
     if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
       const token = getToken();
@@ -304,7 +315,27 @@ export const authAPI = {
       role: string;
     };
   }> => {
-    return apiClient.post('/Auth/login', { email, password });
+    console.log('🔐 Login attempt:', {
+      email,
+      passwordLength: password.length,
+      endpoint: `${API_BASE_URL}/Auth/login`
+    });
+    
+    try {
+      const response: any = await apiClient.post('/Auth/login', { email, password }, true);
+      console.log('✅ Login successful:', {
+        hasToken: !!response.accessToken,
+        user: response.user?.email
+      });
+      return response;
+    } catch (error: any) {
+      console.error('❌ Login failed:', {
+        message: error.message,
+        status: error.status,
+        validationErrors: error.validationErrors
+      });
+      throw error;
+    }
   },
 
   register: async (data: { email: string; password: string; name: string; phone?: string; locale?: string }) => {

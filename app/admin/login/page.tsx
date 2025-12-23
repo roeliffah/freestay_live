@@ -38,8 +38,20 @@ function LoginContent() {
     }
 
     setLoading(true);
+    
+    console.log('📧 Login attempt with:', {
+      email: values.email,
+      apiUrl: process.env.NEXT_PUBLIC_API_URL
+    });
+    
     try {
       const response = await authAPI.login(values.email, values.password);
+
+      console.log('✅ Login response received:', {
+        hasToken: !!response.accessToken,
+        hasUser: !!response.user,
+        userRole: response.user?.role
+      });
 
       // Backend returns accessToken/refreshToken/user; persist under admin_* keys for layout checks
       if (response.accessToken) {
@@ -62,9 +74,25 @@ function LoginContent() {
         window.location.href = '/admin';
       }, 100);
     } catch (error: any) {
-      console.error('Login error:', error);
-      const errorMessage = error.message || 'Login failed. Please check your credentials.';
-      message.error(errorMessage);
+      console.error('❌ Login error details:', {
+        message: error.message,
+        validationErrors: error.validationErrors,
+        fullError: error
+      });
+      
+      let errorMessage = 'Login failed. Please check your credentials.';
+      
+      // Validation errors varsa göster
+      if (error.validationErrors) {
+        const validationMessages = Object.entries(error.validationErrors)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('\n');
+        errorMessage = validationMessages;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      message.error(errorMessage, 5); // 5 saniye göster
       setLoading(false);
       throw error;
     }
