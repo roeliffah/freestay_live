@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu, Avatar, Dropdown, Badge, theme, Button, App } from 'antd';
+import { Layout, Menu, Avatar, Dropdown, Badge, theme, Button, App, Drawer } from 'antd';
 import type { MenuProps } from 'antd';
 import { useRouter, usePathname } from 'next/navigation';
 import {
@@ -102,9 +102,22 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const { token } = theme.useToken();
+
+  // Detect mobile screen
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Logout handler
   const handleLogout = () => {
@@ -255,99 +268,127 @@ export default function AdminLayout({
           >
             <App>
               <Layout style={{ minHeight: '100vh' }}>
-              <Sider 
-                trigger={null} 
-                collapsible 
-                collapsed={collapsed}
-                style={{
-                  overflow: 'auto',
-                  height: '100vh',
-                  position: 'fixed',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  background: token.colorBgContainer,
-                  borderRight: `1px solid ${token.colorBorderSecondary}`,
-                }}
-                theme="light"
-                width={260}
-              >
-                <div style={{ 
-                  height: 64, 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: collapsed ? 'center' : 'flex-start',
-                  padding: collapsed ? 0 : '0 24px',
-                  borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                }}>
-                  {collapsed ? (
-                    <span style={{ fontSize: 24, fontWeight: 'bold', color: token.colorPrimary }}>F</span>
-                  ) : (
-                    <span style={{ fontSize: 20, fontWeight: 'bold', color: token.colorPrimary }}>
-                      FreeStays Admin
-                    </span>
-                  )}
-                </div>
-                <Menu
-                  mode="inline"
-                  selectedKeys={getSelectedKeys()}
-                  defaultOpenKeys={getOpenKeys()}
-                  items={menuItems}
-                  style={{ 
-                    border: 'none',
-                    padding: '8px',
-                  }}
-                />
-              </Sider>
-              
-              <Layout style={{ marginLeft: collapsed ? 80 : 260, transition: 'all 0.2s' }}>
-                <Header 
-                  style={{ 
-                    padding: '0 24px', 
-                    background: token.colorBgContainer,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    borderBottom: `1px solid ${token.colorBorderSecondary}`,
-                    position: 'sticky',
-                    top: 0,
-                    zIndex: 100,
-                  }}
+                {/* Mobile Drawer */}
+                <Drawer
+                  title="FreeStays Admin"
+                  placement="left"
+                  onClose={() => setMobileDrawerOpen(false)}
+                  open={isMobile && mobileDrawerOpen}
+                  width={260}
+                  styles={{ body: { padding: 0 } }}
                 >
-                  <Button
-                    type="text"
-                    icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                    onClick={() => setCollapsed(!collapsed)}
-                    style={{ fontSize: 16 }}
+                  <Menu
+                    mode="inline"
+                    selectedKeys={getSelectedKeys()}
+                    defaultOpenKeys={getOpenKeys()}
+                    items={menuItems}
+                    onClick={() => setMobileDrawerOpen(false)}
+                    style={{ 
+                      border: 'none',
+                      padding: '8px',
+                    }}
                   />
-                  
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <Badge count={5} size="small">
-                      <Button type="text" icon={<BellOutlined />} />
-                    </Badge>
-                    
-                    <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-                        <Avatar style={{ backgroundColor: token.colorPrimary }}>
-                          <UserOutlined />
-                        </Avatar>
-                        <span style={{ fontWeight: 500 }}>Admin</span>
-                      </div>
-                    </Dropdown>
-                  </div>
-                </Header>
-                
-                <Content style={{ 
-                  margin: 24,
-                  padding: 24,
-                  background: token.colorBgContainer,
-                  borderRadius: token.borderRadius,
-                  minHeight: 'calc(100vh - 64px - 48px)',
+                </Drawer>
+
+                {/* Desktop Sider */}
+                {!isMobile && (
+                  <Sider 
+                    trigger={null} 
+                    collapsible 
+                    collapsed={collapsed}
+                    style={{
+                      overflow: 'auto',
+                      height: '100vh',
+                      position: 'fixed',
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      background: token.colorBgContainer,
+                      borderRight: `1px solid ${token.colorBorderSecondary}`,
+                    }}
+                    theme="light"
+                    width={260}
+                  >
+                    <div style={{ 
+                      height: 64, 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: collapsed ? 'center' : 'flex-start',
+                      padding: collapsed ? 0 : '0 24px',
+                      borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                    }}>
+                      {collapsed ? (
+                        <span style={{ fontSize: 24, fontWeight: 'bold', color: token.colorPrimary }}>F</span>
+                      ) : (
+                        <span style={{ fontSize: 20, fontWeight: 'bold', color: token.colorPrimary }}>
+                          FreeStays Admin
+                        </span>
+                      )}
+                    </div>
+                    <Menu
+                      mode="inline"
+                      selectedKeys={getSelectedKeys()}
+                      defaultOpenKeys={getOpenKeys()}
+                      items={menuItems}
+                      style={{ 
+                        border: 'none',
+                        padding: '8px',
+                      }}
+                    />
+                  </Sider>
+                )}
+              
+                <Layout style={{ 
+                  marginLeft: isMobile ? 0 : (collapsed ? 80 : 260), 
+                  transition: 'all 0.2s' 
                 }}>
-                  {children}
-                </Content>
+                  <Header 
+                    style={{ 
+                      padding: isMobile ? '0 16px' : '0 24px', 
+                      background: token.colorBgContainer,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderBottom: `1px solid ${token.colorBorderSecondary}`,
+                      position: 'sticky',
+                      top: 0,
+                      zIndex: 100,
+                    }}
+                  >
+                    <Button
+                      type="text"
+                      icon={isMobile ? <MenuUnfoldOutlined /> : (collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
+                      onClick={() => isMobile ? setMobileDrawerOpen(true) : setCollapsed(!collapsed)}
+                      style={{ fontSize: 16 }}
+                    />
+                  
+                    <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 8 : 16 }}>
+                      <Badge count={5} size="small">
+                        <Button type="text" icon={<BellOutlined />} />
+                      </Badge>
+                    
+                      <Dropdown menu={{ items: userMenuItems, onClick: handleUserMenuClick }} placement="bottomRight">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                          <Avatar style={{ backgroundColor: token.colorPrimary }}>
+                            <UserOutlined />
+                          </Avatar>
+                          {!isMobile && <span style={{ fontWeight: 500 }}>Admin</span>}
+                        </div>
+                      </Dropdown>
+                    </div>
+                  </Header>
+                
+                  <Content style={{ 
+                    margin: isMobile ? 12 : 24,
+                    padding: isMobile ? 16 : 24,
+                    background: token.colorBgContainer,
+                    borderRadius: token.borderRadius,
+                    minHeight: 'calc(100vh - 64px - 48px)',
+                  }}>
+                    {children}
+                  </Content>
+                </Layout>
               </Layout>
-            </Layout>
             </App>
           </ConfigProvider>
         </AntdRegistry>
