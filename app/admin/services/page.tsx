@@ -11,6 +11,7 @@ import {
   Form,
   Input,
   Switch,
+  Select,
   Typography,
   Dropdown,
   Alert,
@@ -36,14 +37,16 @@ const { TextArea } = Input;
 
 interface ExternalService {
   id: string;
-  name: string;
-  code: string;
+  serviceName: string;
   baseUrl: string;
-  apiKey: string;
+  apiKey?: string;
   apiSecret?: string;
+  username?: string;
+  password?: string;
+  affiliateCode?: string;
+  integrationMode: number; // 1=Test, 2=Production
   isActive: boolean;
-  lastSync?: string | null;
-  settings?: Record<string, any>;
+  settings?: string; // JSON string
   createdAt?: string;
   updatedAt?: string;
 }
@@ -66,7 +69,6 @@ function ServicesContent() {
   const [form] = Form.useForm();
   const [testing, setTesting] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [syncing, setSyncing] = useState<string | null>(null);
 
   useEffect(() => {
     fetchServices();
@@ -75,7 +77,7 @@ function ServicesContent() {
   const fetchServices = async () => {
     setLoading(true);
     try {
-      const response: any = await adminAPI.getServices();
+      const response: any = await adminAPI.getExternalServices();
       const servicesData = Array.isArray(response) ? response : (response.items || []);
       setServices(servicesData);
     } catch (error: any) {
@@ -89,8 +91,16 @@ function ServicesContent() {
   const showModal = (service: ExternalService) => {
     setEditingService(service);
     form.setFieldsValue({
-      ...service,
-      settings: service.settings ? JSON.stringify(service.settings, null, 2) : '{}',
+      serviceName: service.serviceName,
+      baseUrl: service.baseUrl,
+      apiKey: service.apiKey,
+      apiSecret: service.apiSecret,
+      username: service.username,
+      password: service.password,
+      affiliateCode: service.affiliateCode,
+      integrationMode: service.integrationMode,
+      isActive: service.isActive,
+      settings: service.settings || '{}',
     });
     setIsModalOpen(true);
   };
@@ -102,28 +112,36 @@ function ServicesContent() {
       
       if (!editingService) return;
 
-      const settings = values.settings ? JSON.parse(values.settings) : {};
+      // Validate settings JSON
+      if (values.settings) {
+        try {
+          JSON.parse(values.settings);
+        } catch {
+          messageApi.error('Invalid JSON format in settings');
+          setSaving(false);
+          return;
+        }
+      }
       
       const updateData = {
-        name: values.name,
         baseUrl: values.baseUrl,
         apiKey: values.apiKey,
         apiSecret: values.apiSecret,
+        username: values.username,
+        password: values.password,
+        affiliateCode: values.affiliateCode,
+        integrationMode: values.integrationMode,
         isActive: values.isActive,
-        settings,
+        settings: values.settings,
       };
 
-      await adminAPI.updateService(editingService.id, updateData);
-      messageApi.success('Service settings saved');
+      await adminAPI.updateExternalService(editingService.id, updateData);
+      messageApi.success('Service settings saved successfully');
       setIsModalOpen(false);
       fetchServices();
     } catch (error: any) {
-      if (error instanceof SyntaxError) {
-        messageApi.error('Invalid JSON format');
-      } else {
-        console.error('Failed to save service:', error);
-        messageApi.error(error.message || 'Failed to save service');
-      }
+      console.error('Failed to save service:', error);
+      messageApi.error(error.message || 'Failed to save service');
     } finally {
       setSaving(false);
     }
@@ -131,9 +149,7 @@ function ServicesContent() {
 
   const toggleActive = async (service: ExternalService) => {
     try {
-      await adminAPI.updateService(service.id, {
-        isActive: !service.isActive,
-      });
+      await adminAPI.toggleExternalServiceStatus(service.id);
       messageApi.success(service.isActive ? 'Service deactivated' : 'Service activated');
       fetchServices();
     } catch (error: any) {
@@ -145,38 +161,13 @@ function ServicesContent() {
   const testConnection = async (service: ExternalService) => {
     setTesting(service.id);
     try {
-      // Backend'de test connection endpoint'i varsa kullanılabilir
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      if (service.apiKey) {
-        messageApi.success(`${service.name} connection successful!`);
-      } else {
-        messageApi.error(`${service.name} connection failed: API key missing`);
-      }
+      await adminAPI.testExternalServiceConnection(service.id);
+      messageApi.success(`${service.serviceName} connection test successful!`);
     } catch (error: any) {
       console.error('Connection test failed:', error);
-      messageApi.error(error.message || 'Connection test failed');
+      messageApi.error(error.message || `${service.serviceName} connection test failed`);
     } finally {
       setTesting(null);
-    }
-  };
-
-  const triggerSync = async (service: ExternalService) => {
-    if (service.code !== 'sunhotels') {
-      messageApi.error('Sync is only available for SunHotels');
-      return;
-    }
-
-    setSyncing(service.id);
-    try {
-      const result = await adminAPI.syncSunHotels();
-      messageApi.success(result.message || 'Synchronization started successfully');
-      fetchServices();
-    } catch (error: any) {
-      console.error('Sync failed:', error);
-      messageApi.error(error.message || 'Failed to start synchronization');
-    } finally {
-      setSyncing(null);
     }
   };
 
@@ -203,12 +194,6 @@ function ServicesContent() {
       label: 'Test Connection',
       onClick: () => testConnection(record),
     },
-    ...(record.code === 'sunhotels' ? [{
-      key: 'sync',
-      icon: <SyncOutlined />,
-      label: 'Synchronize',
-      onClick: () => triggerSync(record),
-    }] : []),
     {
       type: 'divider' as const,
     },
@@ -228,9 +213,11 @@ function ServicesContent() {
         <Space>
           <ApiOutlined style={{ fontSize: 24, color: record.isActive ? '#52c41a' : '#d9d9d9' }} />
           <div>
-            <Text strong>{record.name}</Text>
+            <Text strong>{record.serviceName}</Text>
             <br />
-            <Text type="secondary" style={{ fontSize: 12 }}>{record.code}</Text>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {record.integrationMode === 1 ? 'Test Mode' : 'Production'}
+            </Text>
           </div>
         </Space>
       ),
@@ -261,10 +248,10 @@ function ServicesContent() {
       ),
     },
     {
-      title: 'Last Synchronization',
-      dataIndex: 'lastSync',
-      key: 'lastSync',
-      render: (date: string | null) => date || '-',
+      title: 'Affiliate Code',
+      dataIndex: 'affiliateCode',
+      key: 'affiliateCode',
+      render: (code: string) => code || '-',
     },
     {
       title: 'Status',
@@ -331,17 +318,17 @@ function ServicesContent() {
       </Card>
 
       <Modal
-        title={`${editingService?.name} Settings`}
+        title={`${editingService?.serviceName} Settings`}
         open={isModalOpen}
         onOk={handleSave}
         onCancel={() => setIsModalOpen(false)}
         okText="Save"
         cancelText="Cancel"
-        width={600}
+        width={700}
         confirmLoading={saving}
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Service Name">
+          <Form.Item name="serviceName" label="Service Name">
             <Input disabled />
           </Form.Item>
 
@@ -368,12 +355,44 @@ function ServicesContent() {
           </Form.Item>
 
           <Form.Item
+            name="username"
+            label="Username"
+          >
+            <Input placeholder="Username (if required)" />
+          </Form.Item>
+
+          <Form.Item
+            name="password"
+            label="Password"
+          >
+            <Input.Password placeholder="Password (if required)" />
+          </Form.Item>
+
+          <Form.Item
+            name="affiliateCode"
+            label="Affiliate Code"
+          >
+            <Input placeholder="Affiliate or partner code" />
+          </Form.Item>
+
+          <Form.Item
+            name="integrationMode"
+            label="Integration Mode"
+            rules={[{ required: true }]}
+          >
+            <Select>
+              <Select.Option value={1}>Test Mode</Select.Option>
+              <Select.Option value={2}>Production</Select.Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item
             name="settings"
             label="Additional Settings (JSON)"
             rules={[
               {
                 validator: async (_, value) => {
-                  if (!value || value.trim() === '') return;
+                  if (!value || value.trim() === '' || value.trim() === '{}') return;
                   try {
                     JSON.parse(value);
                   } catch {
@@ -383,7 +402,7 @@ function ServicesContent() {
               },
             ]}
           >
-            <TextArea rows={6} style={{ fontFamily: 'monospace' }} />
+            <TextArea rows={6} style={{ fontFamily: 'monospace' }} placeholder='{"key": "value"}' />
           </Form.Item>
 
           <Form.Item name="isActive" label="Status" valuePropName="checked">

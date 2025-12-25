@@ -93,6 +93,9 @@ function SettingsContent() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SiteSettings>({});
+  const [logoFileList, setLogoFileList] = useState<any[]>([]);
+  const [faviconFileList, setFaviconFileList] = useState<any[]>([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -139,12 +142,38 @@ function SettingsContent() {
         tiktok: (settings as any).tiktok,
       });
 
+      const logoUrl = (settings as any).logoUrl || (settings as any).logo;
+      const faviconUrl = (settings as any).favicon;
+      
       brandingForm.setFieldsValue({
-        logo: (settings as any).logoUrl || (settings as any).logo,
-        favicon: (settings as any).favicon,
+        logo: logoUrl,
+        favicon: faviconUrl,
         primaryColor: (settings as any).primaryColor,
         secondaryColor: (settings as any).secondaryColor,
       });
+      
+      // Update file lists for preview
+      if (logoUrl) {
+        setLogoFileList([{
+          uid: '-1',
+          name: 'logo',
+          status: 'done',
+          url: logoUrl.startsWith('http') ? logoUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${logoUrl}`,
+        }]);
+      } else {
+        setLogoFileList([]);
+      }
+      
+      if (faviconUrl) {
+        setFaviconFileList([{
+          uid: '-1',
+          name: 'favicon',
+          status: 'done',
+          url: faviconUrl.startsWith('http') ? faviconUrl : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${faviconUrl}`,
+        }]);
+      } else {
+        setFaviconFileList([]);
+      }
 
       contactForm.setFieldsValue({
         supportEmail: (settings as any).supportEmail,
@@ -157,6 +186,48 @@ function SettingsContent() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
+
+  const handleLogoUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const response = await adminAPI.uploadImage(file, 'logos');
+      messageApi.success('Logo uploaded successfully');
+      brandingForm.setFieldValue('logo', response.url);
+      setLogoFileList([{
+        uid: file.name,
+        name: file.name,
+        status: 'done',
+        url: response.url.startsWith('http') ? response.url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${response.url}`,
+      }]);
+      return false; // Prevent default upload
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to upload logo');
+      return false;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFaviconUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const response = await adminAPI.uploadImage(file, 'logos');
+      messageApi.success('Favicon uploaded successfully');
+      brandingForm.setFieldValue('favicon', response.url);
+      setFaviconFileList([{
+        uid: file.name,
+        name: file.name,
+        status: 'done',
+        url: response.url.startsWith('http') ? response.url : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '')}${response.url}`,
+      }]);
+      return false; // Prevent default upload
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to upload favicon');
+      return false;
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = async (formName: string, values: any) => {
     setSaving(true);
@@ -206,6 +277,9 @@ function SettingsContent() {
       } else if (formName === 'branding') {
         if (values.logo) {
           updateData.logoUrl = values.logo;
+        }
+        if (values.favicon) {
+          updateData.favicon = values.favicon;
         }
       } else if (formName === 'contact') {
         updateData.supportEmail = values.supportEmail;
@@ -414,27 +488,49 @@ function SettingsContent() {
         >
           <Row gutter={24}>
             <Col span={12}>
+              <Form.Item name="logo" label="Logo" hidden>
+                <Input />
+              </Form.Item>
               <Form.Item label="Logo">
                 <Upload
                   listType="picture-card"
+                  fileList={logoFileList}
                   maxCount={1}
-                  beforeUpload={() => false}
+                  beforeUpload={handleLogoUpload}
+                  onRemove={() => {
+                    setLogoFileList([]);
+                    brandingForm.setFieldValue('logo', undefined);
+                  }}
+                  accept=".jpg,.jpeg,.png,.gif,.webp"
                 >
-                  <Button icon={<UploadOutlined />}>Upload</Button>
+                  {logoFileList.length === 0 && (
+                    <Button icon={<UploadOutlined />} loading={uploading}>Upload Logo</Button>
+                  )}
                 </Upload>
-                <Text type="secondary">Recommended size: 200x50px</Text>
+                <Text type="secondary">Recommended size: 200x50px (Max: 5MB)</Text>
               </Form.Item>
             </Col>
             <Col span={12}>
+              <Form.Item name="favicon" label="Favicon" hidden>
+                <Input />
+              </Form.Item>
               <Form.Item label="Favicon">
                 <Upload
                   listType="picture-card"
+                  fileList={faviconFileList}
                   maxCount={1}
-                  beforeUpload={() => false}
+                  beforeUpload={handleFaviconUpload}
+                  onRemove={() => {
+                    setFaviconFileList([]);
+                    brandingForm.setFieldValue('favicon', undefined);
+                  }}
+                  accept=".jpg,.jpeg,.png,.gif,.webp,.ico"
                 >
-                  <Button icon={<UploadOutlined />}>Upload</Button>
+                  {faviconFileList.length === 0 && (
+                    <Button icon={<UploadOutlined />} loading={uploading}>Upload Favicon</Button>
+                  )}
                 </Upload>
-                <Text type="secondary">Recommended size: 32x32px</Text>
+                <Text type="secondary">Recommended size: 32x32px (Max: 5MB)</Text>
               </Form.Item>
             </Col>
           </Row>

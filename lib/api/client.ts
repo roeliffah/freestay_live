@@ -532,10 +532,33 @@ export const adminAPI = {
   
   deleteCoupon: (id: string) => apiClient.delete(`/admin/coupons/${id}`),
 
-  // Services
-  getServices: () => apiClient.get('/admin/services'),
+  // External Services (SunHotels, Kiwi.com, DiscoverCars, Stripe)
+  getExternalServices: () => apiClient.get('/admin/external-services'),
   
-  updateService: (serviceId: string, data: any) => apiClient.put(`/admin/services/${serviceId}`, data),
+  getExternalService: (id: string) => apiClient.get(`/admin/external-services/${id}`),
+  
+  getExternalServiceByName: (serviceName: string) => apiClient.get(`/admin/external-services/by-name/${serviceName}`),
+  
+  updateExternalService: (id: string, data: {
+    baseUrl?: string;
+    apiKey?: string;
+    apiSecret?: string;
+    username?: string;
+    password?: string;
+    affiliateCode?: string;
+    integrationMode?: number;
+    isActive?: boolean;
+    settings?: string;
+  }) => apiClient.put(`/admin/external-services/${id}`, data),
+  
+  toggleExternalServiceStatus: (id: string) => apiClient.patch(`/admin/external-services/${id}/toggle-status`),
+  
+  testExternalServiceConnection: (id: string) => apiClient.post(`/admin/external-services/${id}/test-connection`),
+
+  // Legacy - Deprecated (use External Services endpoints above)
+  getServices: () => apiClient.get('/admin/external-services'),
+  
+  updateService: (serviceId: string, data: any) => apiClient.put(`/admin/external-services/${serviceId}`, data),
 
   // Jobs - SunHotels Sync
   syncSunHotels: (): Promise<{
@@ -691,6 +714,34 @@ export const adminAPI = {
 
   bulkUpdateFeaturedDestinationPriority: (data: { items: Array<{ id: string; priority: number }> }) =>
     apiClient.patch('/admin/featured-content/destinations/bulk-priority', data),
+
+  // File Upload
+  uploadImage: async (file: File, folder?: string): Promise<{ success: boolean; url: string; fileName: string; size: number }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const queryParams = folder ? `?folder=${folder}` : '';
+    const token = getToken();
+    
+    const response = await fetch(`${API_BASE_URL}/admin/upload/image${queryParams}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || 'Upload failed');
+    }
+
+    return response.json();
+  },
+
+  deleteFile: async (fileUrl: string): Promise<{ success: boolean; message: string }> => {
+    return apiClient.delete(`/admin/upload?fileUrl=${encodeURIComponent(fileUrl)}`);
+  },
 };
 
 // Hotels API
