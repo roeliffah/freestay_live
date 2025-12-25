@@ -236,7 +236,7 @@ function ServicesContent() {
       render: (_: any, record: ExternalService) => (
         <Space>
           <Text style={{ fontFamily: 'monospace' }}>
-            {maskSecret(record.apiKey, showSecrets[record.id])}
+            {maskSecret(record.apiKey || '', showSecrets[record.id])}
           </Text>
           <Button
             type="text"
