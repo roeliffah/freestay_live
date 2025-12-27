@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { tr } from 'date-fns/locale';
+import { tr as dateTr } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Users, Search, MapPin, Plus, Minus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { DateRange } from 'react-day-picker';
 
 import { useSearchStore } from '@/store/searchStore';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import destinationsData from '@/data/destinations.json';
-import featuredDestinations from '@/data/featured-destinations.json';
+import { sunhotelsAPI } from '@/lib/api/client';
+
+interface Destination {
+  id: number;
+  name: string;
+  countryCode?: string;
+  countryName?: string;
+  resortCount?: number;
+}
 
 export function SearchForm() {
   const router = useRouter();
@@ -29,49 +37,67 @@ export function SearchForm() {
   const { searchParams, setSearchParams } = useSearchStore();
   
   const [destination, setDestination] = useState('');
-  const [checkIn, setCheckIn] = useState<Date>();
-  const [checkOut, setCheckOut] = useState<Date>();
+  const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
   const [rooms, setRooms] = useState([{ adults: 2, children: 0 }]);
   const [showGuestDialog, setShowGuestDialog] = useState(false);
   const [showDestinations, setShowDestinations] = useState(false);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
 
-  // Filter destinations based on search input (prioritize featured destinations)
-  const filteredDestinations = useMemo(() => {
-    if (!destination || destination.length < 2) return [];
-    const search = destination.toLowerCase();
-    
-    // First show featured destinations
-    const featured = featuredDestinations.all.filter(d => 
-      d.name.toLowerCase().includes(search) || 
-      d.country.toLowerCase().includes(search)
-    );
-    
-    // Then other destinations if needed
-    const others = destinationsData.all
-      .filter(d => 
-        !featured.find(f => f.id === d.id) &&
-        (d.name.toLowerCase().includes(search) || 
-         d.country.toLowerCase().includes(search))
-      )
-      .slice(0, 5);
-    
-    return [...featured, ...others].slice(0, 8);
+  // Debounced destination search - Backend SunHotels API kullanıyor
+  useEffect(() => {
+    if (!destination || destination.length < 2) {
+      setDestinations([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoadingDestinations(true);
+      try {
+        const results = await sunhotelsAPI.searchDestinations(destination) as Destination[];
+        setDestinations(Array.isArray(results) ? results : []);
+      } catch (error) {
+        console.error('❌ Destinasyon arama hatası:', error);
+        setDestinations([]);
+      } finally {
+        setLoadingDestinations(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
   }, [destination]);
 
   const handleSearch = () => {
-    if (!checkIn || !checkOut) {
+    if (!dateRange?.from || !dateRange?.to) {
       alert(t('selectDate'));
       return;
     }
 
+    // URL parametrelerine destinationId ekle (varsa)
+    const searchUrl = new URLSearchParams({
+      destination,
+      checkIn: format(dateRange.from, 'yyyy-MM-dd'),
+      checkOut: format(dateRange.to, 'yyyy-MM-dd'),
+      adults: rooms.reduce((sum, room) => sum + room.adults, 0).toString(),
+      children: rooms.reduce((sum, room) => sum + room.children, 0).toString(),
+    });
+
+    if (selectedDestinationId) {
+      searchUrl.append('destinationId', selectedDestinationId.toString());
+    }
+
     setSearchParams({
       destination,
-      checkIn: format(checkIn, 'yyyy-MM-dd'),
-      checkOut: format(checkOut, 'yyyy-MM-dd'),
+      checkIn: format(dateRange.from, 'yyyy-MM-dd'),
+      checkOut: format(dateRange.to, 'yyyy-MM-dd'),
       rooms,
     });
 
-    router.push(`/${locale}/search`);
+    router.push(`/${locale}/search?${searchUrl.toString()}`);
   };
 
   const addRoom = () => {
@@ -94,10 +120,16 @@ export function SearchForm() {
 
   const totalGuests = rooms.reduce((sum, room) => sum + room.adults + room.children, 0);
 
+  const formatDateRange = () => {
+    if (!dateRange?.from) return t('selectDate');
+    if (!dateRange.to) return format(dateRange.from, 'dd MMM yyyy', { locale: dateTr });
+    return `${format(dateRange.from, 'dd MMM', { locale: dateTr })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateTr })}`;
+  };
+
   return (
     <Card className="p-6 shadow-xl bg-background/95 backdrop-blur">
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Destinasyon */}
+        {/* Destination */}
         <div className="relative">
           <label className="text-sm font-medium mb-2 block">{t('where')}</label>
           <div className="relative">
@@ -112,70 +144,58 @@ export function SearchForm() {
             />
             
             {/* Autocomplete Dropdown */}
-            {showDestinations && filteredDestinations.length > 0 && (
-              <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-auto">
-                {filteredDestinations.map((dest) => (
+            {showDestinations && destinations.length > 0 && (
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border rounded-md shadow-lg max-h-60 overflow-auto">
+                {destinations.map((dest) => (
                   <button
                     key={dest.id}
                     type="button"
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                     onClick={() => {
                       setDestination(dest.name);
+                      setSelectedDestinationId(dest.id);
                       setShowDestinations(false);
                     }}
                   >
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <div className="font-medium text-sm">{dest.name}</div>
-                      <div className="text-xs text-muted-foreground">{dest.country}</div>
+                      {dest.countryName && (
+                        <div className="text-xs text-muted-foreground">
+                          {dest.countryName} {dest.resortCount ? `• ${dest.resortCount} resort` : ''}
+                        </div>
+                      )}
                     </div>
                   </button>
                 ))}
               </div>
             )}
+            {showDestinations && loadingDestinations && (
+              <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border rounded-md shadow-lg p-4 text-center text-sm text-muted-foreground">
+                {t('searching')}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Giriş Tarihi */}
-        <div>
-          <label className="text-sm font-medium mb-2 block">{t('checkIn')}</label>
+        {/* Date Range Picker */}
+        <div className="md:col-span-2">
+          <label className="text-sm font-medium mb-2 block">{t('checkIn')} - {t('checkOut')}</label>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" className="w-full justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {checkIn ? format(checkIn, 'dd MMM yyyy', { locale: tr }) : t('selectDate')}
+                {formatDateRange()}
               </Button>
             </DialogTrigger>
             <DialogContent className="w-auto p-0">
-              <DialogTitle className="sr-only">{t('checkIn')}</DialogTitle>
+              <DialogTitle className="sr-only">{t('selectDate')}</DialogTitle>
               <Calendar
-                mode="single"
-                selected={checkIn}
-                onSelect={setCheckIn}
+                mode="range"
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={2}
                 disabled={(date) => date < new Date()}
-                initialFocus
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        {/* Çıkış Tarihi */}
-        <div>
-          <label className="text-sm font-medium mb-2 block">{t('checkOut')}</label>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {checkOut ? format(checkOut, 'dd MMM yyyy', { locale: tr }) : t('selectDate')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="w-auto p-0">
-              <DialogTitle className="sr-only">{t('checkOut')}</DialogTitle>
-              <Calendar
-                mode="single"
-                selected={checkOut}
-                onSelect={setCheckOut}
-                disabled={(date) => date < (checkIn || new Date())}
                 initialFocus
               />
             </DialogContent>

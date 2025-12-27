@@ -71,7 +71,8 @@ function LoginContent() {
       
       // Token'ın set edilmesini bekle, sonra redirect yap
       setTimeout(() => {
-        window.location.href = '/admin';
+        // Next.js routing kullan
+        window.location.replace('/admin');
       }, 100);
     } catch (error: any) {
       console.error('❌ Login error details:', {
@@ -99,9 +100,9 @@ function LoginContent() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%)' }}>
       {/* Animated Background */}
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #9333ea 100%)', zIndex: 0 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-20"></div>
         
         {/* Floating Elements */}
@@ -133,7 +134,8 @@ function LoginContent() {
           position: 'relative',
           zIndex: 10,
           width: '450px',
-          maxWidth: '90vw',
+          maxWidth: 'calc(100vw - 48px)',
+          margin: '24px',
           backdropFilter: 'blur(16px)',
           background: 'rgba(255, 255, 255, 0.98)',
           borderRadius: '24px',

@@ -294,8 +294,8 @@ class ApiClient {
     }
     
     // Debug log for Auth endpoints
-    if (endpoint.includes('/Auth/login')) {
-      console.log('🔐 Auth/login Request:', {
+    if (endpoint.includes('/auth/login')) {
+      console.log('🔐 auth/login Request:', {
         endpoint: `${this.baseURL}${endpoint}`,
         body: JSON.stringify(data, null, 2),
         headers: {
@@ -402,11 +402,11 @@ export const authAPI = {
     console.log('🔐 Login attempt:', {
       email,
       passwordLength: password.length,
-      endpoint: `${API_BASE_URL}/Auth/login`
+      endpoint: `${API_BASE_URL}/auth/login`
     });
     
     try {
-      const response: any = await apiClient.post('/Auth/login', { email, password }, true);
+      const response: any = await apiClient.post('/auth/login', { email, password }, true);
       console.log('✅ Login successful:', {
         hasToken: !!response.accessToken,
         user: response.user?.email
@@ -887,7 +887,7 @@ export const adminAPI = {
   },
 };
 
-// Hotels API
+// Hotels API (Legacy - kept for compatibility)
 export const hotelsAPI = {
   search: (params: { Destination?: string; CheckIn?: string; CheckOut?: string; Guests?: number; MinCategory?: number; MaxPrice?: number }) =>
     apiClient.get('/Hotels/search', params),
@@ -903,6 +903,104 @@ export const hotelsAPI = {
   
   getDestinationHotels: (destinationId: string, params?: { checkIn?: string; checkOut?: string; adults?: number }) =>
     apiClient.get(`/Hotels/destinations/${destinationId}/hotels`, params),
+};
+
+// SunHotels API - Modern endpoint'ler
+export const sunhotelsAPI = {
+  // Otel arama - Canlı fiyatlar ve müsaitlik (V3)
+  search: (data: {
+    destinationId?: string;
+    destination?: string;
+    checkIn: string;
+    checkOut: string;
+    numberOfRooms?: number;
+    adults: number;
+    children?: number;
+    childrenAges?: string;
+    infant?: number;
+    currency?: string;
+    language?: string;
+    customerCountry?: string;
+    b2C?: boolean;
+    hotelIds?: string;
+    resortIds?: string;
+    mealIds?: string;
+    featureIds?: string;
+    themeIds?: string;
+    minStarRating?: number;
+    maxStarRating?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    sortOrder?: string;
+  }) => apiClient.post('/sunhotels/search', data),
+
+  // Otel detayları - Canlı fiyat ve müsaitlik
+  getHotelDetails: (hotelId: number, params: {
+    checkIn: string;
+    checkOut: string;
+    adults?: number;
+    children?: number;
+    currency?: string;
+  }) => apiClient.get(`/sunhotels/hotels/${hotelId}/details`, params),
+
+  // Destinasyonları getir
+  getDestinations: () => apiClient.get('/sunhotels/destinations'),
+
+  // Destinasyon arama
+  searchDestinations: (query: string) => apiClient.get('/sunhotels/destinations/search', { q: query }),
+
+  // Destinasyon ID'ye göre getir
+  getDestination: (id: number) => apiClient.get(`/sunhotels/destinations/${id}`),
+
+  // Resortları getir
+  getResorts: () => apiClient.get('/sunhotels/resorts'),
+
+  // Resort arama
+  searchResorts: (query: string) => apiClient.get('/sunhotels/resorts/search', { q: query }),
+
+  // Destinasyona göre resortları getir
+  getDestinationResorts: (destinationId: number) => apiClient.get(`/sunhotels/destinations/${destinationId}/resorts`),
+
+  // Otelleri sayfalanmış olarak getir
+  getHotels: (params?: {
+    page?: number;
+    pageSize?: number;
+    destinationId?: number;
+    resortId?: number;
+    minStars?: number;
+  }) => apiClient.get('/sunhotels/hotels', params),
+
+  // Otel ID'ye göre getir
+  getHotel: (id: number) => apiClient.get(`/sunhotels/hotels/${id}`),
+
+  // Otellerde arama
+  searchHotels: (query: string) => apiClient.get('/sunhotels/hotels/search', { q: query }),
+
+  // Yemek tiplerini getir
+  getMeals: () => apiClient.get('/sunhotels/meals'),
+
+  // Oda tiplerini getir
+  getRoomTypes: () => apiClient.get('/sunhotels/room-types'),
+
+  // Özellikleri getir
+  getFeatures: () => apiClient.get('/sunhotels/features'),
+
+  // Temaları getir
+  getThemes: () => apiClient.get('/sunhotels/themes'),
+
+  // Dilleri getir
+  getLanguages: () => apiClient.get('/sunhotels/languages'),
+
+  // Cache istatistiklerini getir
+  getStatistics: () => apiClient.get('/sunhotels/statistics'),
+
+  // Rezervasyon işlemleri (V3)
+  preBook: (data: any) => apiClient.post('/sunhotels/prebook', data),
+  book: (data: any) => apiClient.post('/sunhotels/book', data),
+  queryBooking: (data: any) => apiClient.post('/sunhotels/booking/query', data),
+  cancelBooking: (bookingId: string, language?: string) => 
+    apiClient.post(`/sunhotels/booking/${bookingId}/cancel${language ? `?language=${language}` : ''}`),
 };
 
 // Bookings API

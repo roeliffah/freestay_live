@@ -94,6 +94,16 @@ interface SiteSettings {
   smtpFromEmail?: string;
   smtpFromName?: string;
   emailProvider?: string;
+  // Affiliate Programs
+  excursionsActive?: boolean;
+  excursionsAffiliateCode?: string;
+  excursionsWidgetCode?: string;
+  carRentalActive?: boolean;
+  carRentalAffiliateCode?: string;
+  carRentalWidgetCode?: string;
+  flightBookingActive?: boolean;
+  flightBookingAffiliateCode?: string;
+  flightBookingWidgetCode?: string;
 }
 
 export default function SettingsPage() {
@@ -111,6 +121,7 @@ function SettingsContent() {
   const [brandingForm] = Form.useForm();
   const [contactForm] = Form.useForm();
   const [emailForm] = Form.useForm();
+  const [affiliateForm] = Form.useForm();
   
   const [loading, setLoading] = useState(false);
   const [testingEmail, setTestingEmail] = useState(false);
@@ -126,6 +137,7 @@ function SettingsContent() {
     branding: false,
     contact: false,
     email: false,
+    affiliate: false,
   });
 
   useEffect(() => {
@@ -259,6 +271,21 @@ function SettingsContent() {
           emailProvider: (settings as any).emailProvider || 'smtp',
         });
         setFormsInitialized(prev => ({ ...prev, email: true }));
+      }
+
+      if (activeTab === 'affiliate' || formsInitialized.affiliate) {
+        affiliateForm.setFieldsValue({
+          excursionsActive: (settings as any).excursionsActive,
+          excursionsAffiliateCode: (settings as any).excursionsAffiliateCode,
+          excursionsWidgetCode: (settings as any).excursionsWidgetCode,
+          carRentalActive: (settings as any).carRentalActive,
+          carRentalAffiliateCode: (settings as any).carRentalAffiliateCode,
+          carRentalWidgetCode: (settings as any).carRentalWidgetCode,
+          flightBookingActive: (settings as any).flightBookingActive,
+          flightBookingAffiliateCode: (settings as any).flightBookingAffiliateCode,
+          flightBookingWidgetCode: (settings as any).flightBookingWidgetCode,
+        });
+        setFormsInitialized(prev => ({ ...prev, affiliate: true }));
       }
       
       // Update file lists for preview
@@ -441,6 +468,22 @@ function SettingsContent() {
         
         console.log('📤 Sending to /admin/settings/smtp:', updateData);
         await adminAPI.updateEmailSettings(updateData);
+      }
+      else if (formName === 'affiliate') {
+        const updateData = {
+          excursionsActive: values.excursionsActive || false,
+          excursionsAffiliateCode: values.excursionsAffiliateCode || '',
+          excursionsWidgetCode: values.excursionsWidgetCode || '',
+          carRentalActive: values.carRentalActive || false,
+          carRentalAffiliateCode: values.carRentalAffiliateCode || '',
+          carRentalWidgetCode: values.carRentalWidgetCode || '',
+          flightBookingActive: values.flightBookingActive || false,
+          flightBookingAffiliateCode: values.flightBookingAffiliateCode || '',
+          flightBookingWidgetCode: values.flightBookingWidgetCode || '',
+        };
+        
+        console.log('📤 Sending affiliate settings to /admin/settings/site:', updateData);
+        await adminAPI.updateSiteSettings(updateData);
       }
 
       messageApi.success(`${formName.charAt(0).toUpperCase() + formName.slice(1)} settings saved successfully`);
@@ -901,9 +944,141 @@ function SettingsContent() {
                 onClick={handleTestEmail}
                 loading={testingEmail}
               >
-                Send Test Email
+                Test Email
               </Button>
             </Space>
+          </Form.Item>
+        </Form>
+      ),
+    },
+    {
+      key: 'affiliate',
+      label: <Space><GlobalOutlined />Affiliate Programs</Space>,
+      children: (
+        <Form
+          form={affiliateForm}
+          layout="vertical"
+          onFinish={(values) => handleSave('affiliate', values)}
+        >
+          <Alert
+            message="Affiliate Programs"
+            description="Configure affiliate links for travel services. When active, these links will appear in the header dropdown menu and travel CTA cards."
+            type="info"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+
+          <Divider><Text strong>Tours & Activities (Excursions)</Text></Divider>
+          
+          <Row gutter={24}>
+            <Col span={6}>
+              <Form.Item 
+                name="excursionsActive" 
+                label="Active" 
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={18}>
+              <Form.Item 
+                name="excursionsAffiliateCode" 
+                label="Affiliate Link"
+                tooltip="Full URL to your affiliate partner (e.g., https://getyourguide.com/?partner_id=XXX)"
+              >
+                <Input placeholder="https://getyourguide.com/?partner_id=XXX" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item 
+            name="excursionsWidgetCode" 
+            label="Widget Code (Optional)"
+            tooltip="Paste your affiliate widget embed code (HTML + Script)"
+          >
+            <TextArea 
+              rows={6} 
+              placeholder='<div data-vi-partner-id="U00202819" data-vi-widget-ref="W-46e0b4fc-2d24-4a08-8178-2464b72e88a1"></div>&#10;<script async src="https://www.viator.com/orion/partner/widget.js"></script>'
+              style={{ fontFamily: 'monospace', fontSize: '12px' }}
+            />
+          </Form.Item>
+
+          <Divider><Text strong>Car Rental</Text></Divider>
+          
+          <Row gutter={24}>
+            <Col span={6}>
+              <Form.Item 
+                name="carRentalActive" 
+                label="Active" 
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={18}>
+              <Form.Item 
+                name="carRentalAffiliateCode" 
+                label="Affiliate Link"
+                tooltip="Full URL to your affiliate partner (e.g., https://rentalcars.com/?affiliateCode=XXX)"
+              >
+                <Input placeholder="https://rentalcars.com/?affiliateCode=XXX" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item 
+            name="carRentalWidgetCode" 
+            label="Widget Code (Optional)"
+            tooltip="Paste your car rental widget embed code (HTML + Script)"
+          >
+            <TextArea 
+              rows={6} 
+              placeholder='<div id="car-rental-widget"></div>&#10;<script src="https://widget.rentalcars.com/widget.js"></script>'
+              style={{ fontFamily: 'monospace', fontSize: '12px' }}
+            />
+          </Form.Item>
+
+          <Divider><Text strong>Flight Booking</Text></Divider>
+          
+          <Row gutter={24}>
+            <Col span={6}>
+              <Form.Item 
+                name="flightBookingActive" 
+                label="Active" 
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            </Col>
+            <Col span={18}>
+              <Form.Item 
+                name="flightBookingAffiliateCode" 
+                label="Affiliate Link"
+                tooltip="Full URL to your affiliate partner (e.g., https://skyscanner.com/?associateid=XXX)"
+              >
+                <Input placeholder="https://skyscanner.com/?associateid=XXX" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item 
+            name="flightBookingWidgetCode" 
+            label="Widget Code (Optional)"
+            tooltip="Paste your flight booking widget embed code (HTML + Script)"
+          >
+            <TextArea 
+              rows={6} 
+              placeholder='<div id="flight-widget"></div>&#10;<script src="https://widget.skyscanner.com/widget.js"></script>'
+              style={{ fontFamily: 'monospace', fontSize: '12px' }}
+            />
+          </Form.Item>
+
+          <Divider />
+
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
+              Save Affiliate Settings
+            </Button>
           </Form.Item>
         </Form>
       ),

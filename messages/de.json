@@ -3,7 +3,11 @@
     "hotels": "Hotels",
     "about": "Über uns",
     "contact": "Kontakt",
-    "myBookings": "Meine Buchungen"
+    "myBookings": "Meine Buchungen",
+    "travel": "Reisen",
+    "excursions": "Touren & Aktivitäten",
+    "rentACar": "Mietwagen",
+    "bookAFlight": "Flug buchen"
   },
   "home": {
     "hero": {
@@ -25,7 +29,8 @@
       "adults": "Erwachsene",
       "children": "Kinder (0-12)",
       "addRoom": "Zimmer hinzufügen",
-      "done": "Fertig"
+      "done": "Fertig",
+      "searching": "Suchen..."
     },
     "popularHotels": {
       "title": "Beliebte Hotels",
@@ -106,6 +111,17 @@
       "subtitle": "Buchen Sie jetzt für den Sommerurlaub und sparen Sie bis zu 40%",
       "badge": "Bis zu 40% Rabatt",
       "button": "Kampagnen ansehen"
+    },
+    "travelCTA": {
+      "sectionTitle": "Entdecken Sie weitere Reiseerlebnisse",
+      "sectionSubtitle": "Vervollständigen Sie Ihren perfekten Urlaub mit unseren Reisepartnern",
+      "excursionsTitle": "Touren & Aktivitäten",
+      "excursionsDesc": "Entdecken Sie unvergessliche Erlebnisse und lokale Touren an Ihrem Reiseziel",
+      "carRentalTitle": "Mietwagen",
+      "carRentalDesc": "Erkunden Sie frei mit bequemen und erschwinglichen Mietwagenoptionen",
+      "flightBookingTitle": "Flug buchen",
+      "flightBookingDesc": "Finden Sie die besten Flugangebote zu Ihrem Traumziel",
+      "exploreNow": "Jetzt entdecken"
     }
   },
   "search": {

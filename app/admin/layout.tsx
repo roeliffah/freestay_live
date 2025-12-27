@@ -56,7 +56,7 @@ const menuItems: MenuItem[] = [
   ]),
   getItem(<Link href="/admin/bookings">Bookings</Link>, '/admin/bookings', <CalendarOutlined />),
   getItem(<Link href="/admin/coupons">Coupons</Link>, '/admin/coupons', <GiftOutlined />),
-  getItem(<Link href="/admin/featured-content">Featured Content</Link>, '/admin/featured-content', <StarOutlined />),
+  getItem(<Link href="/admin/homepage-sections">Homepage Sections</Link>, '/admin/homepage-sections', <HomeOutlined />),
   getItem('Content', 'content', <FileTextOutlined />, [
     getItem(<Link href="/admin/translations">Translations</Link>, '/admin/translations', <TranslationOutlined />),
     getItem(<Link href="/admin/pages">Static Pages</Link>, '/admin/pages', <FileTextOutlined />),

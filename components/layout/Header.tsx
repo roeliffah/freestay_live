@@ -1,17 +1,43 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { Phone, User, Menu, X } from 'lucide-react';
+import { Phone, User, Menu, X, ChevronDown, Plane, Car, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { adminAPI } from '@/lib/api/client';
 
 export function Header() {
   const t = useTranslations('header');
   const locale = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [travelMenuOpen, setTravelMenuOpen] = useState(false);
+  const [affiliateData, setAffiliateData] = useState<{
+    excursions: { active: boolean; affiliateCode: string };
+    carRental: { active: boolean; affiliateCode: string };
+    flightBooking: { active: boolean; affiliateCode: string };
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchAffiliatePrograms = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/public/settings/affiliate-programs`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Affiliate programs loaded:', data);
+          setAffiliateData(data);
+        } else {
+          console.warn('Failed to load affiliate programs, status:', response.status);
+        }
+      } catch (error) {
+        console.error('Failed to fetch affiliate programs:', error);
+      }
+    };
+
+    fetchAffiliatePrograms();
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -36,6 +62,73 @@ export function Header() {
             >
               {t('hotels')}
             </Link>
+            
+            {/* Travel Dropdown - Sadece aktif servisler varsa göster */}
+            {affiliateData && (affiliateData.excursions.active || affiliateData.carRental.active || affiliateData.flightBooking.active) && (
+              <div 
+                className="relative group"
+                onMouseEnter={() => setTravelMenuOpen(true)}
+                onMouseLeave={() => setTravelMenuOpen(false)}
+              >
+                <button 
+                  className="text-sm font-medium transition-colors hover:text-primary flex items-center gap-1"
+                  onClick={() => setTravelMenuOpen(!travelMenuOpen)}
+                >
+                  {t('travel')}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                
+                {travelMenuOpen && (
+                  <div 
+                    className="absolute top-full left-0 mt-2 w-64 bg-white border rounded-md shadow-lg py-2 z-[100] pointer-events-auto"
+                  >
+                    {affiliateData.excursions.active && affiliateData.excursions.affiliateCode && (
+                      <a 
+                        href={affiliateData.excursions.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
+                      >
+                        <Compass className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium">{t('excursions')}</div>
+                          <div className="text-xs text-muted-foreground">Discover local experiences</div>
+                        </div>
+                      </a>
+                    )}
+                    {affiliateData.carRental.active && affiliateData.carRental.affiliateCode && (
+                      <a 
+                        href={affiliateData.carRental.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
+                      >
+                        <Car className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium">{t('rentACar')}</div>
+                          <div className="text-xs text-muted-foreground">Best car rental deals</div>
+                        </div>
+                      </a>
+                    )}
+                    {affiliateData.flightBooking.active && affiliateData.flightBooking.affiliateCode && (
+                      <a 
+                        href={affiliateData.flightBooking.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 transition-colors"
+                      >
+                        <Plane className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="text-sm font-medium">{t('bookAFlight')}</div>
+                          <div className="text-xs text-muted-foreground">Find cheap flights</div>
+                        </div>
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             <Link 
               href={`/${locale}/about`}
               className="text-sm font-medium transition-colors hover:text-primary"
@@ -88,6 +181,49 @@ export function Header() {
               >
                 {t('hotels')}
               </Link>
+              
+              {/* Mobile Travel Menu */}
+              {affiliateData && (affiliateData.excursions.active || affiliateData.carRental.active || affiliateData.flightBooking.active) && (
+                <div className="px-2">
+                  <div className="text-sm font-medium mb-2">{t('travel')}</div>
+                  <div className="pl-4 space-y-2">
+                    {affiliateData.excursions.active && affiliateData.excursions.affiliateCode && (
+                      <a 
+                        href={affiliateData.excursions.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary py-1"
+                      >
+                        <Compass className="h-4 w-4" />
+                        {t('excursions')}
+                      </a>
+                    )}
+                    {affiliateData.carRental.active && affiliateData.carRental.affiliateCode && (
+                      <a 
+                        href={affiliateData.carRental.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary py-1"
+                      >
+                        <Car className="h-4 w-4" />
+                        {t('rentACar')}
+                      </a>
+                    )}
+                    {affiliateData.flightBooking.active && affiliateData.flightBooking.affiliateCode && (
+                      <a 
+                        href={affiliateData.flightBooking.affiliateCode}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary py-1"
+                      >
+                        <Plane className="h-4 w-4" />
+                        {t('bookAFlight')}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <Link 
                 href={`/${locale}/about`}
                 className="text-sm font-medium transition-colors hover:text-primary px-2 py-2"
@@ -109,7 +245,7 @@ export function Header() {
                 </Button>
                 <Button variant="ghost" size="sm" className="flex-1">
                   <User className="h-4 w-4 mr-2" />
-                  {t('login') || 'Login'}
+                  Login
                 </Button>
               </div>
               <Button className="mx-2" onClick={() => setMobileMenuOpen(false)}>

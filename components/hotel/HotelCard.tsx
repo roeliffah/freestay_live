@@ -8,7 +8,24 @@ import { Star, MapPin, Wifi, Coffee, Dumbbell, Waves, UtensilsCrossed } from 'lu
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import type { Hotel } from '@/lib/sunhotels/types';
+
+interface Hotel {
+  hotelId: number;
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  country: string;
+  category: number;
+  resortName: string;
+  minPrice: number;
+  currency: string;
+  images: Array<{ url: string; order: number }>;
+  reviewScore?: number;
+  reviewCount?: number;
+  featureIds?: number[];
+  themeIds?: number[];
+}
 
 interface HotelCardProps {
   hotel: Hotel;
@@ -51,6 +68,9 @@ export function HotelCard({ hotel }: HotelCardProps) {
   
   const hotelUrl = `/${locale}/hotel/${hotel.hotelId}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`;
 
+  // Backend'den gelen özellikler listesi yoksa default liste kullan
+  const facilities = ['WiFi', 'Restaurant', 'Pool', 'Spa', 'Gym', 'Beach'];
+
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-shadow">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
@@ -58,11 +78,11 @@ export function HotelCard({ hotel }: HotelCardProps) {
         <div className="relative h-48 sm:h-56 md:h-auto md:min-h-[250px]">
           <Image
             src={hotel.images[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'}
-            alt={hotel.hotelName}
+            alt={hotel.name}
             fill
             className="object-cover"
           />
-          {hotel.minPrice && hotel.minPrice < 2000 && (
+          {hotel.minPrice && hotel.minPrice < 100 && (
             <Badge className="absolute top-3 left-3 bg-red-500">
               {t('deal')}
             </Badge>
@@ -76,12 +96,12 @@ export function HotelCard({ hotel }: HotelCardProps) {
               <div className="flex-1">
                 <Link href={hotelUrl}>
                   <h3 className="text-2xl font-bold hover:text-primary transition-colors">
-                    {hotel.hotelName}
+                    {hotel.name}
                   </h3>
                 </Link>
                 <div className="flex items-center mt-1 text-muted-foreground">
                   <MapPin className="h-4 w-4 mr-1" />
-                  <span className="text-sm">{hotel.regionName}, {hotel.destinationName}</span>
+                  <span className="text-sm">{hotel.city}, {hotel.country}</span>
                 </div>
               </div>
               <div className="flex flex-col items-end ml-4">
@@ -90,7 +110,13 @@ export function HotelCard({ hotel }: HotelCardProps) {
                     <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <span className="text-xs text-muted-foreground mt-1">{hotel.categoryName}</span>
+                <span className="text-xs text-muted-foreground mt-1">{hotel.category} Star</span>
+                {hotel.reviewScore && (
+                  <div className="flex items-center mt-1">
+                    <span className="text-xs font-semibold text-primary mr-1">{hotel.reviewScore.toFixed(1)}</span>
+                    <span className="text-xs text-muted-foreground">({hotel.reviewCount} {t('reviews')})</span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -100,7 +126,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
             {/* Tesisler */}
             <div className="flex flex-wrap gap-2 mt-3">
-              {hotel.facilities.slice(0, 6).map((facility, idx) => {
+              {facilities.slice(0, 6).map((facility, idx) => {
                 const Icon = facilityIcons[facility] || Coffee;
                 return (
                   <div
@@ -120,7 +146,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
             <div>
               <p className="text-sm text-muted-foreground">{t('startingPrice')}</p>
               <p className="text-3xl font-bold text-primary">
-                ₺{hotel.minPrice?.toLocaleString(locale) || '0'}
+                {hotel.currency === 'EUR' ? '€' : hotel.currency === 'USD' ? '$' : '₺'}{hotel.minPrice?.toLocaleString(locale) || '0'}
               </p>
               <p className="text-xs text-muted-foreground mt-1">{t('taxIncluded')}</p>
             </div>

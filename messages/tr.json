@@ -3,7 +3,11 @@
     "hotels": "Oteller",
     "about": "Hakkımızda",
     "contact": "İletişim",
-    "myBookings": "Rezervasyonlarım"
+    "myBookings": "Rezervasyonlarım",
+    "travel": "Seyahat",
+    "excursions": "Turlar & Aktiviteler",
+    "rentACar": "Araç Kiralama",
+    "bookAFlight": "Uçak Bileti Al"
   },
   "home": {
     "hero": {
@@ -25,13 +29,24 @@
       "adults": "Yetişkin",
       "children": "Çocuk (0-12 yaş)",
       "addRoom": "Oda Ekle",
-      "done": "Tamam"
+      "done": "Tamam",
+      "searching": "Aranıyor..."
     },
     "popularHotels": {
       "title": "Popüler Oteller",
-      "subtitle": "Dünya çapında en çok tercih edilen tatil otelleri",
-      "perNight": "gece",
+      "subtitle": "Yıldız sayısına göre en çok tercih edilen tatil otelleri",
       "viewAll": "Tüm Otelleri Gör"
+    },
+    "popularDestinations": {
+      "title": "Popüler Destinasyonlar",
+      "subtitle": "Ülkelere göre en popüler tatil bölgeleri",
+      "hotels": "otel",
+      "viewHotels": "Otelleri Gör"
+    },
+    "romanticTours": {
+      "title": "Romantik Turlar",
+      "subtitle": "Sevdiklerinizle unutulmaz anlar için özel seçilmiş oteller",
+      "viewAll": "Tüm Romantik Otelleri Gör"
     },
     "features": {
       "title": "Neden FreeStays?",
@@ -106,6 +121,17 @@
       "subtitle": "En iyi fiyatlar ve özel fırsatlar sizi bekliyor",
       "search": "Otel Ara",
       "learnMore": "Daha Fazla Bilgi"
+    },
+    "travelCTA": {
+      "sectionTitle": "Daha Fazla Seyahat Deneyimi Keşfedin",
+      "sectionSubtitle": "Seyahat ortaklarımızla mükemmel tatilinizi tamamlayın",
+      "excursionsTitle": "Turlar & Aktiviteler",
+      "excursionsDesc": "Varabildiğiniz yerlerde unutulmaz deneyimler ve yerel turlar keşfedin",
+      "carRentalTitle": "Araç Kiralama",
+      "carRentalDesc": "Uygun fiyatlı ve kolay araç kiralama seçenekleriyle özgürce keşfedin",
+      "flightBookingTitle": "Uçak Bileti Al",
+      "flightBookingDesc": "Rüya varabildiğiniz yerlere en uygun uçuş fırsatlarını bulun",
+      "exploreNow": "Şimdi Keşfet"
     }
   },
   "search": {

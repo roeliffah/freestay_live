@@ -3,7 +3,11 @@
     "hotels": "Hotels",
     "about": "About",
     "contact": "Contact",
-    "myBookings": "My Bookings"
+    "myBookings": "My Bookings",
+    "travel": "Travel",
+    "excursions": "Tours & Activities",
+    "rentACar": "Rent a Car",
+    "bookAFlight": "Book a Flight"
   },
   "home": {
     "hero": {
@@ -25,13 +29,24 @@
       "adults": "Adults",
       "children": "Children (0-12)",
       "addRoom": "Add Room",
-      "done": "Done"
+      "done": "Done",
+      "searching": "Searching..."
     },
     "popularHotels": {
       "title": "Popular Hotels",
-      "subtitle": "Most preferred vacation hotels worldwide",
-      "perNight": "night",
+      "subtitle": "Top-rated hotels selected by star rating",
       "viewAll": "View All Hotels"
+    },
+    "popularDestinations": {
+      "title": "Popular Destinations",
+      "subtitle": "Most popular vacation spots by country",
+      "hotels": "hotels",
+      "viewHotels": "View Hotels"
+    },
+    "romanticTours": {
+      "title": "Romantic Tours",
+      "subtitle": "Hand-picked hotels for unforgettable moments with your loved ones",
+      "viewAll": "View All Romantic Hotels"
     },
     "features": {
       "title": "Why FreeStays?",
@@ -106,6 +121,17 @@
       "subtitle": "Book now for summer vacation and save up to 40%",
       "badge": "Up to 40% Off",
       "button": "View Campaigns"
+    },
+    "travelCTA": {
+      "sectionTitle": "Explore More Travel Experiences",
+      "sectionSubtitle": "Complete your perfect vacation with our travel partners",
+      "excursionsTitle": "Tours & Activities",
+      "excursionsDesc": "Discover unforgettable experiences and local tours at your destination",
+      "carRentalTitle": "Rent a Car",
+      "carRentalDesc": "Explore freely with convenient and affordable car rental options",
+      "flightBookingTitle": "Book a Flight",
+      "flightBookingDesc": "Find the best flight deals to your dream destination",
+      "exploreNow": "Explore Now"
     }
   },
   "search": {

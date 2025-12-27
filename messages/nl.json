@@ -3,7 +3,11 @@
     "hotels": "Hotels",
     "about": "Over ons",
     "contact": "Contact",
-    "myBookings": "Mijn boekingen"
+    "myBookings": "Mijn Boekingen",
+    "travel": "Reizen",
+    "excursions": "Tours & Activiteiten",
+    "rentACar": "Auto huren",
+    "bookAFlight": "Vlucht boeken"
   },
   "home": {
     "hero": {
@@ -25,7 +29,8 @@
       "adults": "Volwassenen",
       "children": "Kinderen (0-12)",
       "addRoom": "Kamer toevoegen",
-      "done": "Klaar"
+      "done": "Klaar",
+      "searching": "Zoeken..."
     },
     "popularHotels": {
       "title": "Populaire hotels",
@@ -106,6 +111,17 @@
       "subtitle": "Boek nu voor uw zomervakantie en bespaar tot 40%",
       "badge": "Tot 40% Korting",
       "button": "Bekijk Campagnes"
+    },
+    "travelCTA": {
+      "sectionTitle": "Ontdek meer reiservaringen",
+      "sectionSubtitle": "Maak uw perfecte vakantie compleet met onze reispartners",
+      "excursionsTitle": "Tours & Activiteiten",
+      "excursionsDesc": "Ontdek onvergetelijke ervaringen en lokale tours op uw bestemming",
+      "carRentalTitle": "Auto huren",
+      "carRentalDesc": "Verken vrijelijk met handige en betaalbare autoverhuur opties",
+      "flightBookingTitle": "Vlucht boeken",
+      "flightBookingDesc": "Vind de beste vluchtdeals naar uw droombestemming",
+      "exploreNow": "Nu ontdekken"
     }
   },
   "search": {

@@ -3,8 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { sunHotelsClient } from '@/lib/sunhotels/client';
-import type { Hotel } from '@/lib/sunhotels/types';
+import { sunhotelsAPI } from '@/lib/api/client';
 import { HotelCard } from '@/components/hotel/HotelCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,30 @@ import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { SlidersHorizontal, Star, MapPin } from 'lucide-react';
+
+interface Hotel {
+  hotelId: number;
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  country: string;
+  countryCode: string;
+  category: number;
+  latitude: number;
+  longitude: number;
+  giataCode: string;
+  resortId: number;
+  resortName: string;
+  minPrice: number;
+  currency: string;
+  reviewScore?: number;
+  reviewCount?: number;
+  images: Array<{ url: string; order: number }>;
+  rooms: Array<any>;
+  featureIds: number[];
+  themeIds: number[];
+}
 
 interface Filters {
   priceRange?: [number, number];
@@ -28,7 +51,6 @@ function SearchPage() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
-  const [isFromAPI, setIsFromAPI] = useState(true); // Track if results are from API or fallback
   const [filters, setFilters] = useState<Filters>({
     sortBy: 'price',
     sortOrder: 'asc',
@@ -41,35 +63,33 @@ function SearchPage() {
         // Get search parameters
         const destination = searchParams.get('destination') || '';
         const destinationId = searchParams.get('destinationId') || '';
-        const type = searchParams.get('type') || '';
         const checkIn = searchParams.get('checkIn') || new Date().toISOString().split('T')[0];
         const checkOut = searchParams.get('checkOut') || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0];
         const adults = parseInt(searchParams.get('adults') || '2');
         const children = parseInt(searchParams.get('children') || '0');
 
-        console.log('🔍 Search Parameters:', { destination, destinationId, checkIn, checkOut });
+        console.log('🔍 Search Parameters:', { destination, destinationId, checkIn, checkOut, adults, children });
 
-        // Try live API with destinationID (priority) or destination name
-        const response = await sunHotelsClient.searchHotels({
-          checkIn,
-          checkOut,
-          nationality: 'TR',
-          currency: 'EUR',
-          language: locale.toLowerCase(),
+        // Backend API çağrısı - yeni SunHotels V3 endpoint
+        const results = await sunhotelsAPI.search({
           destinationId: destinationId || undefined,
           destination: !destinationId && destination ? destination : undefined,
-          type: type || undefined,
-          rooms: [{ adult: adults, child: children }],
-        });
+          checkIn,
+          checkOut,
+          numberOfRooms: 1,
+          adults,
+          children: children || 0,
+          currency: 'EUR',
+          language: locale.toLowerCase(),
+          customerCountry: 'TR',
+          b2C: true,
+        }) as Hotel[];
         
-        // If API returns hotels, use them
-        // Otherwise, response.hotels will already contain mock/fallback data
-        setHotels(response.hotels);
-        setIsFromAPI(response.isFromAPI !== false); // Default to true if not specified
+        console.log('✅ Search Results:', results);
+        setHotels(Array.isArray(results) ? results : []);
       } catch (error) {
-        console.error('Otel arama hatası:', error);
+        console.error('❌ Otel arama hatası:', error);
         setHotels([]);
-        setIsFromAPI(false);
       } finally {
         setLoading(false);
       }
@@ -105,8 +125,8 @@ function SearchPage() {
       }
       if (filters.sortBy === 'name') {
         return filters.sortOrder === 'asc'
-          ? a.hotelName.localeCompare(b.hotelName)
-          : b.hotelName.localeCompare(a.hotelName);
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
       }
       return 0;
     });
@@ -277,24 +297,6 @@ function SearchPage() {
             </Button>
 
             <div className="space-y-4">
-              {/* Fallback Notice - Show when using mock data */}
-              {!loading && !isFromAPI && hotels.length > 0 && (
-                <Card className="p-6 bg-blue-50 border-blue-200">
-                  <div className="flex items-start gap-3">
-                    <div className="text-3xl">ℹ️</div>
-                    <div>
-                      <h3 className="font-semibold text-lg mb-1">{t('noResultsFromApi')}</h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {t('featuredHotelsInfo')}
-                      </p>
-                      <p className="text-sm font-medium text-primary">
-                        💎 {t('checkFeaturedHotels')}
-                      </p>
-                    </div>
-                  </div>
-                </Card>
-              )}
-
               {loading ? (
                 // Loading Skeleton
                 Array.from({ length: 3 }).map((_, i) => (

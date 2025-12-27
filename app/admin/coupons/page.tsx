@@ -420,7 +420,7 @@ const handleDelete = async (id: string) => {
               title={expiredCoupons > 0 ? "Expired Coupons" : "Usage Rate"}
               value={expiredCoupons > 0 ? expiredCoupons : usageRate}
               suffix={expiredCoupons > 0 ? "" : "%"}
-              valueStyle={{ color: expiredCoupons > 0 ? '#ef4444' : '#f59e0b' }}
+              styles={{ content: { color: expiredCoupons > 0 ? '#ef4444' : '#f59e0b' } }}
             />
           </Card>
         </Col>
