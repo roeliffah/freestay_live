@@ -11,11 +11,15 @@ import {
   Form,
   Input,
   Switch,
-  message,
   Typography,
   Dropdown,
   Select,
   Spin,
+  Collapse,
+  Divider,
+  Badge,
+  App,
+  Popconfirm,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import {
@@ -25,8 +29,10 @@ import {
   MoreOutlined,
   FileTextOutlined,
   EyeOutlined,
+  TranslationOutlined,
 } from '@ant-design/icons';
 import { adminAPI } from '@/lib/api/client';
+import { SUPPORTED_LOCALES } from '@/lib/constants/locales';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -48,24 +54,20 @@ interface StaticPage {
   updatedAt: string;
 }
 
-const locales = [
-  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-];
-
 export default function PagesPage() {
+  return (
+    <App>
+      <PagesContent />
+    </App>
+  );
+}
+
+function PagesContent() {
+  const { message } = App.useApp();
   const [pages, setPages] = useState<StaticPage[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPage, setEditingPage] = useState<StaticPage | null>(null);
-  const [selectedLocale, setSelectedLocale] = useState('tr');
   const [saving, setSaving] = useState(false);
   const [form] = Form.useForm();
 
@@ -90,15 +92,23 @@ export default function PagesPage() {
   const showModal = (page?: StaticPage) => {
     if (page) {
       setEditingPage(page);
-      const translation = page.translations.find(t => t.locale === selectedLocale) || page.translations[0];
-      form.setFieldsValue({
+      // Tüm diller için değerleri ayarla
+      const formValues: any = {
         slug: page.slug,
         isActive: page.isActive,
-        title: translation?.title || '',
-        content: translation?.content || '',
-        metaTitle: translation?.metaTitle || '',
-        metaDescription: translation?.metaDescription || '',
+      };
+      
+      SUPPORTED_LOCALES.forEach(locale => {
+        const translation = page.translations.find(t => t.locale === locale.code);
+        if (translation) {
+          formValues[`title_${locale.code}`] = translation.title;
+          formValues[`content_${locale.code}`] = translation.content;
+          formValues[`metaTitle_${locale.code}`] = translation.metaTitle;
+          formValues[`metaDescription_${locale.code}`] = translation.metaDescription;
+        }
       });
+      
+      form.setFieldsValue(formValues);
     } else {
       setEditingPage(null);
       form.resetFields();
@@ -111,23 +121,20 @@ export default function PagesPage() {
       const values = await form.validateFields();
       setSaving(true);
 
-      const translationData = {
-        locale: selectedLocale,
-        title: values.title,
-        content: values.content,
-        metaTitle: values.metaTitle,
-        metaDescription: values.metaDescription,
-      };
+      // Tüm diller için çevirileri topla
+      const translations: PageTranslation[] = SUPPORTED_LOCALES.map(locale => ({
+        locale: locale.code,
+        title: values[`title_${locale.code}`] || '',
+        content: values[`content_${locale.code}`] || '',
+        metaTitle: values[`metaTitle_${locale.code}`] || '',
+        metaDescription: values[`metaDescription_${locale.code}`] || '',
+      })).filter(t => t.title); // Sadece başlık doldurulmuş olanları al
       
       if (editingPage) {
-        // Mevcut translations'ı güncelle
-        const existingTranslations = editingPage.translations.filter(t => t.locale !== selectedLocale);
-        const updatedTranslations = [...existingTranslations, translationData];
-
         const updateData = {
           slug: values.slug,
           isActive: values.isActive,
-          translations: updatedTranslations,
+          translations,
         };
 
         await adminAPI.updatePage(editingPage.id, updateData);
@@ -136,7 +143,7 @@ export default function PagesPage() {
         const createData = {
           slug: values.slug,
           isActive: values.isActive,
-          translations: [translationData],
+          translations,
         };
 
         await adminAPI.createPage(createData);
@@ -162,43 +169,6 @@ export default function PagesPage() {
     }
   };
 
-  const onLocaleChange = (locale: string) => {
-    setSelectedLocale(locale);
-    if (editingPage) {
-      const translation = editingPage.translations.find(t => t.locale === locale);
-      form.setFieldsValue({
-        title: translation?.title || '',
-        content: translation?.content || '',
-        metaTitle: translation?.metaTitle || '',
-        metaDescription: translation?.metaDescription || '',
-      });
-    }
-  };
-
-  const getActionItems = (record: StaticPage): MenuProps['items'] => [
-    {
-      key: 'edit',
-      icon: <EditOutlined />,
-      label: 'Edit',
-      onClick: () => showModal(record),
-    },
-    {
-      key: 'preview',
-      icon: <EyeOutlined />,
-      label: 'Preview',
-      onClick: () => window.open(`/tr/${record.slug}`, '_blank'),
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'delete',
-      icon: <DeleteOutlined />,
-      label: 'Delete',
-      danger: true,
-    },
-  ];
-
   const columns = [
     {
       title: 'Page',
@@ -219,7 +189,7 @@ export default function PagesPage() {
       key: 'translations',
       render: (_: any, record: StaticPage) => (
         <Space>
-          {locales.map(locale => {
+          {SUPPORTED_LOCALES.map(locale => {
             const hasTranslation = record.translations.some(t => t.locale === locale.code);
             return (
               <Tag 
@@ -253,28 +223,34 @@ export default function PagesPage() {
     {
       title: 'Actions',
       key: 'actions',
-      width: 100,
+      width: 150,
       render: (_: any, record: StaticPage) => (
-        <Dropdown
-          menu={{
-            items: getActionItems(record),
-            onClick: ({ key }) => {
-              if (key === 'delete') {
-                Modal.confirm({
-                  title: 'Delete Page',
-                  content: `Are you sure you want to delete "${record.translations[0]?.title}" page?`,
-                  okText: 'Delete',
-                  okType: 'danger',
-                  cancelText: 'Cancel',
-                  onOk: () => handleDelete(record.id),
-                });
-              }
-            },
-          }}
-          trigger={['click']}
-        >
-          <Button type="text" icon={<MoreOutlined />} />
-        </Dropdown>
+        <Space>
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => showModal(record)}
+          />
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={() => window.open(`/tr/${record.slug}`, '_blank')}
+          />
+          <Popconfirm
+            title="Delete Page"
+            description={`Are you sure you want to delete "${record.translations[0]?.title}" page?`}
+            onConfirm={() => handleDelete(record.id)}
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
@@ -297,6 +273,7 @@ export default function PagesPage() {
             columns={columns}
             dataSource={pages}
             rowKey="id"
+            scroll={{ x: 'max-content' }}
             pagination={{
               pageSize: 10,
               showTotal: (total) => `Total ${total} pages`,
@@ -306,26 +283,14 @@ export default function PagesPage() {
       </Card>
 
       <Modal
-        title={
-          <Space>
-            {editingPage ? 'Edit Page' : 'New Page'}
-            <Select
-              value={selectedLocale}
-              onChange={onLocaleChange}
-              style={{ width: 150 }}
-              options={locales.map(l => ({
-                label: <Space>{l.flag} {l.name}</Space>,
-                value: l.code,
-              }))}
-            />
-          </Space>
-        }
+        title={editingPage ? 'Edit Page' : 'New Page'}
         open={isModalOpen}
         onOk={handleSave}
         onCancel={() => setIsModalOpen(false)}
         okText="Save"
         cancelText="Cancel"
-        width={800}
+        width="90%"
+        style={{ maxWidth: 900 }}
         confirmLoading={saving}
       >
         <Form form={form} layout="vertical" initialValues={{ isActive: true }}>
@@ -340,33 +305,56 @@ export default function PagesPage() {
             <Input prefix="freestays.com/" placeholder="privacy-policy" />
           </Form.Item>
 
-          <Form.Item
-            name="title"
-            label={`Title (${selectedLocale.toUpperCase()})`}
-            rules={[{ required: true, message: 'Title is required' }]}
-          >
-            <Input placeholder="Page title" />
-          </Form.Item>
-
-          <Form.Item
-            name="content"
-            label={`Content (${selectedLocale.toUpperCase()})`}
-            rules={[{ required: true, message: 'Content is required' }]}
-          >
-            <TextArea rows={10} placeholder="Page content (Markdown supported)" />
-          </Form.Item>
-
-          <Form.Item name="metaTitle" label="Meta Title">
-            <Input placeholder="SEO title" />
-          </Form.Item>
-
-          <Form.Item name="metaDescription" label="Meta Description">
-            <TextArea rows={2} placeholder="SEO description" />
-          </Form.Item>
-
           <Form.Item name="isActive" label="Status" valuePropName="checked">
             <Switch checkedChildren="Active" unCheckedChildren="Draft" />
           </Form.Item>
+
+          <Divider><Space><TranslationOutlined />Translations</Space></Divider>
+
+          <Collapse
+            items={SUPPORTED_LOCALES?.map(locale => {
+              const translation = editingPage?.translations?.find(t => t.locale === locale.code);
+              const hasContent = translation && (translation.title || translation.content);
+              
+              return {
+                key: locale.code,
+                label: (
+                  <Space>
+                    <span>{locale.flag}</span>
+                    <Text strong>{locale.name}</Text>
+                    {hasContent && <Badge status="success" />}
+                  </Space>
+                ),
+                children: (
+                  <>
+                    <Form.Item
+                      name={`title_${locale.code}`}
+                      label="Title"
+                      rules={locale.code === 'tr' ? [{ required: true, message: 'Title is required for default language' }] : []}
+                    >
+                      <Input placeholder={`Page title in ${locale.name}`} />
+                    </Form.Item>
+
+                    <Form.Item
+                      name={`content_${locale.code}`}
+                      label="Content"
+                    >
+                      <TextArea rows={6} placeholder={`Page content in ${locale.name} (Markdown supported)`} />
+                    </Form.Item>
+
+                    <Form.Item name={`metaTitle_${locale.code}`} label="Meta Title">
+                      <Input placeholder={`SEO title in ${locale.name}`} />
+                    </Form.Item>
+
+                    <Form.Item name={`metaDescription_${locale.code}`} label="Meta Description">
+                      <TextArea rows={2} placeholder={`SEO description in ${locale.name}`} />
+                    </Form.Item>
+                  </>
+                ),
+              };
+            }) || []}
+            defaultActiveKey={['tr']}
+          />
         </Form>
       </Modal>
     </div>

@@ -586,6 +586,7 @@ function BookingsContent() {
           columns={columns}
           dataSource={filteredBookings}
           rowKey="id"
+          scroll={{ x: 'max-content' }}
           pagination={{
             current: currentPage,
             pageSize: pageSize,

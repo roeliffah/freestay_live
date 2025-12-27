@@ -19,6 +19,9 @@ import {
   Tooltip,
   Spin,
   App,
+  Collapse,
+  Badge,
+  Divider,
 } from 'antd';
 import type { MenuProps, TabsProps } from 'antd';
 import {
@@ -30,8 +33,10 @@ import {
   CopyOutlined,
   CodeOutlined,
   ReloadOutlined,
+  TranslationOutlined,
 } from '@ant-design/icons';
 import { adminAPI } from '@/lib/api/client';
+import { SUPPORTED_LOCALES } from '@/lib/constants/locales';
 
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -54,18 +59,6 @@ interface EmailTemplate {
   updatedAt: string;
 }
 
-const locales = [
-  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
-  { code: 'en', name: 'English', flag: '🇬🇧' },
-  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
-  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
-  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
-  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
-  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
-  { code: 'es', name: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'Français', flag: '🇫🇷' },
-];
-
 export default function EmailTemplatesPage() {
   return (
     <App>
@@ -80,11 +73,11 @@ function EmailTemplatesContent() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
-  const [selectedLocale, setSelectedLocale] = useState('en');
   const [form] = Form.useForm();
   const [testEmailModalOpen, setTestEmailModalOpen] = useState(false);
   const [testEmailForm] = Form.useForm();
   const [saving, setSaving] = useState(false);
+  const [selectedLocale, setSelectedLocale] = useState('tr');
 
   useEffect(() => {
     fetchTemplates();
@@ -106,15 +99,22 @@ function EmailTemplatesContent() {
 
   const showModal = (template: EmailTemplate) => {
     setEditingTemplate(template);
-    const translation = template.translations?.find(t => t.locale === selectedLocale) || 
-                       template.translations?.[0] || 
-                       { locale: selectedLocale, subject: '', body: '' };
+    setSelectedLocale('tr'); // Reset to default locale
     
-    form.setFieldsValue({
-      subject: translation.subject || '',
-      body: translation.body || '',
+    // Tüm diller için değerleri ayarla
+    const formValues: any = {
       isActive: template.isActive,
+    };
+    
+    SUPPORTED_LOCALES.forEach(locale => {
+      const translation = template.translations?.find(t => t.locale === locale.code);
+      if (translation) {
+        formValues[`subject_${locale.code}`] = translation.subject;
+        formValues[`body_${locale.code}`] = translation.body;
+      }
     });
+    
+    form.setFieldsValue(formValues);
     setIsModalOpen(true);
   };
 
@@ -125,22 +125,18 @@ function EmailTemplatesContent() {
       
       if (!editingTemplate) return;
 
-      // Mevcut translations'ı güncelle veya yeni ekle
-      const existingTranslations = editingTemplate.translations?.filter(t => t.locale !== selectedLocale) || [];
-      const updatedTranslations = [
-        ...existingTranslations,
-        {
-          locale: selectedLocale,
-          subject: values.subject,
-          body: values.body,
-        }
-      ];
+      // Tüm diller için çevirileri topla
+      const translations: EmailTemplateTranslation[] = SUPPORTED_LOCALES.map(locale => ({
+        locale: locale.code,
+        subject: values[`subject_${locale.code}`] || '',
+        body: values[`body_${locale.code}`] || '',
+      })).filter(t => t.subject); // Sadece subject doldurulmuş olanları al
 
       const updateData = {
         name: editingTemplate.name,
         description: editingTemplate.description,
         isActive: values.isActive,
-        translations: updatedTranslations,
+        translations,
       };
 
       await adminAPI.updateEmailTemplate(editingTemplate.id, updateData);
@@ -155,17 +151,6 @@ function EmailTemplatesContent() {
     }
   };
 
-  const onLocaleChange = (locale: string) => {
-    setSelectedLocale(locale);
-    if (editingTemplate) {
-      const translation = editingTemplate.translations?.find(t => t.locale === locale);
-      form.setFieldsValue({
-        subject: translation?.subject || '',
-        body: translation?.body || '',
-      });
-    }
-  };
-
   const handleSendTestEmail = async () => {
     try {
       const values = await testEmailForm.validateFields();
@@ -173,7 +158,7 @@ function EmailTemplatesContent() {
 
       await adminAPI.sendTestEmail(editingTemplate.code, {
         email: values.email,
-        locale: values.locale || selectedLocale,
+        locale: values.locale || 'tr',
         testVariables: values.testVariables ? JSON.parse(values.testVariables) : undefined,
       });
 
@@ -249,7 +234,7 @@ function EmailTemplatesContent() {
       key: 'translations',
       render: (_: any, record: EmailTemplate) => (
         <Space>
-          {locales.map(locale => {
+          {SUPPORTED_LOCALES.map(locale => {
             const hasTranslation = record.translations?.some(
               t => t.locale === locale.code && t.body && t.body.trim() !== ''
             ) || false;
@@ -293,7 +278,7 @@ function EmailTemplatesContent() {
             icon={<SendOutlined />} 
             onClick={() => {
               setEditingTemplate(record);
-              testEmailForm.setFieldsValue({ locale: selectedLocale });
+              testEmailForm.setFieldsValue({ locale: 'tr' });
               setTestEmailModalOpen(true);
             }}
           >
@@ -330,6 +315,7 @@ function EmailTemplatesContent() {
             columns={columns}
             dataSource={templates}
             rowKey="id"
+            scroll={{ x: 'max-content' }}
             pagination={{
               pageSize: 10,
               showTotal: (total) => `Total ${total} templates`,
@@ -345,9 +331,9 @@ function EmailTemplatesContent() {
             {editingTemplate?.name}
             <Select
               value={selectedLocale}
-              onChange={onLocaleChange}
+              onChange={setSelectedLocale}
               style={{ width: 150 }}
-              options={locales.map(l => ({
+              options={SUPPORTED_LOCALES.map(l => ({
                 label: <Space>{l.flag} {l.name}</Space>,
                 value: l.code,
               }))}
@@ -381,16 +367,16 @@ function EmailTemplatesContent() {
 
         <Form form={form} layout="vertical">
           <Form.Item
-            name="subject"
-            label={`Subject (${selectedLocale.toUpperCase()})`}
+            name={`subject_${selectedLocale}`}
+            label={`Subject (${SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name})`}
             rules={[{ required: true, message: 'Subject is required' }]}
           >
             <Input placeholder="Email subject" />
           </Form.Item>
 
           <Form.Item
-            name="body"
-            label={`Content (${selectedLocale.toUpperCase()})`}
+            name={`body_${selectedLocale}`}
+            label={`Content (${SUPPORTED_LOCALES.find(l => l.code === selectedLocale)?.name})`}
             rules={[{ required: true, message: 'Content is required' }]}
           >
             <TextArea rows={15} placeholder="Email content" style={{ fontFamily: 'monospace' }} />
@@ -442,7 +428,7 @@ function EmailTemplatesContent() {
             rules={[{ required: true, message: 'Language is required' }]}
           >
             <Select
-              options={locales.map(l => ({
+              options={SUPPORTED_LOCALES.map(l => ({
                 label: <Space>{l.flag} {l.name}</Space>,
                 value: l.code,
               }))}

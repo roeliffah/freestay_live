@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,10 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { bookingsAPI } from '@/lib/api/client';
 
 interface BookingFormProps {
+  hotelId?: string;
   hotelName: string;
   roomName: string;
   boardType: string;
@@ -31,6 +34,7 @@ interface BookingFormProps {
 }
 
 export function BookingForm({
+  hotelId = '',
   hotelName,
   roomName,
   boardType,
@@ -68,6 +72,8 @@ export function BookingForm({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -99,24 +105,43 @@ export function BookingForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
       return;
     }
 
-    // TODO: API entegrasyonu buraya gelecek
-    console.log('📋 Rezervasyon formu gönderildi:', {
-      hotel: hotelName,
-      room: roomName,
-      guest: formData,
-      checkIn,
-      checkOut,
-      totalPrice,
-    });
+    setIsSubmitting(true);
+    
+    try {
+      // Rezervasyon oluştur
+      const bookingData = {
+        hotelId: hotelId || '00000000-0000-0000-0000-000000000000',
+        roomTypeName: roomName,
+        checkIn,
+        checkOut,
+        adults: Math.floor(guests * 0.7), // Tahmini
+        children: Math.ceil(guests * 0.3),
+        guestName: `${formData.firstName} ${formData.lastName}`,
+        guestEmail: formData.email,
+        specialRequests: formData.specialRequests || undefined,
+        totalPrice,
+        couponCode: undefined,
+      };
 
-    alert('Rezervasyon formu hazırlandı! (API entegrasyonu henüz yapılmadı)');
+      const response = await bookingsAPI.createHotelBooking(bookingData) as any;
+      
+      // Başarılı rezervasyon sonrası ödeme sayfasına yönlendir
+      if (response.data?.id) {
+        router.push(`/${locale}/booking/success?bookingId=${response.data.id}`);
+      }
+    } catch (error: any) {
+      console.error('Rezervasyon hatası:', error);
+      alert(error.response?.data?.message || 'Rezervasyon oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -420,8 +445,9 @@ export function BookingForm({
           type="submit" 
           size="lg" 
           className="w-full md:w-auto min-w-[250px]"
+          disabled={isSubmitting}
         >
-          {t('completeReservation')}
+          {isSubmitting ? t('processing') : t('completeReservation')}
         </Button>
       </div>
     </form>

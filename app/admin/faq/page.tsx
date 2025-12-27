@@ -17,6 +17,7 @@ import {
   Spin,
   App,
   message as antdMessage,
+  Tabs,
 } from 'antd';
 import {
   PlusOutlined,
@@ -31,6 +32,7 @@ import type { DragEndEvent } from '@dnd-kit/core';
 import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { SUPPORTED_LOCALES } from '@/lib/constants/locales';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -44,6 +46,11 @@ interface FAQ {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  translations?: Array<{
+    locale: string;
+    question: string;
+    answer: string;
+  }>;
 }
 
 const categories = [
@@ -107,7 +114,20 @@ function FAQContent() {
   const showModal = (faq?: FAQ) => {
     if (faq) {
       setEditingFaq(faq);
-      form.setFieldsValue(faq);
+      // Transform translations array to form fields
+      const formValues: any = {
+        category: faq.category,
+        isActive: faq.isActive,
+      };
+      
+      if (faq.translations && Array.isArray(faq.translations)) {
+        faq.translations.forEach(t => {
+          formValues[`question_${t.locale}`] = t.question;
+          formValues[`answer_${t.locale}`] = t.answer;
+        });
+      }
+      
+      form.setFieldsValue(formValues);
     } else {
       setEditingFaq(null);
       form.resetFields();
@@ -120,11 +140,24 @@ function FAQContent() {
     try {
       const values = await form.validateFields();
 
+      // Transform form values to API format
+      const translations = SUPPORTED_LOCALES.map(locale => ({
+        locale: locale.code,
+        question: values[`question_${locale.code}`] || '',
+        answer: values[`answer_${locale.code}`] || '',
+      }));
+
+      const payload = {
+        category: values.category,
+        isActive: values.isActive,
+        translations,
+      };
+
       if (editingFaq) {
-        await adminAPI.updateFaq(editingFaq.id, values);
+        await adminAPI.updateFaq(editingFaq.id, payload);
         messageApi.success('FAQ updated successfully');
       } else {
-        await adminAPI.createFaq(values);
+        await adminAPI.createFaq(payload);
         messageApi.success('FAQ created successfully');
       }
 
@@ -203,21 +236,29 @@ function FAQContent() {
       title: 'Question',
       dataIndex: 'question',
       key: 'question',
-      render: (question: string) => (
-        <Text strong ellipsis style={{ maxWidth: 400, display: 'block' }}>
-          {question}
-        </Text>
-      ),
+      render: (_: any, record: FAQ) => {
+        const trTranslation = record.translations?.find(t => t.locale === 'tr');
+        const question = trTranslation?.question || record.question || '-';
+        return (
+          <Text strong ellipsis style={{ maxWidth: 400, display: 'block' }}>
+            {question}
+          </Text>
+        );
+      },
     },
     {
       title: 'Answer',
       dataIndex: 'answer',
       key: 'answer',
-      render: (answer: string) => (
-        <Text ellipsis style={{ maxWidth: 300, display: 'block' }}>
-          {answer}
-        </Text>
-      ),
+      render: (_: any, record: FAQ) => {
+        const trTranslation = record.translations?.find(t => t.locale === 'tr');
+        const answer = trTranslation?.answer || record.answer || '-';
+        return (
+          <Text ellipsis style={{ maxWidth: 300, display: 'block' }}>
+            {answer}
+          </Text>
+        );
+      },
     },
     {
       title: 'Category',
@@ -246,6 +287,28 @@ function FAQContent() {
         { text: 'Inactive', value: false },
       ],
       onFilter: (value: any, record: FAQ) => record.isActive === value,
+    },
+    {
+      title: 'Translations',
+      key: 'translations',
+      render: (_: any, record: FAQ) => (
+        <Space>
+          {SUPPORTED_LOCALES.map(locale => {
+            const hasTranslation = record.translations?.some(
+              t => t.locale === locale.code && t.question && t.question.trim() !== ''
+            ) || false;
+            return (
+              <Tag 
+                key={locale.code} 
+                color={hasTranslation ? 'green' : 'default'}
+                style={{ opacity: hasTranslation ? 1 : 0.5 }}
+              >
+                {locale.flag} {locale.code.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </Space>
+      ),
     },
     {
       title: 'Actions',
@@ -321,6 +384,7 @@ function FAQContent() {
               columns={columns}
               dataSource={filteredFaqs}
               rowKey="id"
+              scroll={{ x: 'max-content' }}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
@@ -366,21 +430,35 @@ function FAQContent() {
             isActive: true,
           }}
         >
-          <Form.Item
-            name="question"
-            label="Question"
-            rules={[{ required: true, message: 'Question is required' }]}
-          >
-            <Input placeholder="Enter question" />
-          </Form.Item>
+          <Tabs
+            items={SUPPORTED_LOCALES.map(locale => ({
+              key: locale.code,
+              label: (
+                <Space>
+                  {locale.flag} {locale.name}
+                </Space>
+              ),
+              children: (
+                <div key={locale.code}>
+                  <Form.Item
+                    name={`question_${locale.code}`}
+                    label="Question"
+                    rules={locale.code === 'tr' ? [{ required: true, message: 'Turkish question is required' }] : []}
+                  >
+                    <Input placeholder={`Enter question in ${locale.name}`} />
+                  </Form.Item>
 
-          <Form.Item
-            name="answer"
-            label="Answer"
-            rules={[{ required: true, message: 'Answer is required' }]}
-          >
-            <TextArea rows={6} placeholder="Enter answer" />
-          </Form.Item>
+                  <Form.Item
+                    name={`answer_${locale.code}`}
+                    label="Answer"
+                    rules={locale.code === 'tr' ? [{ required: true, message: 'Turkish answer is required' }] : []}
+                  >
+                    <TextArea rows={6} placeholder={`Enter answer in ${locale.name}`} />
+                  </Form.Item>
+                </div>
+              ),
+            }))}
+          />
 
           <Form.Item
             name="category"

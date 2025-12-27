@@ -95,17 +95,31 @@ function PaymentSettingsContent() {
   const fetchPaymentSettings = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getPaymentSettings();
-      if ((data as any).stripeSettings) {
-        setStripeSettings((data as any).stripeSettings);
-        stripeForm.setFieldsValue((data as any).stripeSettings);
+      const data = await adminAPI.getPaymentSettings() as any;
+      
+      // Yeni API yapısını parse et
+      if (data?.provider === 'stripe') {
+        const settings = {
+          isEnabled: data.isActive,
+          testMode: !data.isLive,
+          publicKeyTest: data.testMode?.publicKey || '',
+          secretKeyTest: data.testMode?.secretKey || '',
+          publicKeyLive: data.liveMode?.publicKey || '',
+          secretKeyLive: data.liveMode?.secretKey || '',
+          webhookSecret: data.webhookSecret || '',
+          webhookUrl: `${process.env.NEXT_PUBLIC_API_URL}/webhooks/stripe`,
+        };
+        
+        setStripeSettings(settings);
+        stripeForm.setFieldsValue(settings);
       }
-      if ((data as any).transactions) {
-        setTransactions((data as any).transactions);
+      
+      if (data?.transactions) {
+        setTransactions(data.transactions);
       }
     } catch (error: any) {
       console.error('Failed to load payment settings:', error);
-      messageApi.error(error.message || 'Failed to load payment settings');
+      messageApi.error(error.response?.data?.message || error.message || 'Failed to load payment settings');
     } finally {
       setLoading(false);
     }
@@ -114,12 +128,28 @@ function PaymentSettingsContent() {
   const handleStripeSave = async (values: any) => {
     setSaving(true);
     try {
-      await adminAPI.updatePaymentSettings({ stripeSettings: values });
+      // Backend API'nin beklediği yeni formata dönüştür
+      const paymentData = {
+        provider: 'stripe',
+        testMode: {
+          publicKey: values.publicKeyTest || '',
+          secretKey: values.secretKeyTest || ''
+        },
+        liveMode: {
+          publicKey: values.publicKeyLive || '',
+          secretKey: values.secretKeyLive || ''
+        },
+        webhookSecret: values.webhookSecret || '',
+        isLive: !values.testMode,
+        isActive: values.isEnabled
+      };
+      
+      await adminAPI.updatePaymentSettings(paymentData);
       setStripeSettings({ ...stripeSettings, ...values });
       messageApi.success('Stripe settings saved successfully');
     } catch (error: any) {
       console.error('Failed to save Stripe settings:', error);
-      messageApi.error(error.message || 'Failed to save Stripe settings');
+      messageApi.error(error.response?.data?.message || error.message || 'Failed to save Stripe settings');
     } finally {
       setSaving(false);
     }
@@ -140,12 +170,12 @@ function PaymentSettingsContent() {
 
   const transactionColumns = [
     {
-      title: 'Tarih',
+      title: 'Date',
       dataIndex: 'date',
       key: 'date',
     },
     {
-      title: 'Tip',
+      title: 'Type',
       dataIndex: 'type',
       key: 'type',
       render: (type: string) => (
@@ -208,7 +238,7 @@ function PaymentSettingsContent() {
                 />
               </Form.Item>
               {stripeSettings.testMode && (
-                <Alert title="No real payments in test mode" type="warning" showIcon />
+                <Alert title="No real payments will be processed in test mode" type="warning" showIcon />
               )}
             </Col>
           </Row>
@@ -271,17 +301,27 @@ function PaymentSettingsContent() {
 
           <Divider><Text strong>Webhook</Text></Divider>
 
+          <Alert 
+            title="Add this URL as webhook endpoint in Stripe Dashboard"
+            description={`Stripe Dashboard → Developers → Webhooks → Add endpoint → Enter this URL`}
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item name="webhookUrl" label="Webhook URL">
+              <Form.Item label="Webhook URL">
                 <Space.Compact style={{ width: '100%' }}>
                   <Input 
                     prefix={<LinkOutlined />} 
+                    value={stripeSettings.webhookUrl || `${process.env.NEXT_PUBLIC_API_URL || ''}/webhooks/stripe`}
                     disabled 
                   />
                   <Button 
                     onClick={() => {
-                      navigator.clipboard.writeText(stripeSettings.webhookUrl);
+                      const url = stripeSettings.webhookUrl || `${process.env.NEXT_PUBLIC_API_URL}/webhooks/stripe`;
+                      navigator.clipboard.writeText(url);
                       messageApi.success('URL copied');
                     }}
                   >
@@ -323,10 +363,15 @@ function PaymentSettingsContent() {
               <Card>
                 <Statistic
                   title="Today's Revenue"
-                  value={1340}
+                  value={(() => {
+                    const today = new Date().toISOString().split('T')[0];
+                    return transactions
+                      .filter(t => t.date.startsWith(today) && t.status === 'succeeded' && t.type === 'payment')
+                      .reduce((sum, t) => sum + t.amount, 0);
+                  })()}
                   precision={2}
                   prefix="€"
-                  styles={{ content: { color: '#3f8600' } }}
+                  valueStyle={{ color: '#3f8600' }}
                 />
               </Card>
             </Col>
@@ -334,10 +379,15 @@ function PaymentSettingsContent() {
               <Card>
                 <Statistic
                   title="This Month"
-                  value={24580}
+                  value={(() => {
+                    const thisMonth = new Date().toISOString().substring(0, 7);
+                    return transactions
+                      .filter(t => t.date.startsWith(thisMonth) && t.status === 'succeeded' && t.type === 'payment')
+                      .reduce((sum, t) => sum + t.amount, 0);
+                  })()}
                   precision={2}
                   prefix="€"
-                  styles={{ content: { color: '#3f8600' } }}
+                  valueStyle={{ color: '#3f8600' }}
                 />
               </Card>
             </Col>
@@ -345,10 +395,14 @@ function PaymentSettingsContent() {
               <Card>
                 <Statistic
                   title="Refunds"
-                  value={1250}
+                  value={(() => {
+                    return Math.abs(transactions
+                      .filter(t => t.type === 'refund' && t.status === 'succeeded')
+                      .reduce((sum, t) => sum + t.amount, 0));
+                  })()}
                   precision={2}
                   prefix="€"
-                  styles={{ content: { color: '#cf1322' } }}
+                  valueStyle={{ color: '#cf1322' }}
                 />
               </Card>
             </Col>
@@ -356,10 +410,14 @@ function PaymentSettingsContent() {
               <Card>
                 <Statistic
                   title="Success Rate"
-                  value={97.5}
+                  value={(() => {
+                    if (transactions.length === 0) return 0;
+                    const succeeded = transactions.filter(t => t.status === 'succeeded').length;
+                    return (succeeded / transactions.length) * 100;
+                  })()}
                   precision={1}
                   suffix="%"
-                  styles={{ content: { color: '#3f8600' } }}
+                  valueStyle={{ color: '#3f8600' }}
                 />
               </Card>
             </Col>
@@ -369,6 +427,7 @@ function PaymentSettingsContent() {
             columns={transactionColumns}
             dataSource={transactions}
             rowKey="id"
+            scroll={{ x: 'max-content' }}
             pagination={{ pageSize: 10 }}
           />
         </div>

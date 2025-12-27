@@ -427,8 +427,22 @@
     "termsRequired": "Şartları kabul etmelisiniz",
     "marketingAccept": "Kampanya ve fırsatlardan haberdar olmak istiyorum.",
     "completeReservation": "Rezervasyonu Tamamla",
+    "processing": "İşleniyor...",
     "reservationInfoMissing": "Rezervasyon bilgileri eksik",
     "backToSearch": "Arama Sayfasına Dön",
+    "success": {
+      "title": "Rezervasyonunuz Tamamlandı!",
+      "subtitle": "Rezervasyonunuz başarıyla oluşturuldu.",
+      "bookingNumber": "Rezervasyon Numarası",
+      "confirmationEmail": "Onay E-postası",
+      "totalAmount": "Toplam Tutar",
+      "nextSteps": "Sonraki Adımlar",
+      "emailSent": "Rezervasyon detayları e-posta adresinize gönderildi",
+      "downloadVoucher": "Otel için voucher'ınızı indirebilirsiniz",
+      "downloadConfirmation": "Rezervasyon Onayını İndir",
+      "backToHome": "Ana Sayfaya Dön",
+      "needHelp": "Yardıma mı ihtiyacınız var?"
+    },
     "trustBadges": {
       "securePayment": "Güvenli Ödeme",
       "sslCertified": "SSL Sertifikalı",

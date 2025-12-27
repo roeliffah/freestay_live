@@ -60,7 +60,7 @@ export default function SecureForm({
   children,
   ...formProps
 }: SecureFormProps): React.JSX.Element {
-  const [form] = Form.useForm(formProps.form as FormInstance);
+  const [form] = Form.useForm();
   const [honeypot] = useState(createHoneypot());
   const [blocked, setBlocked] = useState(false);
   const [blockTime, setBlockTime] = useState<number | null>(null);

@@ -327,7 +327,8 @@ export default function TranslationsPage() {
         }}
         okText="Add"
         cancelText="Cancel"
-        width={700}
+        width="90%"
+        style={{ maxWidth: 700 }}
       >
         <Form form={form} layout="vertical">
           <Space style={{ width: '100%' }} size={16}>

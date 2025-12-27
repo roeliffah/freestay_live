@@ -5,6 +5,7 @@ import {
   Card,
   Form,
   Input,
+  InputNumber,
   Button,
   Space,
   Typography,
@@ -15,10 +16,11 @@ import {
   Row,
   Col,
   Select,
-  TimePicker,
   Alert,
   Spin,
   App,
+  Collapse,
+  Badge,
 } from 'antd';
 import type { TabsProps } from 'antd';
 import {
@@ -35,19 +37,22 @@ import {
   UploadOutlined,
   CrownOutlined,
   ReloadOutlined,
+  TranslationOutlined,
 } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import { adminAPI } from '@/lib/api/client';
+import { SUPPORTED_LOCALES, SUPPORTED_CURRENCIES, SUPPORTED_TIMEZONES } from '@/lib/constants/locales';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+const { Option } = Select;
+
+interface LocalizedText {
+  [locale: string]: string;
+}
 
 interface SiteSettings {
-  siteName?: string;
-  tagline?: string;
-  email?: string;
-  phone?: string;
-  address?: string;
+  siteName?: string | LocalizedText;
+  siteTagline?: string | LocalizedText;  // Localized tagline in General tab
   timezone?: string;
   currency?: string;
   defaultLocale?: string;
@@ -60,18 +65,35 @@ interface SiteSettings {
   youtube?: string;
   linkedin?: string;
   tiktok?: string;
+  pinterest?: string;
   // Branding
   logo?: string;
   favicon?: string;
   primaryColor?: string;
   secondaryColor?: string;
-  // Contact
-  supportEmail?: string;
-  salesEmail?: string;
-  supportPhone?: string;
-  workingHoursStart?: string;
-  workingHoursEnd?: string;
-  workingDays?: string[];
+  accentColor?: string;
+  footerText?: string;
+  // Contact (all contact info in Contact tab)
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  address?: string;
+  city?: string;
+  country?: string;
+  postalCode?: string;
+  workingHours?: string;  // Free text format (e.g., "Mon-Fri: 9:00-18:00")
+  mapLatitude?: string;
+  mapLongitude?: string;
+  googleMapsIframe?: string;
+  // Email Settings
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUsername?: string;
+  smtpPassword?: string;
+  smtpEnableSsl?: boolean;
+  smtpFromEmail?: string;
+  smtpFromName?: string;
+  emailProvider?: string;
 }
 
 export default function SettingsPage() {
@@ -88,14 +110,23 @@ function SettingsContent() {
   const [socialForm] = Form.useForm();
   const [brandingForm] = Form.useForm();
   const [contactForm] = Form.useForm();
+  const [emailForm] = Form.useForm();
   
   const [loading, setLoading] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SiteSettings>({});
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [faviconFileList, setFaviconFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [formsInitialized, setFormsInitialized] = useState<Record<string, boolean>>({
+    general: false,
+    social: false,
+    branding: false,
+    contact: false,
+    email: false,
+  });
 
   useEffect(() => {
     fetchSettings();
@@ -104,9 +135,26 @@ function SettingsContent() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getSiteSettings();
-      console.log('📥 Received settings from API:', data);
-      setSettings(data as any);
+      // Tüm ayar gruplarını paralel olarak çek
+      const [siteData, socialData, brandingData, contactData, emailData] = await Promise.all([
+        adminAPI.getSiteSettings().catch(() => ({} as any)),
+        adminAPI.getSocialSettings().catch(() => ({} as any)),
+        adminAPI.getBrandingSettings().catch(() => ({} as any)),
+        adminAPI.getContactSettings().catch(() => ({} as any)),
+        adminAPI.getEmailSettings().catch(() => ({} as any)),
+      ]);
+
+      // Tüm verileri birleştir
+      const combinedSettings = {
+        ...(siteData || {}),
+        ...(socialData || {}),
+        ...(brandingData || {}),
+        ...(contactData || {}),
+        ...(emailData || {}),
+      };
+
+      console.log('📥 Received settings from API:', combinedSettings);
+      setSettings(combinedSettings as any);
     } catch (error: any) {
       console.error('Failed to load settings:', error);
       messageApi.error(error.message || 'Failed to load settings');
@@ -120,37 +168,98 @@ function SettingsContent() {
     if (settings && Object.keys(settings).length > 0) {
       console.log('🔄 Updating forms with settings:', settings);
       
-      generalForm.setFieldsValue({
-        siteName: settings.siteName,
-        tagline: settings.tagline,
-        email: settings.supportEmail || settings.email,
-        phone: settings.supportPhone || settings.phone,
-        address: settings.address,
-        timezone: settings.timezone,
-        currency: (settings as any).defaultCurrency || (settings as any).currency,
-        defaultLocale: settings.defaultLocale,
-        maintenanceMode: settings.maintenanceMode,
-        maintenanceMessage: settings.maintenanceMessage,
-      });
-
-      socialForm.setFieldsValue({
-        facebook: (settings as any).socialLinks?.facebook || (settings as any).facebook,
-        twitter: (settings as any).socialLinks?.twitter || (settings as any).twitter,
-        instagram: (settings as any).socialLinks?.instagram || (settings as any).instagram,
-        youtube: (settings as any).socialLinks?.youTube || (settings as any).youtube,
-        linkedin: (settings as any).socialLinks?.linkedIn || (settings as any).linkedin,
-        tiktok: (settings as any).tiktok,
-      });
+      // SiteName ve tagline çoklu dil desteği
+      const siteNameValues: any = {};
+      const taglineValues: any = {};
+      
+      if (typeof settings.siteName === 'object' && settings.siteName !== null) {
+        Object.assign(siteNameValues, settings.siteName);
+      } else if (typeof settings.siteName === 'string') {
+        siteNameValues.tr = settings.siteName;
+      }
+      
+      const settingsTagline = (settings as any).siteTagline || (settings as any).tagline;
+      if (typeof settingsTagline === 'object' && settingsTagline !== null) {
+        Object.assign(taglineValues, settingsTagline);
+      } else if (typeof settingsTagline === 'string') {
+        taglineValues.tr = settingsTagline;
+      }
 
       const logoUrl = (settings as any).logoUrl || (settings as any).logo;
       const faviconUrl = (settings as any).favicon;
-      
-      brandingForm.setFieldsValue({
-        logo: logoUrl,
-        favicon: faviconUrl,
-        primaryColor: (settings as any).primaryColor,
-        secondaryColor: (settings as any).secondaryColor,
-      });
+
+      // Sadece aktif tab'ın formunu güncelle
+      if (activeTab === 'general' || formsInitialized.general) {
+        generalForm.setFieldsValue({
+          siteName: siteNameValues,
+          tagline: taglineValues,
+          timezone: settings.timezone,
+          currency: (settings as any).defaultCurrency || (settings as any).currency,
+          defaultLocale: settings.defaultLocale,
+          profitMargin: (settings as any).profitMargin,
+          extraFee: (settings as any).extraFee,
+          defaultVatRate: (settings as any).defaultVatRate,
+          maintenanceMode: settings.maintenanceMode,
+          maintenanceMessage: settings.maintenanceMessage,
+        });
+        setFormsInitialized(prev => ({ ...prev, general: true }));
+      }
+
+      if (activeTab === 'social' || formsInitialized.social) {
+        socialForm.setFieldsValue({
+          facebook: (settings as any).socialLinks?.facebook || (settings as any).facebook,
+          twitter: (settings as any).socialLinks?.twitter || (settings as any).twitter,
+          instagram: (settings as any).socialLinks?.instagram || (settings as any).instagram,
+          youtube: (settings as any).socialLinks?.youTube || (settings as any).youtube,
+          linkedin: (settings as any).socialLinks?.linkedIn || (settings as any).linkedin,
+          tiktok: (settings as any).tiktok,
+          pinterest: (settings as any).pinterest,
+        });
+        setFormsInitialized(prev => ({ ...prev, social: true }));
+      }
+
+      if (activeTab === 'branding' || formsInitialized.branding) {
+        brandingForm.setFieldsValue({
+          logo: logoUrl,
+          favicon: faviconUrl,
+          primaryColor: (settings as any).primaryColor,
+          secondaryColor: (settings as any).secondaryColor,
+          accentColor: (settings as any).accentColor,
+          footerText: (settings as any).footerText,
+        });
+        setFormsInitialized(prev => ({ ...prev, branding: true }));
+      }
+
+      if (activeTab === 'contact' || formsInitialized.contact) {
+        contactForm.setFieldsValue({
+          email: (settings as any).email || (settings as any).supportEmail,
+          phone: (settings as any).phone || (settings as any).supportPhone,
+          whatsapp: (settings as any).whatsapp,
+          address: (settings as any).address,
+          city: (settings as any).city,
+          country: (settings as any).country,
+          postalCode: (settings as any).postalCode,
+          workingHours: (settings as any).workingHours,
+          mapLatitude: (settings as any).mapLatitude,
+          mapLongitude: (settings as any).mapLongitude,
+          googleMapsIframe: (settings as any).googleMapsIframe,
+        });
+        setFormsInitialized(prev => ({ ...prev, contact: true }));
+      }
+
+      if (activeTab === 'email' || formsInitialized.email) {
+        // Email settings'leri ayrı bir endpoint'ten almak gerekebilir
+        emailForm.setFieldsValue({
+          smtpHost: (settings as any).smtpHost,
+          smtpPort: (settings as any).smtpPort,
+          smtpUsername: (settings as any).smtpUsername,
+          smtpEnableSsl: (settings as any).smtpEnableSsl ?? true,
+          smtpFromEmail: (settings as any).smtpFromEmail,
+          smtpFromName: (settings as any).smtpFromName,
+          emailProvider: (settings as any).emailProvider || 'smtp',
+        });
+        setFormsInitialized(prev => ({ ...prev, email: true }));
+      }
       
       // Update file lists for preview
       if (logoUrl) {
@@ -174,18 +283,9 @@ function SettingsContent() {
       } else {
         setFaviconFileList([]);
       }
-
-      contactForm.setFieldsValue({
-        supportEmail: (settings as any).supportEmail,
-        salesEmail: (settings as any).salesEmail,
-        supportPhone: (settings as any).supportPhone,
-        workingHoursStart: (settings as any).workingHoursStart ? dayjs((settings as any).workingHoursStart, 'HH:mm') : undefined,
-        workingHoursEnd: (settings as any).workingHoursEnd ? dayjs((settings as any).workingHoursEnd, 'HH:mm') : undefined,
-        workingDays: (settings as any).workingDays,
-      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings]);
+  }, [settings, activeTab]);
 
   const handleLogoUpload = async (file: File) => {
     setUploading(true);
@@ -229,67 +329,121 @@ function SettingsContent() {
     }
   };
 
+  const handleTestEmail = async () => {
+    try {
+      await emailForm.validateFields();
+      const values = emailForm.getFieldsValue();
+      
+      if (!values.smtpFromEmail) {
+        messageApi.error('Please enter From Email first');
+        return;
+      }
+
+      setTestingEmail(true);
+      await adminAPI.testEmail({ toEmail: values.smtpFromEmail });
+      messageApi.success('Test email sent successfully! Check your inbox.');
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to send test email');
+    } finally {
+      setTestingEmail(false);
+    }
+  };
+
   const handleSave = async (formName: string, values: any) => {
     setSaving(true);
     try {
       console.log('💾 Saving settings for tab:', formName);
       console.log('📝 Form values:', values);
-      console.log('📦 Current settings:', settings);
 
-      // Prepare complete data structure preserving all existing settings
-      const updateData: any = {
-        siteName: settings.siteName,
-        supportEmail: settings.supportEmail || (settings as any).email,
-        supportPhone: (settings as any).supportPhone || (settings as any).phone,
-        defaultLocale: settings.defaultLocale,
-        availableLocales: (settings as any).availableLocales || (settings.defaultLocale ? [settings.defaultLocale] : undefined),
-        defaultCurrency: (settings as any).defaultCurrency || (settings as any).currency,
-        availableCurrencies: (settings as any).availableCurrencies || ((settings as any).currency ? [(settings as any).currency] : undefined),
-        maintenanceMode: settings.maintenanceMode || false,
-        logoUrl: (settings as any).logoUrl || (settings as any).logo,
-        socialLinks: {
-          facebook: (settings as any).facebook || ((settings as any).socialLinks?.facebook),
-          twitter: (settings as any).twitter || ((settings as any).socialLinks?.twitter),
-          instagram: (settings as any).instagram || ((settings as any).socialLinks?.instagram),
-          linkedIn: (settings as any).linkedin || ((settings as any).socialLinks?.linkedIn),
-          youTube: (settings as any).youtube || ((settings as any).socialLinks?.youTube),
-        },
-      };
-
-      // Update with new values from the current tab
+      // Her tab için kendi endpoint'ine gönder
       if (formName === 'general') {
-        updateData.siteName = values.siteName;
-        updateData.supportEmail = values.email;
-        updateData.supportPhone = values.phone;
-        updateData.defaultLocale = values.defaultLocale;
-        updateData.availableLocales = values.defaultLocale ? [values.defaultLocale] : undefined;
-        updateData.defaultCurrency = values.currency;
-        updateData.availableCurrencies = values.currency ? [values.currency] : undefined;
-        updateData.maintenanceMode = values.maintenanceMode;
-      } else if (formName === 'social') {
-        updateData.socialLinks = {
+        // siteName: Çoklu dil formundan default dil değerini al
+        const siteNameObj = values.siteName || {};
+        const siteName = siteNameObj.tr || siteNameObj.en || Object.values(siteNameObj).find(v => v) || '';
+        
+        // tagline: Çoklu dil formundan default dil değerini al
+        const taglineObj = values.tagline || {};
+        const tagline = taglineObj.tr || taglineObj.en || Object.values(taglineObj).find(v => v) || '';
+        
+        const updateData: any = {
+          siteName,
+          tagline: tagline || undefined,  // Boşsa undefined gönder
+          defaultLocale: values.defaultLocale || undefined,
+          defaultCurrency: values.currency || undefined,
+          timezone: values.timezone || undefined,
+          profitMargin: values.profitMargin !== undefined && values.profitMargin !== '' ? parseFloat(values.profitMargin) : undefined,
+          extraFee: values.extraFee !== undefined && values.extraFee !== '' ? parseFloat(values.extraFee) : undefined,
+          defaultVatRate: values.defaultVatRate !== undefined && values.defaultVatRate !== '' ? parseFloat(values.defaultVatRate) : undefined,
+          maintenanceMode: values.maintenanceMode || false,
+          maintenanceMessage: values.maintenanceMessage || undefined,
+        };
+        
+        console.log('📤 Sending to /admin/settings/site:', updateData);
+        console.log('📝 Raw form values:', values);
+        await adminAPI.updateSiteSettings(updateData);
+      } 
+      else if (formName === 'social') {
+        const updateData = {
           facebook: values.facebook || '',
           twitter: values.twitter || '',
           instagram: values.instagram || '',
-          linkedIn: values.linkedin || '',
-          youTube: values.youtube || '',
+          youtube: values.youtube || '',
+          linkedin: values.linkedin || '',
+          tiktok: values.tiktok || '',
+          pinterest: values.pinterest || '',
         };
-      } else if (formName === 'branding') {
-        if (values.logo) {
-          updateData.logoUrl = values.logo;
-        }
-        if (values.favicon) {
-          updateData.favicon = values.favicon;
-        }
-      } else if (formName === 'contact') {
-        updateData.supportEmail = values.supportEmail;
-        updateData.supportPhone = values.supportPhone;
+        
+        console.log('📤 Sending to /admin/settings/social:', updateData);
+        await adminAPI.updateSocialSettings(updateData);
+      } 
+      else if (formName === 'branding') {
+        const updateData = {
+          logoUrl: values.logo || '',
+          faviconUrl: values.favicon || '',
+          primaryColor: values.primaryColor || '',
+          secondaryColor: values.secondaryColor || '',
+          accentColor: values.accentColor || '',
+          footerText: values.footerText || '',
+        };
+        
+        console.log('📤 Sending to /admin/settings/branding:', updateData);
+        await adminAPI.updateBrandingSettings(updateData);
+      } 
+      else if (formName === 'contact') {
+        const updateData = {
+          email: values.email || '',
+          phone: values.phone || '',
+          whatsapp: values.whatsapp || '',
+          address: values.address || '',
+          city: values.city || '',
+          country: values.country || '',
+          postalCode: values.postalCode || '',
+          workingHours: values.workingHours || '',
+          mapLatitude: values.mapLatitude || '',
+          mapLongitude: values.mapLongitude || '',
+          googleMapsIframe: values.googleMapsIframe || '',
+        };
+        
+        console.log('📤 Sending to /admin/settings/contact:', updateData);
+        await adminAPI.updateContactSettings(updateData);
+      }
+      else if (formName === 'email') {
+        const updateData = {
+          smtpHost: values.smtpHost,
+          smtpPort: values.smtpPort,
+          smtpUsername: values.smtpUsername,
+          smtpPassword: values.smtpPassword,
+          smtpEnableSsl: values.smtpEnableSsl ?? true,
+          smtpFromEmail: values.smtpFromEmail,
+          smtpFromName: values.smtpFromName,
+          emailProvider: values.emailProvider || 'smtp',
+        };
+        
+        console.log('📤 Sending to /admin/settings/smtp:', updateData);
+        await adminAPI.updateEmailSettings(updateData);
       }
 
-      console.log('📤 Sending to API:', JSON.stringify(updateData, null, 2));
-
-      await adminAPI.updateSiteSettings(updateData);
-      messageApi.success('Settings saved successfully');
+      messageApi.success(`${formName.charAt(0).toUpperCase() + formName.slice(1)} settings saved successfully`);
       await fetchSettings(); // Reload to get updated values
     } catch (error: any) {
       console.error('❌ Failed to save settings:', error);
@@ -307,37 +461,11 @@ function SettingsContent() {
     );
   }
 
-  const timezones = [
-    { value: 'Europe/Istanbul', label: 'Istanbul (UTC+3)' },
-    { value: 'Europe/London', label: 'London (UTC+0)' },
-    { value: 'Europe/Berlin', label: 'Berlin (UTC+1)' },
-    { value: 'America/New_York', label: 'New York (UTC-5)' },
-    { value: 'Asia/Tokyo', label: 'Tokyo (UTC+9)' },
-  ];
-
-  const currencies = [
-    { value: 'EUR', label: '€ Euro (EUR)' },
-    { value: 'USD', label: '$ US Dollar (USD)' },
-    { value: 'TRY', label: '₺ Türk Lirası (TRY)' },
-    { value: 'GBP', label: '£ British Pound (GBP)' },
-  ];
-
-  const locales = [
-    { value: 'tr', label: '🇹🇷 Türkçe' },
-    { value: 'en', label: '🇬🇧 English' },
-    { value: 'de', label: '🇩🇪 Deutsch' },
-    { value: 'nl', label: '🇳🇱 Nederlands' },
-  ];
-
-  const weekDays = [
-    { value: 'monday', label: 'Monday' },
-    { value: 'tuesday', label: 'Tuesday' },
-    { value: 'wednesday', label: 'Wednesday' },
-    { value: 'thursday', label: 'Thursday' },
-    { value: 'friday', label: 'Friday' },
-    { value: 'saturday', label: 'Saturday' },
-    { value: 'sunday', label: 'Sunday' },
-  ];
+  // Locales array SUPPORTED_LOCALES'ten türetiliyor
+  const locales = SUPPORTED_LOCALES.map(locale => ({
+    value: locale.code,
+    label: `${locale.flag} ${locale.name}`,
+  }));
 
   const tabItems: TabsProps['items'] = [
     {
@@ -349,59 +477,133 @@ function SettingsContent() {
           layout="vertical"
           onFinish={(values) => handleSave('general', values)}
         >
-          <Row gutter={24}>
-            <Col span={12}>
-              <Form.Item
-                name="siteName"
-                label="Site Name"
-                rules={[{ required: true, message: 'Site name is required' }]}
-              >
-                <Input prefix={<CrownOutlined />} />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item name="tagline" label="Tagline">
-                <Input placeholder="Site tagline" />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Divider><Space><TranslationOutlined />Localized Content</Space></Divider>
+          
+          <Collapse
+            items={SUPPORTED_LOCALES.map(locale => ({
+              key: locale.code,
+              label: (
+                <Space>
+                  <span>{locale.flag}</span>
+                  <Text strong>{locale.name}</Text>
+                </Space>
+              ),
+              children: (
+                <Row gutter={24}>
+                  <Col span={12}>
+                    <Form.Item
+                      name={['siteName', locale.code]}
+                      label={`Site Name (${locale.name})`}
+                      rules={locale.code === 'tr' ? [
+                        { required: true, message: 'Site name is required for Turkish (default language)' },
+                        { min: 2, message: 'Site name must be at least 2 characters' },
+                      ] : []}
+                    >
+                      <Input prefix={<CrownOutlined />} placeholder={`Enter site name in ${locale.name}`} maxLength={100} />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item 
+                      name={['tagline', locale.code]} 
+                      label={`Tagline (${locale.name})`}
+                    >
+                      <Input placeholder={`Enter tagline in ${locale.name}`} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              ),
+            }))}
+            defaultActiveKey={['tr']}
+          />
+
+          <Divider><Text strong>General Settings</Text></Divider>
 
           <Row gutter={24}>
             <Col span={8}>
               <Form.Item name="timezone" label="Timezone">
-                <Select options={timezones} />
+                <Select options={SUPPORTED_TIMEZONES} showSearch placeholder="Select timezone" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="currency" label="Default Currency">
-                <Select options={currencies} />
+                <Select options={SUPPORTED_CURRENCIES} placeholder="Select currency" />
               </Form.Item>
             </Col>
             <Col span={8}>
               <Form.Item name="defaultLocale" label="Default Language">
-                <Select options={locales} />
+                <Select options={locales} placeholder="Select language" />
               </Form.Item>
             </Col>
           </Row>
 
-          <Divider><Text strong>Contact Information</Text></Divider>
+          <Divider><Text strong>Pricing & Tax Settings</Text></Divider>
 
           <Row gutter={24}>
-            <Col span={12}>
-              <Form.Item name="email" label="Email">
-                <Input prefix={<MailOutlined />} />
+            <Col span={8}>
+              <Form.Item 
+                name="profitMargin" 
+                label="Profit Margin (%)"
+                tooltip="Percentage markup on hotel base prices"
+                rules={[
+                  { type: 'number', min: 0, max: 100, message: 'Profit margin must be between 0 and 100' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  max={100}
+                  suffix="%"
+                  placeholder="e.g., 15.50" 
+                />
               </Form.Item>
             </Col>
-            <Col span={12}>
-              <Form.Item name="phone" label="Phone">
-                <Input prefix={<PhoneOutlined />} />
+            <Col span={8}>
+              <Form.Item 
+                name="extraFee" 
+                label="Standard Service Fee (€)"
+                tooltip="Fixed service fee added to each booking"
+                rules={[
+                  { type: 'number', min: 0, message: 'Service fee must be 0 or greater' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  prefix="€"
+                  placeholder="e.g., 25.00" 
+                />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item 
+                name="defaultVatRate" 
+                label="Default VAT Rate (%)"
+                tooltip="Default tax rate applied to bookings"
+                rules={[
+                  { type: 'number', min: 0, max: 100, message: 'VAT rate must be between 0 and 100' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  max={100}
+                  suffix="%"
+                  placeholder="e.g., 20.00" 
+                />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="address" label="Address">
-            <TextArea rows={2} />
-          </Form.Item>
+          <Alert
+            title="Pricing Information"
+            description="Profit margin is added to hotel base prices. Service fee is a fixed amount added to each booking. VAT/Tax is calculated on the final price including profit margin and service fee."
+            type="info"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
 
           <Divider><Text strong>Maintenance Mode</Text></Divider>
 
@@ -468,6 +670,10 @@ function SettingsContent() {
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item name="pinterest" label="Pinterest">
+            <Input prefix={<span style={{ marginRight: 8 }}>📍</span>} placeholder="https://pinterest.com/..." />
+          </Form.Item>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
@@ -538,22 +744,166 @@ function SettingsContent() {
           <Divider><Text strong>Colors</Text></Divider>
 
           <Row gutter={24}>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item name="primaryColor" label="Primary Color">
                 <Input type="color" style={{ width: 100, height: 40 }} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <Form.Item name="secondaryColor" label="Secondary Color">
+                <Input type="color" style={{ width: 100, height: 40 }} />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="accentColor" label="Accent Color">
                 <Input type="color" style={{ width: 100, height: 40 }} />
               </Form.Item>
             </Col>
           </Row>
 
+          <Form.Item name="footerText" label="Footer Text">
+            <TextArea rows={2} placeholder="Copyright text or additional information" />
+          </Form.Item>
+
+          <Alert
+            title="Note: Site Name and Tagline"
+            description="Site name and tagline are configured in the General tab with multi-language support."
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
           <Form.Item>
             <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
               Save
             </Button>
+          </Form.Item>
+        </Form>
+      ),
+    },
+    {
+      key: 'email',
+      label: (
+        <Space>
+          <MailOutlined />
+          Email
+          <Badge count="SMTP" style={{ backgroundColor: '#52c41a' }} />
+        </Space>
+      ),
+      children: (
+        <Form
+          form={emailForm}
+          layout="vertical"
+          onFinish={(values) => handleSave('email', values)}
+        >
+          <Alert
+            title="SMTP Configuration"
+            description="Configure your SMTP server to send emails. Password will be encrypted before storage."
+            type="info"
+            showIcon
+            style={{ marginBottom: 24 }}
+          />
+
+          <Divider><Text strong>SMTP Server Settings</Text></Divider>
+
+          <Row gutter={24}>
+            <Col span={16}>
+              <Form.Item
+                name="smtpHost"
+                label="SMTP Host"
+                rules={[{ required: true, message: 'SMTP host is required' }]}
+              >
+                <Input placeholder="smtp.gmail.com" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item
+                name="smtpPort"
+                label="SMTP Port"
+                rules={[{ required: true, message: 'SMTP port is required' }]}
+              >
+                <Input type="number" placeholder="587" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                name="smtpUsername"
+                label="SMTP Username"
+                rules={[{ required: true, message: 'Username is required' }]}
+              >
+                <Input placeholder="noreply@freestays.com" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="smtpPassword"
+                label="SMTP Password"
+                rules={[{ required: true, message: 'Password is required' }]}
+                extra="Password will be encrypted with AES-256"
+              >
+                <Input.Password placeholder="Enter SMTP password" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="smtpEnableSsl" label="Enable SSL/TLS" valuePropName="checked">
+            <Switch defaultChecked />
+          </Form.Item>
+
+          <Divider><Text strong>Email Sender Information</Text></Divider>
+
+          <Row gutter={24}>
+            <Col span={12}>
+              <Form.Item
+                name="smtpFromEmail"
+                label="From Email"
+                rules={[
+                  { required: true, message: 'From email is required' },
+                  { type: 'email', message: 'Please enter a valid email' },
+                ]}
+              >
+                <Input prefix={<MailOutlined />} placeholder="noreply@freestays.com" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="smtpFromName"
+                label="From Name"
+                rules={[{ required: true, message: 'From name is required' }]}
+              >
+                <Input placeholder="FreeStays" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="emailProvider" label="Email Provider">
+            <Select
+              options={[
+                { value: 'smtp', label: 'SMTP' },
+                { value: 'sendgrid', label: 'SendGrid', disabled: true },
+                { value: 'mailgun', label: 'Mailgun', disabled: true },
+              ]}
+            />
+          </Form.Item>
+
+          <Divider />
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>
+                Save Email Settings
+              </Button>
+              <Button
+                icon={<MailOutlined />}
+                onClick={handleTestEmail}
+                loading={testingEmail}
+              >
+                Send Test Email
+              </Button>
+            </Space>
           </Form.Item>
         </Form>
       ),
@@ -567,42 +917,79 @@ function SettingsContent() {
           layout="vertical"
           onFinish={(values) => handleSave('contact', values)}
         >
-          <Divider><Text strong>Email Addresses</Text></Divider>
+          <Divider><Text strong>Contact Information</Text></Divider>
 
           <Row gutter={24}>
             <Col span={12}>
-              <Form.Item name="supportEmail" label="Support Email">
-                <Input prefix={<MailOutlined />} />
+              <Form.Item name="email" label="Email">
+                <Input prefix={<MailOutlined />} placeholder="info@freestays.com" />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item name="salesEmail" label="Sales Email">
-                <Input prefix={<MailOutlined />} />
+              <Form.Item name="phone" label="Phone">
+                <Input prefix={<PhoneOutlined />} placeholder="+90 555 123 4567" />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="supportPhone" label="Support Phone">
-            <Input prefix={<PhoneOutlined />} style={{ maxWidth: 300 }} />
+          <Form.Item name="whatsapp" label="WhatsApp Number">
+            <Input prefix={<PhoneOutlined />} placeholder="+90 555 123 4567" />
           </Form.Item>
+
+          <Divider><Text strong>Address Information</Text></Divider>
+
+          <Form.Item name="address" label="Street Address">
+            <TextArea rows={2} placeholder="Atatürk Caddesi No:123" />
+          </Form.Item>
+
+          <Row gutter={24}>
+            <Col span={8}>
+              <Form.Item name="city" label="City">
+                <Input placeholder="İstanbul" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="country" label="Country">
+                <Input placeholder="Turkey" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="postalCode" label="Postal Code">
+                <Input placeholder="34000" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Divider><Text strong>Working Hours</Text></Divider>
 
+          <Form.Item 
+            name="workingHours" 
+            label="Working Hours"
+            extra="Enter working hours as free text (e.g., Mon-Fri: 9:00-18:00, Sat: 10:00-14:00)"
+          >
+            <Input placeholder="Mon-Fri: 9:00-18:00, Sat: 10:00-14:00" />
+          </Form.Item>
+
+          <Divider><Text strong>Google Maps Integration</Text></Divider>
+
           <Row gutter={24}>
-            <Col span={8}>
-              <Form.Item name="workingHoursStart" label="Start">
-                <TimePicker format="HH:mm" style={{ width: '100%' }} />
+            <Col span={12}>
+              <Form.Item name="mapLatitude" label="Map Latitude">
+                <Input placeholder="41.0082" />
               </Form.Item>
             </Col>
-            <Col span={8}>
-              <Form.Item name="workingHoursEnd" label="End">
-                <TimePicker format="HH:mm" style={{ width: '100%' }} />
+            <Col span={12}>
+              <Form.Item name="mapLongitude" label="Map Longitude">
+                <Input placeholder="28.9784" />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item name="workingDays" label="Working Days">
-            <Select mode="multiple" options={weekDays} placeholder="Select working days" />
+          <Form.Item name="googleMapsIframe" label="Google Maps Embed Code">
+            <TextArea 
+              rows={4} 
+              placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>' 
+            />
           </Form.Item>
 
           <Form.Item>

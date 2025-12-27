@@ -312,6 +312,7 @@ function ServicesContent() {
             columns={columns}
             dataSource={services}
             rowKey="id"
+            scroll={{ x: 'max-content' }}
             pagination={false}
           />
         </Spin>
@@ -324,7 +325,8 @@ function ServicesContent() {
         onCancel={() => setIsModalOpen(false)}
         okText="Save"
         cancelText="Cancel"
-        width={700}
+        width="90%"
+        style={{ maxWidth: 700 }}
         confirmLoading={saving}
       >
         <Form form={form} layout="vertical">
@@ -408,6 +410,27 @@ function ServicesContent() {
           <Form.Item name="isActive" label="Status" valuePropName="checked">
             <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
           </Form.Item>
+
+          {editingService?.createdAt && (
+            <Alert
+              type="info"
+              icon={<SyncOutlined />}
+              title="Service Information"
+              description={
+                <div>
+                  <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                    Created: {new Date(editingService.createdAt).toLocaleString('tr-TR')}
+                  </Text>
+                  {editingService.updatedAt && (
+                    <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                      Last Updated: {new Date(editingService.updatedAt).toLocaleString('tr-TR')}
+                    </Text>
+                  )}
+                </div>
+              }
+              style={{ marginTop: 16 }}
+            />
+          )}
         </Form>
       </Modal>
     </div>

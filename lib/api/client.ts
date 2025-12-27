@@ -5,6 +5,87 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://freestays-api-b
 import { rateLimiter, apiRateLimiter } from '@/lib/security/rate-limiter';
 import { getCsrfToken, initCsrfProtection } from '@/lib/security/csrf-protection';
 
+// SEO Settings Types
+interface SeoSettings {
+  defaultMetaTitle?: string;
+  defaultMetaDescription?: string;
+  googleAnalyticsId?: string;
+  googleTagManagerId?: string;
+  facebookPixelId?: string;
+  robotsTxt?: string;
+  sitemapEnabled?: boolean;
+  // Organization Schema
+  organizationName?: string;
+  organizationUrl?: string;
+  organizationLogo?: string;
+  organizationDescription?: string;
+  socialProfiles?: string[];
+  // Contact Information
+  contactPhone?: string;
+  contactEmail?: string;
+  businessAddress?: string;
+}
+
+interface UpdateSeoSettingsRequest {
+  defaultMetaTitle?: string;
+  defaultMetaDescription?: string;
+  googleAnalyticsId?: string;
+  googleTagManagerId?: string;
+  facebookPixelId?: string;
+  robotsTxt?: string;
+  sitemapEnabled?: boolean;
+  // Organization Schema
+  organizationName?: string;
+  organizationUrl?: string;
+  organizationLogo?: string;
+  organizationDescription?: string;
+  socialProfiles?: string[];
+  // Contact Information
+  contactPhone?: string;
+  contactEmail?: string;
+  businessAddress?: string;
+}
+
+interface PageSeoRequest {
+  pageType: string;
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string;
+  ogImage?: string;
+  // Extended Open Graph
+  ogType?: string;
+  ogUrl?: string;
+  ogSiteName?: string;
+  ogLocale?: string;
+  // Twitter Card
+  twitterCard?: string;
+  twitterSite?: string;
+  twitterCreator?: string;
+  twitterImage?: string;
+  // Schema.org Structured Data
+  structuredDataJson?: string;
+  // Hotel Schema (for hotel_detail page type)
+  hotelSchemaType?: string;
+  hotelName?: string;
+  hotelImage?: string[];
+  hotelAddress?: string;
+  hotelTelephone?: string;
+  hotelPriceRange?: string;
+  hotelStarRating?: number;
+  hotelAggregateRating?: {
+    ratingValue: number;
+    reviewCount: number;
+  };
+}
+
+interface LocaleSeoSettings {
+  pages?: PageSeoRequest[];
+}
+
+interface UpdateLocaleSeoSettingsRequest {
+  pages?: PageSeoRequest[];
+}
+
 // Helper function to get token
 const getToken = (): string | null => {
   if (typeof window !== 'undefined') {
@@ -110,10 +191,13 @@ class ApiClient {
         localStorage.removeItem('admin_refresh_token');
         localStorage.removeItem('admin_user');
         document.cookie = 'admin_token=; path=/; max-age=0';
+        
         if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
+          // Token süresi dolmuş mesajını göster
+          alert('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
           window.location.href = '/admin/login';
           // Return a rejected promise to stop execution
-          return Promise.reject(new Error('Session expired. Redirecting to login...'));
+          return Promise.reject(new Error('Token expired. Session ended.'));
         }
       }
 
@@ -598,6 +682,43 @@ export const adminAPI = {
     lastSyncTime: string | null;
   }> => apiClient.get('/sunhotels/statistics'),
 
+  // Hangfire Management
+  getRecurringJobs: () => apiClient.get('/admin/hangfire/recurring-jobs'),
+  
+  triggerRecurringJob: (jobId: string) => apiClient.post(`/admin/hangfire/recurring-jobs/${jobId}/trigger`),
+  
+  deleteRecurringJob: (jobId: string) => apiClient.delete(`/admin/hangfire/recurring-jobs/${jobId}`),
+  
+  updateJobSchedule: (jobId: string, cronExpression: string) => 
+    apiClient.put(`/admin/hangfire/recurring-jobs/${jobId}/schedule`, { cronExpression }),
+  
+  getProcessingJobs: () => apiClient.get('/admin/hangfire/processing-jobs'),
+  
+  cancelJob: (jobId: string) => apiClient.delete(`/admin/hangfire/jobs/${jobId}`),
+  
+  getQueueStats: () => apiClient.get('/admin/hangfire/queue/stats'),
+  
+  clearFailedJobs: () => apiClient.delete('/admin/hangfire/queue/failed'),
+  
+  cancelProcessingJobs: () => apiClient.delete('/admin/hangfire/queue/processing'),
+  
+  getHangfireHistory: (params?: { page?: number; pageSize?: number; jobType?: string; status?: string }) =>
+    apiClient.get('/admin/hangfire/history', params),
+  
+  cleanupStuckJobs: (olderThanMinutes: number = 30) =>
+    apiClient.post('/admin/hangfire/history/cleanup-stuck', { olderThanMinutes }),
+  
+  getCronPresets: () => apiClient.get('/admin/hangfire/cron-presets'),
+  
+  getHangfireServers: () => apiClient.get('/admin/hangfire/servers'),
+
+  // SunHotels Job Triggers
+  enqueueSyncAll: () => apiClient.post('/admin/jobs/sunhotels/enqueue-sync-all'),
+  
+  enqueueSyncBasic: () => apiClient.post('/admin/jobs/sunhotels/enqueue-sync-basic'),
+  
+  getSunHotelsJobStatus: () => apiClient.get('/admin/jobs/sunhotels/status'),
+
   // Email Templates
   getEmailTemplates: (params?: { isActive?: boolean }) =>
     apiClient.get('/admin/email-templates', params),
@@ -651,13 +772,35 @@ export const adminAPI = {
   
   updateSiteSettings: (data: any) => apiClient.put('/admin/settings/site', data),
   
-  getSeoSettings: () => apiClient.get('/admin/settings/seo'),
+  getSocialSettings: () => apiClient.get('/admin/settings/social'),
   
-  updateSeoSettings: (data: any) => apiClient.put('/admin/settings/seo', data),
+  updateSocialSettings: (data: any) => apiClient.put('/admin/settings/social', data),
   
-  getLocaleSeoSettings: (locale: string) => apiClient.get(`/admin/settings/seo/${locale}`),
+  getBrandingSettings: () => apiClient.get('/admin/settings/branding'),
   
-  updateLocaleSeoSettings: (locale: string, data: any) =>
+  updateBrandingSettings: (data: any) => apiClient.put('/admin/settings/branding', data),
+  
+  getContactSettings: () => apiClient.get('/admin/settings/contact'),
+  
+  updateContactSettings: (data: any) => apiClient.put('/admin/settings/contact', data),
+  
+  // Email/SMTP Settings (Backend: /smtp)
+  getEmailSettings: () => apiClient.get('/admin/settings/smtp'),
+  
+  updateEmailSettings: (data: any) => apiClient.put('/admin/settings/smtp', data),
+  
+  testEmail: (data: { toEmail: string }) => apiClient.post('/admin/settings/smtp/test-connection', data),
+  
+  // SEO Settings
+  getSeoSettings: () => apiClient.get<SeoSettings>('/admin/settings/seo'),
+  
+  updateSeoSettings: (data: UpdateSeoSettingsRequest) => 
+    apiClient.put('/admin/settings/seo', data),
+  
+  getLocaleSeoSettings: (locale: string) => 
+    apiClient.get<LocaleSeoSettings>(`/admin/settings/seo/${locale}`),
+  
+  updateLocaleSeoSettings: (locale: string, data: UpdateLocaleSeoSettingsRequest) =>
     apiClient.put(`/admin/settings/seo/${locale}`, data),
   
   getPaymentSettings: () => apiClient.get('/admin/settings/payment'),

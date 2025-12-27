@@ -55,7 +55,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
     <Card className="overflow-hidden hover:shadow-xl transition-shadow">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
         {/* Görsel */}
-        <div className="relative h-64 md:h-auto min-h-[250px]">
+        <div className="relative h-48 sm:h-56 md:h-auto md:min-h-[250px]">
           <Image
             src={hotel.images[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'}
             alt={hotel.hotelName}

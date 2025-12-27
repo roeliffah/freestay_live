@@ -437,6 +437,7 @@ function FeaturedHotelsTab({ messageApi }: any) {
               columns={columns}
               dataSource={hotels}
               rowKey="id"
+              scroll={{ x: 'max-content' }}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,

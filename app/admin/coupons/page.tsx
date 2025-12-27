@@ -116,23 +116,36 @@ function CouponsContent() {
       
       const couponData: any = {
         code: values.code,
-        discountType: values.discountType,
+        description: values.description || '',
+        discountType: values.discountType === 'percentage' ? 0 : 1, // Convert to enum
         discountValue: values.discountValue,
-        maxUses: values.maxUses,
-        minBookingAmount: values.minBookingAmount,
-        usageType: values.usageType,
-        isActive: values.isActive,
+        minimumAmount: values.minimumAmount || null,
+        maximumDiscount: values.maximumDiscount || null,
+        usageLimit: values.usageLimit || null,
+        validFrom: dayjs().toISOString(),
+        validUntil: dayjs().add(1, 'year').toISOString(),
       };
 
       // Tarih alanları girilmişse ekle
       if (values.dateRange && values.dateRange.length === 2) {
         const [validFrom, validUntil] = values.dateRange;
-        couponData.validFrom = validFrom.format('YYYY-MM-DD');
-        couponData.validUntil = validUntil.format('YYYY-MM-DD');
+        couponData.validFrom = validFrom.toISOString();
+        couponData.validUntil = validUntil.toISOString();
       }
 
       if (editingCoupon) {
-        await adminAPI.updateCoupon(editingCoupon.id, couponData);
+        const updateData: any = {
+          description: values.description || '',
+          discountValue: values.discountValue,
+          minimumAmount: values.minimumAmount || null,
+          maximumDiscount: values.maximumDiscount || null,
+          usageLimit: values.usageLimit || null,
+          isActive: values.isActive,
+        };
+        if (values.dateRange && values.dateRange.length === 2) {
+          updateData.validUntil = values.dateRange[1].toISOString();
+        }
+        await adminAPI.updateCoupon(editingCoupon.id, updateData);
         messageApi.success('Coupon updated successfully');
       } else {
         await adminAPI.createCoupon(couponData);
@@ -339,7 +352,11 @@ const handleDelete = async (id: string) => {
   );
 
   const activeCoupons = coupons.filter(c => c.isActive).length;
+  const inactiveCoupons = coupons.filter(c => !c.isActive).length;
   const totalUsage = coupons.reduce((sum, c) => sum + c.usedCount, 0);
+  const totalMaxUses = coupons.reduce((sum, c) => c.maxUses === -1 ? sum : sum + c.maxUses, 0);
+  const usageRate = totalMaxUses > 0 ? Math.round((totalUsage / totalMaxUses) * 100) : 0;
+  const expiredCoupons = coupons.filter(c => c.validUntil && dayjs(c.validUntil).isBefore(dayjs())).length;
 
   if (loading) {
     return (
@@ -380,8 +397,9 @@ const handleDelete = async (id: string) => {
         <Col span={6}>
           <Card>
             <Statistic 
-              title="Active Coupons" 
+              title="Active / Inactive" 
               value={activeCoupons}
+              suffix={`/ ${inactiveCoupons}`}
               styles={{ content: { color: '#10b981' } }}
             />
           </Card>
@@ -391,16 +409,18 @@ const handleDelete = async (id: string) => {
             <Statistic 
               title="Total Usage" 
               value={totalUsage}
+              suffix={totalMaxUses > 0 ? `/ ${totalMaxUses}` : ''}
+              styles={{ content: { color: '#3b82f6' } }}
             />
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <Statistic 
-              title="Usage Rate" 
-              value={68}
-              suffix="%"
-              styles={{ content: { color: '#f59e0b' } }}
+              title={expiredCoupons > 0 ? "Expired Coupons" : "Usage Rate"}
+              value={expiredCoupons > 0 ? expiredCoupons : usageRate}
+              suffix={expiredCoupons > 0 ? "" : "%"}
+              valueStyle={{ color: expiredCoupons > 0 ? '#ef4444' : '#f59e0b' }}
             />
           </Card>
         </Col>
@@ -422,6 +442,7 @@ const handleDelete = async (id: string) => {
           columns={columns}
           dataSource={filteredCoupons}
           rowKey="id"
+          scroll={{ x: 'max-content' }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
@@ -448,9 +469,8 @@ const handleDelete = async (id: string) => {
           layout="vertical"
           initialValues={{
             discountType: 'percentage',
-            maxUses: 100,
-            minBookingAmount: 0,
-            usageType: 'single',
+            usageLimit: 100,
+            minimumAmount: 0,
             isActive: true,
           }}
         >
@@ -467,6 +487,13 @@ const handleDelete = async (id: string) => {
               style={{ textTransform: 'uppercase' }}
               onChange={(e) => form.setFieldValue('code', e.target.value.toUpperCase())}
             />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Description"
+          >
+            <Input.TextArea rows={2} placeholder="Coupon description (optional)" />
           </Form.Item>
 
           <Row gutter={16}>
@@ -493,36 +520,33 @@ const handleDelete = async (id: string) => {
             </Col>
           </Row>
 
-          <Form.Item
-            name="usageType"
-            label="Usage Type"
-            rules={[{ required: true, message: 'Usage type is required' }]}
-          >
-            <Select>
-              <Select.Option value="single">Single Use</Select.Option>
-              <Select.Option value="annual">Annual</Select.Option>
-            </Select>
-          </Form.Item>
-
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="maxUses"
+                name="usageLimit"
                 label="Maximum Usage"
-                tooltip="Enter -1 for unlimited"
+                tooltip="Leave empty for unlimited"
               >
-                <InputNumber min={-1} style={{ width: '100%' }} />
+                <InputNumber min={1} style={{ width: '100%' }} placeholder="Unlimited" />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
-                name="minBookingAmount"
+                name="minimumAmount"
                 label="Minimum Order Amount (€)"
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item
+            name="maximumDiscount"
+            label="Maximum Discount Amount (€)"
+            tooltip="For percentage discounts, cap the discount amount"
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="No limit" />
+          </Form.Item>
 
           <Form.Item
             name="dateRange"

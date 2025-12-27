@@ -19,7 +19,7 @@ export default async function HomePage({
   return (
     <div className="flex flex-col">
       {/* Hero Section with Background Image */}
-      <section className="relative h-[600px] bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80')" }}>
+      <section className="relative h-[400px] sm:h-[500px] lg:h-[600px] bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920&q=80')" }}>
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
         
         <div className="relative container mx-auto px-4 h-full flex flex-col justify-center">
@@ -44,9 +44,9 @@ export default async function HomePage({
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold text-center mb-8">{t('roomTypes.title')}</h2>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
             <Link href={`/${locale}/search?type=hotel`}>
-              <Card className="p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
+              <Card className="p-4 md:p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Hotel className="h-8 w-8 text-blue-600" />
                 </div>
@@ -56,7 +56,7 @@ export default async function HomePage({
             </Link>
 
             <Link href={`/${locale}/search?type=resort`}>
-              <Card className="p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
+              <Card className="p-4 md:p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Umbrella className="h-8 w-8 text-green-600" />
                 </div>
@@ -66,7 +66,7 @@ export default async function HomePage({
             </Link>
 
             <Link href={`/${locale}/search?type=apart`}>
-              <Card className="p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
+              <Card className="p-4 md:p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Plane className="h-8 w-8 text-purple-600" />
                 </div>
@@ -76,7 +76,7 @@ export default async function HomePage({
             </Link>
 
             <Link href={`/${locale}/search?type=villa`}>
-              <Card className="p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
+              <Card className="p-4 md:p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer border-2 hover:border-primary">
                 <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="h-8 w-8 text-orange-600" />
                 </div>
@@ -149,7 +149,7 @@ export default async function HomePage({
             {/* Large Destination Card */}
             <Link href={`/${locale}/search?destinationId=228&destination=Antalya`} className="md:col-span-2 md:row-span-2">
               <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
-                <div className="relative h-full min-h-[400px] overflow-hidden">
+                <div className="relative h-full min-h-[300px] sm:min-h-[400px] overflow-hidden">
                   <Image
                     src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800"
                     alt="Antalya"

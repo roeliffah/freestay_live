@@ -427,8 +427,22 @@
     "termsRequired": "You must accept the terms",
     "marketingAccept": "I want to be informed about campaigns and opportunities.",
     "completeReservation": "Complete Reservation",
+    "processing": "Processing...",
     "reservationInfoMissing": "Reservation information missing",
     "backToSearch": "Back to Search",
+    "success": {
+      "title": "Reservation Completed!",
+      "subtitle": "Your reservation has been successfully created.",
+      "bookingNumber": "Booking Number",
+      "confirmationEmail": "Confirmation Email",
+      "totalAmount": "Total Amount",
+      "nextSteps": "Next Steps",
+      "emailSent": "Booking details have been sent to your email",
+      "downloadVoucher": "You can download your voucher for the hotel",
+      "downloadConfirmation": "Download Booking Confirmation",
+      "backToHome": "Back to Home",
+      "needHelp": "Need help?"
+    },
     "trustBadges": {
       "securePayment": "Secure Payment",
       "sslCertified": "SSL Certified",

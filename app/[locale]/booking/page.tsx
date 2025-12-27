@@ -72,6 +72,7 @@ function BookingContent() {
             </Card>
           ) : (
             <BookingForm
+              hotelId={hotelId}
               hotelName={hotelName}
               roomName={roomName}
               boardType={boardType}

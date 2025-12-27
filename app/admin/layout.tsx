@@ -190,91 +190,81 @@ export default function AdminLayout({
   // Show loading spinner during authentication check
   if (loading) {
     return (
-      <html lang="en" suppressHydrationWarning>
-        <body style={{ margin: 0 }} suppressHydrationWarning>
-          <AntdRegistry>
-            <ConfigProvider
-              locale={enUS}
-              theme={{
-                token: {
-                  colorPrimary: '#6366f1',
-                  borderRadius: 8,
-                },
-              }}
-            >
-              <App>
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  alignItems: 'center', 
-                  height: '100vh',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}>
-                  <div style={{
-                    width: '40px',
-                    height: '40px',
-                    border: '4px solid rgba(255,255,255,0.3)',
-                    borderTop: '4px solid white',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
-                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                </div>
-              </App>
-            </ConfigProvider>
-          </AntdRegistry>
-        </body>
-      </html>
+      <AntdRegistry>
+        <ConfigProvider
+          locale={enUS}
+          theme={{
+            token: {
+              colorPrimary: '#6366f1',
+              borderRadius: 8,
+            },
+          }}
+        >
+          <App>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '100vh',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            }}>
+              <div style={{
+                width: '40px',
+                height: '40px',
+                border: '4px solid rgba(255,255,255,0.3)',
+                borderTop: '4px solid white',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }} />
+              <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          </App>
+        </ConfigProvider>
+      </AntdRegistry>
     );
   }
 
   // Show login page without sidebar
   if (pathname === '/admin/login') {
     return (
-      <html lang="en" suppressHydrationWarning>
-        <body style={{ margin: 0 }} suppressHydrationWarning>
-          <AntdRegistry>
-            <ConfigProvider
-              locale={enUS}
-              theme={{
-                token: {
-                  colorPrimary: '#6366f1',
-                  borderRadius: 8,
-                },
-              }}
-            >
-              <App>
-                {children}
-              </App>
-            </ConfigProvider>
-          </AntdRegistry>
-        </body>
-      </html>
+      <AntdRegistry>
+        <ConfigProvider
+          locale={enUS}
+          theme={{
+            token: {
+              colorPrimary: '#6366f1',
+              borderRadius: 8,
+            },
+          }}
+        >
+          <App>
+            {children}
+          </App>
+        </ConfigProvider>
+      </AntdRegistry>
     );
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body style={{ margin: 0 }} suppressHydrationWarning>
-        <AntdRegistry>
-          <ConfigProvider
-            locale={enUS}
-            theme={{
-              token: {
-                colorPrimary: '#6366f1',
-                borderRadius: 8,
-              },
-            }}
-          >
-            <App>
-              <Layout style={{ minHeight: '100vh' }}>
+    <AntdRegistry>
+      <ConfigProvider
+        locale={enUS}
+        theme={{
+          token: {
+            colorPrimary: '#6366f1',
+            borderRadius: 8,
+          },
+        }}
+      >
+        <App>
+          <Layout style={{ minHeight: '100vh' }}>
                 {/* Mobile Drawer */}
                 <Drawer
                   title="FreeStays Admin"
                   placement="left"
                   onClose={() => setMobileDrawerOpen(false)}
                   open={isMobile && mobileDrawerOpen}
-                  width={260}
+                  size="default"
                   styles={{ body: { padding: 0 } }}
                 >
                   <Menu
@@ -392,7 +382,5 @@ export default function AdminLayout({
             </App>
           </ConfigProvider>
         </AntdRegistry>
-      </body>
-    </html>
   );
 }
