@@ -136,6 +136,15 @@ const SECTION_TYPES = [
     hasDestinations: true,
   },
   { 
+    value: 'popular-countries', 
+    label: 'Popular Countries', 
+    icon: '🌏', 
+    description: 'Featured countries',
+    hasTranslations: true,
+    hasHotels: false,
+    hasDestinations: false,
+  },
+  { 
     value: 'romantic-tours', 
     label: 'Romantic Tours', 
     icon: '💑', 
@@ -639,7 +648,10 @@ function HomePageContent() {
             <Button
               icon={<GlobalOutlined />}
               size="small"
-              onClick={() => handleOpenTranslations(section)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenTranslations(section);
+              }}
               title="Edit Translations"
             >
               {!isMobile && (section.translations ? Object.keys(section.translations).length : 0)}
@@ -649,7 +661,10 @@ function HomePageContent() {
             <Button
               icon={<HomeOutlined />}
               size="small"
-              onClick={() => handleOpenHotels(section)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenHotels(section);
+              }}
               title="Select Hotels"
             >
               {!isMobile && <Badge count={section.hotelCount || 0} showZero />}
@@ -659,7 +674,10 @@ function HomePageContent() {
             <Button
               icon={<EnvironmentOutlined />}
               size="small"
-              onClick={() => handleOpenDestinations(section)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenDestinations(section);
+              }}
               title="Select Destinations"
             >
               {!isMobile && <Badge count={section.destinationCount || 0} showZero />}
@@ -667,14 +685,20 @@ function HomePageContent() {
           )}
           <Switch
             checked={section.isActive}
-            onChange={() => handleToggleActive(section)}
+            onChange={(checked, e) => {
+              e.stopPropagation();
+              handleToggleActive(section);
+            }}
             checkedChildren={<EyeOutlined />}
             unCheckedChildren={<EyeInvisibleOutlined />}
           />
           <Button
             icon={<EditOutlined />}
             size="small"
-            onClick={() => handleOpenModal(section)}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenModal(section);
+            }}
           />
           <Popconfirm
             title="Are you sure you want to delete this section?"
@@ -682,7 +706,12 @@ function HomePageContent() {
             okText="Yes"
             cancelText="No"
           >
-            <Button icon={<DeleteOutlined />} size="small" danger />
+            <Button 
+              icon={<DeleteOutlined />} 
+              size="small" 
+              danger 
+              onClick={(e) => e.stopPropagation()}
+            />
           </Popconfirm>
           {!isMobile && <DragOutlined style={{ cursor: 'grab', fontSize: '16px' }} />}
         </Space>

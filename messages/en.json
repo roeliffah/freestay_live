@@ -47,8 +47,10 @@
       "title": "Romantic Tours",
       "subtitle": "Hand-picked hotels for unforgettable moments with your loved ones",
       "viewAll": "View All Romantic Hotels"
-    },
-    "features": {
+    },    "countries": {
+      "title": "Popular Countries",
+      "subtitle": "Discover the most preferred holiday countries and destinations"
+    },    "features": {
       "title": "Why FreeStays?",
       "bestPrice": "Best Price Guarantee",
       "bestPriceDesc": "We offer the most competitive prices",

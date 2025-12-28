@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { SearchForm } from '@/components/search/SearchForm';
 import { PopularHotels } from '@/components/home/PopularHotels';
 import { PopularDestinations } from '@/components/home/PopularDestinations';
+import { PopularCountries } from '@/components/home/PopularCountries';
 import { RomanticTours } from '@/components/home/RomanticTours';
 import { TravelCTACards } from '@/components/home/TravelCTACards';
 import { Star, Shield, Clock, Sparkles, Hotel, Umbrella, Plane } from 'lucide-react';
@@ -177,6 +178,9 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
 
       case 'popular-destinations':
         return <PopularDestinations key={section.id} locale={locale} destinationIds={config.destinationIds} title={sectionTitle ?? undefined} />;
+
+      case 'popular-countries':
+        return <PopularCountries key={section.id} locale={locale} countryIds={config.countryIds} title={sectionTitle ?? undefined} />;
 
       case 'romantic-tours':
         return <RomanticTours key={section.id} locale={locale} hotelIds={config.hotelIds} title={sectionTitle ?? undefined} />;

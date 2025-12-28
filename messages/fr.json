@@ -122,6 +122,10 @@
       "flightBookingTitle": "Réserver un vol",
       "flightBookingDesc": "Trouvez les meilleures offres de vols vers votre destination de rêve",
       "exploreNow": "Explorez maintenant"
+    },
+    "countries": {
+      "title": "Pays Populaires",
+      "subtitle": "Découvrez les pays et destinations de vacances les plus populaires"
     }
   },
   "search": {

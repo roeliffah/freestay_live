@@ -122,6 +122,10 @@
       "flightBookingTitle": "Vlucht boeken",
       "flightBookingDesc": "Vind de beste vluchtdeals naar uw droombestemming",
       "exploreNow": "Nu ontdekken"
+    },
+    "countries": {
+      "title": "Populaire Landen",
+      "subtitle": "Ontdek de meest populaire vakantielanden en bestemmingen"
     }
   },
   "search": {
