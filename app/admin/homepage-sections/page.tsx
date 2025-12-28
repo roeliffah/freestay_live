@@ -220,6 +220,11 @@ function HomePageContent() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    loadSections();
+  }, []);
+
   const loadSections = async () => {
     setLoading(true);
     try {
@@ -247,7 +252,12 @@ function HomePageContent() {
       if (!response.ok) throw new Error('Failed to fetch sections');
 
       const data = await response.json();
-      setSections(data.data || data);
+      const sectionsData = data.data || data;
+      // Sort by displayOrder
+      const sortedSections = Array.isArray(sectionsData) 
+        ? sectionsData.sort((a, b) => a.displayOrder - b.displayOrder)
+        : sectionsData;
+      setSections(sortedSections);
     } catch (error) {
       message.error('Failed to load sections');
       console.error(error);
