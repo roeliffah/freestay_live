@@ -30,7 +30,8 @@
       "children": "Kinderen (0-12)",
       "addRoom": "Kamer toevoegen",
       "done": "Klaar",
-      "searching": "Zoeken..."
+      "searching": "Zoeken...",
+      "noDatesInfo": "Geen datums geselecteerd. Geschatte prijzen worden getoond. Selecteer datums voor actuele prijzen en beschikbaarheid."
     },
     "popularHotels": {
       "title": "Populaire hotels",
@@ -126,6 +127,19 @@
     "countries": {
       "title": "Populaire Landen",
       "subtitle": "Ontdek de meest populaire vakantielanden en bestemmingen"
+    },
+    "themedHotels": {
+      "title": "Hotels per Thema",
+      "subtitle": "Kies een themacategorie die u interesseert en ontdek geschikte hotels",
+      "viewAll": "Bekijk Alles"
+    },
+    "themes": {
+      "luxury": "Luxe",
+      "spa": "Spa & Wellness",
+      "family": "Gezin",
+      "budget": "Budget",
+      "ecoCertified": "Milieuvriendelijk",
+      "skiing": "Skiën"
     }
   },
   "search": {
@@ -162,7 +176,10 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    }
+    },
+    "staticMode": "Statisch Zoeken",
+    "realtimeMode": "Live Prijzen",
+    "staticModeInfo": "Geschatte prijzen worden getoond. Selecteer datums in het zoekformulier voor actuele prijzen en beschikbaarheid."
   },
   "hotel": {
     "deal": "Aanbieding!",

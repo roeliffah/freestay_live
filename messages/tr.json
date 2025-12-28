@@ -30,7 +30,8 @@
       "children": "Çocuk (0-12 yaş)",
       "addRoom": "Oda Ekle",
       "done": "Tamam",
-      "searching": "Aranıyor..."
+      "searching": "Aranıyor...",
+      "noDatesInfo": "Tarih seçmediniz. Yaklaşık fiyatlar gösterilecek. Güncel fiyat ve müsaitlik için tarih seçebilirsiniz."
     },
     "popularHotels": {
       "title": "Popüler Oteller",
@@ -51,6 +52,19 @@
     "countries": {
       "title": "Popüler Ülkeler",
       "subtitle": "En çok tercih edilen tatil ülkeleri ve destinasyonları keşfedin"
+    },
+    "themedHotels": {
+      "title": "Temaya Göre Oteller",
+      "subtitle": "İlginizi çeken tema kategorisini seçin ve size özel otelleri keşfedin",
+      "viewAll": "Tümünü Gör"
+    },
+    "themes": {
+      "luxury": "Lüks",
+      "spa": "Spa & Wellness",
+      "family": "Aile",
+      "budget": "Ekonomik",
+      "ecoCertified": "Çevre Dostu",
+      "skiing": "Kayak"
     },
     "features": {
       "title": "Neden FreeStays?",
@@ -141,6 +155,9 @@
   "search": {
     "title": "Arama Sonuçları",
     "hotelsFound": "otel bulundu",
+    "staticMode": "Statik Arama",
+    "realtimeMode": "Güncel Fiyat",
+    "staticModeInfo": "Yaklaşık fiyatlar gösteriliyor. Güncel fiyat ve müsaitlik için arama formunda tarih seçin.",
     "filters": "Filtreler",
     "sortBy": "Sıralama",
     "price": "Fiyat",

@@ -30,7 +30,8 @@
       "children": "Kinder (0-12)",
       "addRoom": "Zimmer hinzufügen",
       "done": "Fertig",
-      "searching": "Suchen..."
+      "searching": "Suchen...",
+      "noDatesInfo": "Keine Daten ausgewählt. Ungefähre Preise werden angezeigt. Wählen Sie Daten für aktuelle Preise und Verfügbarkeit."
     },
     "popularHotels": {
       "title": "Beliebte Hotels",
@@ -126,6 +127,19 @@
     "countries": {
       "title": "Beliebte Länder",
       "subtitle": "Entdecken Sie die beliebtesten Urlaubsländer und Reiseziele"
+    },
+    "themedHotels": {
+      "title": "Hotels nach Thema",
+      "subtitle": "Wählen Sie eine Themenkategorie, die Sie interessiert, und entdecken Sie passende Hotels",
+      "viewAll": "Alle Anzeigen"
+    },
+    "themes": {
+      "luxury": "Luxus",
+      "spa": "Spa & Wellness",
+      "family": "Familie",
+      "budget": "Budget",
+      "ecoCertified": "Umweltfreundlich",
+      "skiing": "Skifahren"
     }
   },
   "search": {
@@ -162,7 +176,10 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    }
+    },
+    "staticMode": "Statische Suche",
+    "realtimeMode": "Live-Preise",
+    "staticModeInfo": "Ungefähre Preise werden angezeigt. Wählen Sie Daten im Suchformular für aktuelle Preise und Verfügbarkeit."
   },
   "hotel": {
     "deal": "Angebot!",

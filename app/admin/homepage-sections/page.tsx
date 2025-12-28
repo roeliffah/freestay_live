@@ -154,6 +154,15 @@ const SECTION_TYPES = [
     hasDestinations: false,
   },
   { 
+    value: 'themed-hotels', 
+    label: 'Themed Hotels', 
+    icon: '🎨', 
+    description: 'Hotels by theme (spa, luxury, family, etc)',
+    hasTranslations: true,
+    hasHotels: true,
+    hasDestinations: false,
+  },
+  { 
     value: 'campaign-banner', 
     label: 'Campaign Banner', 
     icon: '🎉', 

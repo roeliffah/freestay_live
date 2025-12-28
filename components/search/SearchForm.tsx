@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { tr as dateTr } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Users, Search, MapPin, Plus, Minus } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, Search, MapPin, Plus, Minus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -72,19 +73,21 @@ export function SearchForm() {
   }, [destination]);
 
   const handleSearch = () => {
-    if (!dateRange?.from || !dateRange?.to) {
-      alert(t('selectDate'));
-      return;
-    }
-
-    // URL parametrelerine destinationId ekle (varsa)
+    // Tarih opsiyonel - yoksa static search, varsa real-time search
     const searchUrl = new URLSearchParams({
       destination,
-      checkIn: format(dateRange.from, 'yyyy-MM-dd'),
-      checkOut: format(dateRange.to, 'yyyy-MM-dd'),
       adults: rooms.reduce((sum, room) => sum + room.adults, 0).toString(),
       children: rooms.reduce((sum, room) => sum + room.children, 0).toString(),
     });
+
+    // Tarihler varsa ekle (real-time search için)
+    if (dateRange?.from && dateRange?.to) {
+      searchUrl.append('checkIn', format(dateRange.from, 'yyyy-MM-dd'));
+      searchUrl.append('checkOut', format(dateRange.to, 'yyyy-MM-dd'));
+      searchUrl.append('mode', 'realtime');
+    } else {
+      searchUrl.append('mode', 'static');
+    }
 
     if (selectedDestinationId) {
       searchUrl.append('destinationId', selectedDestinationId.toString());
@@ -92,8 +95,8 @@ export function SearchForm() {
 
     setSearchParams({
       destination,
-      checkIn: format(dateRange.from, 'yyyy-MM-dd'),
-      checkOut: format(dateRange.to, 'yyyy-MM-dd'),
+      checkIn: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+      checkOut: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
       rooms,
     });
 
@@ -313,6 +316,16 @@ export function SearchForm() {
         <Search className="mr-2 h-5 w-5" />
         {t('searchButton')}
       </Button>
+
+      {/* Info badge - tarih seçilmemişse göster */}
+      {(!dateRange?.from || !dateRange?.to) && (
+        <div className="mt-4 flex items-start gap-2 text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-md">
+          <Info className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+          <p className="text-blue-900 dark:text-blue-100">
+            {t('noDatesInfo')}
+          </p>
+        </div>
+      )}
     </Card>
   );
 }

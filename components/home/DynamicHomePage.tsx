@@ -6,6 +6,7 @@ import { PopularHotels } from '@/components/home/PopularHotels';
 import { PopularDestinations } from '@/components/home/PopularDestinations';
 import { PopularCountries } from '@/components/home/PopularCountries';
 import { RomanticTours } from '@/components/home/RomanticTours';
+import { ThemedHotels } from '@/components/home/ThemedHotels';
 import { TravelCTACards } from '@/components/home/TravelCTACards';
 import { Star, Shield, Clock, Sparkles, Hotel, Umbrella, Plane } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -184,6 +185,14 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
 
       case 'romantic-tours':
         return <RomanticTours key={section.id} locale={locale} hotelIds={config.hotelIds} title={sectionTitle ?? undefined} />;
+
+      case 'themed-hotels':
+        return <ThemedHotels 
+          key={section.id} 
+          locale={locale} 
+          themeIds={config.themeIds}
+          title={sectionTitle ?? undefined} 
+        />;
 
       case 'campaign-banner':
         return (

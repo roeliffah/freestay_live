@@ -51,6 +51,7 @@ function SearchPage() {
   const [hotels, setHotels] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [searchMode, setSearchMode] = useState<'static' | 'realtime'>('static');
   const [filters, setFilters] = useState<Filters>({
     sortBy: 'price',
     sortOrder: 'asc',
@@ -63,32 +64,60 @@ function SearchPage() {
         // Get search parameters
         const destination = searchParams.get('destination') || '';
         const destinationId = searchParams.get('destinationId') || '';
-        const checkIn = searchParams.get('checkIn') || new Date().toISOString().split('T')[0];
-        const checkOut = searchParams.get('checkOut') || new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0];
+        const checkIn = searchParams.get('checkIn');
+        const checkOut = searchParams.get('checkOut');
+        const mode = searchParams.get('mode') as 'static' | 'realtime' || 'static';
         const adults = parseInt(searchParams.get('adults') || '2');
         const children = parseInt(searchParams.get('children') || '0');
 
+        setSearchMode(mode);
+        console.log('🔍 Search Mode:', mode);
         console.log('🔍 Search Parameters:', { destination, destinationId, checkIn, checkOut, adults, children });
 
-        // Backend API çağrısı - yeni SunHotels V3 endpoint
-        const results = await sunhotelsAPI.search({
-          destinationId: destinationId || undefined,
-          destination: !destinationId && destination ? destination : undefined,
-          checkIn,
-          checkOut,
-          numberOfRooms: 1,
-          adults,
-          children: children || 0,
-          currency: 'EUR',
-          language: locale.toLowerCase(),
-          customerCountry: 'TR',
-          b2C: true,
-        }) as Hotel[];
-        
-        console.log('✅ Search Results:', results);
-        setHotels(Array.isArray(results) ? results : []);
+        // 2 AŞAMALI STRATEJİ
+        if (mode === 'static' || !checkIn || !checkOut) {
+          // STATIC SEARCH - Tarih yok, DB'den statik otel listesi
+          console.log('📦 Static search - loading from database');
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/sunhotels/hotels/static?` +
+            new URLSearchParams({
+              destination: destination || '',
+              destinationId: destinationId || '',
+              limit: '100'
+            }).toString()
+          );
+          
+          if (response.ok) {
+            const result = await response.json();
+            const staticHotels = result.data || result;
+            console.log('✅ Static hotels loaded:', staticHotels.length);
+            setHotels(Array.isArray(staticHotels) ? staticHotels : []);
+          } else {
+            console.error('❌ Static search failed:', response.status);
+            setHotels([]);
+          }
+        } else {
+          // REAL-TIME SEARCH - Tarih var, SunHotels API'den güncel fiyat/müsaitlik
+          console.log('⚡ Real-time search - querying SunHotels API');
+          const results = await sunhotelsAPI.search({
+            destinationId: destinationId || undefined,
+            destination: !destinationId && destination ? destination : undefined,
+            checkIn,
+            checkOut,
+            numberOfRooms: 1,
+            adults,
+            children: children || 0,
+            currency: 'EUR',
+            language: locale.toLowerCase(),
+            customerCountry: 'TR',
+            b2C: true,
+          }) as Hotel[];
+          
+          console.log('✅ Real-time search results:', results.length);
+          setHotels(Array.isArray(results) ? results : []);
+        }
       } catch (error) {
-        console.error('❌ Otel arama hatası:', error);
+        console.error('❌ Hotel search error:', error);
         setHotels([]);
       } finally {
         setLoading(false);
@@ -144,13 +173,32 @@ function SearchPage() {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">
-            {t('title')}
-          </h1>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold">
+              {t('title')}
+            </h1>
+            {searchMode === 'static' ? (
+              <Badge variant="secondary" className="text-xs">
+                📦 {t('staticMode')}
+              </Badge>
+            ) : (
+              <Badge variant="default" className="text-xs bg-green-600">
+                ⚡ {t('realtimeMode')}
+              </Badge>
+            )}
+          </div>
           <p className="text-muted-foreground">
             {filteredAndSortedHotels.length} {t('hotelsFound')}
             {searchParams.get('destination') && ` - ${searchParams.get('destination')}`}
           </p>
+          {searchMode === 'static' && (
+            <div className="mt-3 flex items-start gap-2 text-sm bg-blue-50 dark:bg-blue-950 p-3 rounded-md">
+              <SlidersHorizontal className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+              <p className="text-blue-900 dark:text-blue-100">
+                {t('staticModeInfo')}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
