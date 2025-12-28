@@ -270,13 +270,16 @@ function HomePageContent() {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
+      console.log('🔄 Drag ended - moving from', active.id, 'to', over.id);
       const oldIndex = sections.findIndex((item) => item.id === active.id);
       const newIndex = sections.findIndex((item) => item.id === over.id);
+      console.log('📊 Old index:', oldIndex, 'New index:', newIndex);
 
       const newSections = arrayMove(sections, oldIndex, newIndex).map((section, index) => ({
         ...section,
         displayOrder: index + 1,
       }));
+      console.log('📋 New order:', newSections.map(s => `${s.sectionType}(${s.displayOrder})`));
 
       setSections(newSections);
 
@@ -288,6 +291,7 @@ function HomePageContent() {
           return;
         }
 
+        console.log('📤 Sending reorder request:', newSections.map(s => ({ id: s.id, displayOrder: s.displayOrder })));
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/reorder`, {
           method: 'PATCH',
           headers: {
@@ -298,6 +302,7 @@ function HomePageContent() {
             sections: newSections.map(s => ({ id: s.id, displayOrder: s.displayOrder })),
           }),
         });
+        console.log('📥 Reorder response status:', response.status);
 
         if (response.status === 401) {
           message.error('Session expired. Please login again.');
@@ -383,6 +388,7 @@ function HomePageContent() {
 
   const handleDeleteSection = async (id: string) => {
     try {
+      console.log('🗑️ Deleting section:', id);
       const token = localStorage.getItem('admin_token');
       if (!token) {
         message.error('Session expired. Please login again.');
@@ -397,6 +403,7 @@ function HomePageContent() {
           'Content-Type': 'application/json',
         },
       });
+      console.log('🗑️ Delete response status:', response.status);
 
       if (response.status === 401) {
         message.error('Session expired. Please login again.');
