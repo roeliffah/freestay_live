@@ -145,14 +145,27 @@
   "search": {
     "title": "Résultats de recherche",
     "hotelsFound": "hôtels trouvés",
+    "staticMode": "Recherche Statique",
+    "realtimeMode": "Prix en Direct",
+    "staticModeInfo": "Affichage de prix approximatifs. Sélectionnez des dates dans le formulaire de recherche pour les prix actuels et la disponibilité.",
     "filters": "Filtres",
     "sortBy": "Trier par",
     "price": "Prix",
     "rating": "Évaluation",
     "name": "Nom",
     "stars": "Étoiles",
+    "dates": "Dates",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "country": "Pays",
+    "city": "Ville",
+    "themes": "Thèmes",
+    "features": "Équipements",
+    "resorts": "Resorts",
+    "roomTypes": "Types de chambres",
     "priceRange": "Fourchette de prix",
     "all": "Tous",
+    "allStars": "Toutes les Étoiles",
     "clearFilters": "Effacer les filtres",
     "perNight": "Prix à partir de par nuit",
     "taxIncluded": "Taxes incluses",
@@ -165,6 +178,8 @@
     "allStars": "Toutes les Étoiles",
     "tryAgain": "Réessayer",
     "loading": "Chargement des hôtels...",
+    "previous": "Précédent",
+    "next": "Suivant",
     "sortOptions": {
       "priceAsc": "Prix (Croissant)",
       "priceDesc": "Prix (Décroissant)",
@@ -176,10 +191,7 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    },
-    "staticMode": "Recherche Statique",
-    "realtimeMode": "Prix en Direct",
-    "staticModeInfo": "Affichage de prix approximatifs. Sélectionnez des dates dans le formulaire de recherche pour les prix actuels et la disponibilité."
+    }
   },
   "hotel": {
     "deal": "Offre spéciale!",
@@ -196,7 +208,15 @@
     "freeCancellation": "Annulation gratuite",
     "noPayment": "Pas de prépaiement",
     "instantConfirm": "Confirmation instantanée",
-    "location": "Emplacement"
+    "location": "Emplacement",
+    "priceNotAvailable": "Sélectionnez des dates pour voir le prix",
+    "selectDates": "Sélectionner les dates",
+    "selectDatesForPrice": "Sélectionner les dates pour voir le prix",
+    "searchWithDates": "Rechercher avec ces dates",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "selectDate": "Sélectionner la date",
+    "reviews": "avis"
   },
   "about": {
     "hero": {

@@ -32,6 +32,7 @@ import {
   EnvironmentOutlined,
   SearchOutlined,
   StarFilled,
+  TagsOutlined,
 } from '@ant-design/icons';
 import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -143,6 +144,7 @@ const SECTION_TYPES = [
     hasTranslations: true,
     hasHotels: false,
     hasDestinations: false,
+    hasCountries: true,
   },
   { 
     value: 'romantic-tours', 
@@ -159,8 +161,9 @@ const SECTION_TYPES = [
     icon: '🎨', 
     description: 'Hotels by theme (spa, luxury, family, etc)',
     hasTranslations: true,
-    hasHotels: true,
+    hasHotels: false,
     hasDestinations: false,
+    hasThemes: true,
   },
   { 
     value: 'campaign-banner', 
@@ -216,6 +219,8 @@ function HomePageContent() {
   const [translationsModalOpen, setTranslationsModalOpen] = useState(false);
   const [hotelsModalOpen, setHotelsModalOpen] = useState(false);
   const [destinationsModalOpen, setDestinationsModalOpen] = useState(false);
+  const [countriesModalOpen, setCountriesModalOpen] = useState(false);
+  const [themesModalOpen, setThemesModalOpen] = useState(false);
   const [configBuilderModalOpen, setConfigBuilderModalOpen] = useState(false);
   const [editingSection, setEditingSection] = useState<HomePageSection | null>(null);
   const [selectedSection, setSelectedSection] = useState<HomePageSection | null>(null);
@@ -226,7 +231,11 @@ function HomePageContent() {
   const [translationsForm] = Form.useForm();
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px hareket ettikten sonra drag başlar
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -452,7 +461,7 @@ function HomePageContent() {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}/toggle`,
         {
-          method: 'PUT',
+          method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -478,6 +487,7 @@ function HomePageContent() {
   };
 
   const handleOpenTranslations = async (section: HomePageSection) => {
+    console.log('📝 handleOpenTranslations called', section.id);
     setSelectedSection(section);
     
     try {
@@ -519,6 +529,7 @@ function HomePageContent() {
       });
 
       translationsForm.setFieldsValue(formValues);
+      console.log('✅ Opening translations modal');
       setTranslationsModalOpen(true);
     } catch (error) {
       message.error('Failed to load translations');
@@ -568,6 +579,7 @@ function HomePageContent() {
 
       message.success('Translations saved successfully');
       setTranslationsModalOpen(false);
+      setSelectedSection(null);
       loadSections();
     } catch (error) {
       message.error('Failed to save translations');
@@ -576,12 +588,16 @@ function HomePageContent() {
   };
 
   const handleOpenHotels = (section: HomePageSection) => {
+    console.log('🏨 handleOpenHotels called', section.id);
     setSelectedSection(section);
+    console.log('✅ Opening hotels modal');
     setHotelsModalOpen(true);
   };
 
   const handleOpenDestinations = (section: HomePageSection) => {
+    console.log('🗺️ handleOpenDestinations called', section.id);
     setSelectedSection(section);
+    console.log('✅ Opening destinations modal');
     setDestinationsModalOpen(true);
   };
 
@@ -597,6 +613,10 @@ function HomePageContent() {
       setConfigBuilderModalOpen(true);
     } else if (typeInfo.hasDestinations) {
       setConfigBuilderModalOpen(true);
+    } else if (typeInfo.hasCountries) {
+      setCountriesModalOpen(true);
+    } else if (typeInfo.hasThemes) {
+      setThemesModalOpen(true);
     } else {
       message.info('This section type does not require data selection');
     }
@@ -611,7 +631,28 @@ function HomePageContent() {
       configuration: JSON.stringify(configData, null, 2)
     });
     setConfigBuilderModalOpen(false);
+    setSelectedSectionType('');
     message.success('Configuration updated successfully');
+  };
+
+  const handleCountriesSuccess = (selectedIds: string[]) => {
+    const configData = { countryIds: selectedIds };
+    form.setFieldsValue({
+      configuration: JSON.stringify(configData, null, 2)
+    });
+    setCountriesModalOpen(false);
+    setSelectedSection(null);
+    message.success('Countries selected successfully');
+  };
+
+  const handleThemesSuccess = (selectedIds: string[]) => {
+    const configData = { themeIds: selectedIds };
+    form.setFieldsValue({
+      configuration: JSON.stringify(configData, null, 2)
+    });
+    setThemesModalOpen(false);
+    setSelectedSection(null);
+    message.success('Themes selected successfully');
   };
 
   const getSectionTypeInfo = (type: string) => {
@@ -652,12 +693,13 @@ function HomePageContent() {
         </div>
       ),
       extra: (
-        <Space onClick={(e) => e.stopPropagation()} wrap style={{ flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+        <Space wrap style={{ flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
           {sectionType.hasTranslations && (
             <Button
               icon={<GlobalOutlined />}
               size="small"
               onClick={(e) => {
+                console.log('🌐 Translations button clicked', section.id);
                 e.stopPropagation();
                 handleOpenTranslations(section);
               }}
@@ -671,6 +713,7 @@ function HomePageContent() {
               icon={<HomeOutlined />}
               size="small"
               onClick={(e) => {
+                console.log('🏠 Hotels button clicked', section.id);
                 e.stopPropagation();
                 handleOpenHotels(section);
               }}
@@ -684,6 +727,7 @@ function HomePageContent() {
               icon={<EnvironmentOutlined />}
               size="small"
               onClick={(e) => {
+                console.log('📍 Destinations button clicked', section.id);
                 e.stopPropagation();
                 handleOpenDestinations(section);
               }}
@@ -692,26 +736,62 @@ function HomePageContent() {
               {!isMobile && <Badge count={section.destinationCount || 0} showZero />}
             </Button>
           )}
-          <Switch
-            checked={section.isActive}
-            onChange={(checked, e) => {
-              e.stopPropagation();
-              handleToggleActive(section);
-            }}
-            checkedChildren={<EyeOutlined />}
-            unCheckedChildren={<EyeInvisibleOutlined />}
-          />
+          {sectionType.hasCountries && (
+            <Button
+              icon={<GlobalOutlined />}
+              size="small"
+              onClick={(e) => {
+                console.log('🌍 Countries button clicked', section.id);
+                e.stopPropagation();
+                setSelectedSection(section);
+                setCountriesModalOpen(true);
+              }}
+              title="Select Countries"
+            >
+              {!isMobile && <Badge count={section.configuration?.countryIds?.length || 0} showZero />}
+            </Button>
+          )}
+          {sectionType.hasThemes && (
+            <Button
+              icon={<TagsOutlined />}
+              size="small"
+              onClick={(e) => {
+                console.log('🏷️ Themes button clicked', section.id);
+                e.stopPropagation();
+                setSelectedSection(section);
+                setThemesModalOpen(true);
+              }}
+              title="Select Themes"
+            >
+              {!isMobile && <Badge count={section.configuration?.themeIds?.length || 0} showZero />}
+            </Button>
+          )}
+          <div onClick={(e) => e.stopPropagation()}>
+            <Switch
+              checked={section.isActive}
+              onChange={(checked) => {
+                console.log('🔄 Switch toggled', section.id, checked);
+                handleToggleActive(section);
+              }}
+              checkedChildren={<EyeOutlined />}
+              unCheckedChildren={<EyeInvisibleOutlined />}
+            />
+          </div>
           <Button
             icon={<EditOutlined />}
             size="small"
             onClick={(e) => {
+              console.log('✏️ Edit button clicked', section.id);
               e.stopPropagation();
               handleOpenModal(section);
             }}
           />
           <Popconfirm
             title="Are you sure you want to delete this section?"
-            onConfirm={() => handleDeleteSection(section.id)}
+            onConfirm={() => {
+              console.log('🗑️ Delete confirmed', section.id);
+              handleDeleteSection(section.id);
+            }}
             okText="Yes"
             cancelText="No"
           >
@@ -719,7 +799,10 @@ function HomePageContent() {
               icon={<DeleteOutlined />} 
               size="small" 
               danger 
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                console.log('🗑️ Delete button clicked', section.id);
+                e.stopPropagation();
+              }}
             />
           </Popconfirm>
           {!isMobile && <DragOutlined style={{ cursor: 'grab', fontSize: '16px' }} />}
@@ -799,14 +882,7 @@ function HomePageContent() {
                   <SortableItem key={section.id} id={section.id}>
                     <Card className="overflow-hidden">
                       <div 
-                        className="p-4 cursor-pointer hover:bg-gray-50"
-                        onClick={() => {
-                          setExpandedSections(prev => 
-                            prev.includes(section.id) 
-                              ? prev.filter(id => id !== section.id)
-                              : [...prev, section.id]
-                          );
-                        }}
+                        className="p-4"
                         style={{ 
                           display: 'flex', 
                           alignItems: isMobile ? 'flex-start' : 'center', 
@@ -815,8 +891,19 @@ function HomePageContent() {
                           gap: isMobile ? '8px' : '0'
                         }}
                       >
-                        {sectionCard.label}
-                        <div onClick={(e) => e.stopPropagation()}>
+                        <div 
+                          className="cursor-pointer hover:opacity-70 flex-1"
+                          onClick={() => {
+                            setExpandedSections(prev => 
+                              prev.includes(section.id) 
+                                ? prev.filter(id => id !== section.id)
+                                : [...prev, section.id]
+                            );
+                          }}
+                        >
+                          {sectionCard.label}
+                        </div>
+                        <div>
                           {sectionCard.extra}
                         </div>
                       </div>
@@ -916,7 +1003,10 @@ function HomePageContent() {
           </Space>
         }
         open={translationsModalOpen}
-        onCancel={() => setTranslationsModalOpen(false)}
+        onCancel={() => {
+          setTranslationsModalOpen(false);
+          setSelectedSection(null);
+        }}
         onOk={() => translationsForm.submit()}
         width={isMobile ? '100%' : 900}
         style={{ top: isMobile ? 0 : undefined }}
@@ -959,9 +1049,13 @@ function HomePageContent() {
       <HotelsSelectionModal
         open={hotelsModalOpen}
         section={selectedSection}
-        onClose={() => setHotelsModalOpen(false)}
+        onClose={() => {
+          setHotelsModalOpen(false);
+          setSelectedSection(null);
+        }}
         onSuccess={() => {
           setHotelsModalOpen(false);
+          setSelectedSection(null);
           loadSections();
         }}
         isMobile={isMobile}
@@ -971,11 +1065,39 @@ function HomePageContent() {
       <DestinationsSelectionModal
         open={destinationsModalOpen}
         section={selectedSection}
-        onClose={() => setDestinationsModalOpen(false)}
+        onClose={() => {
+          setDestinationsModalOpen(false);
+          setSelectedSection(null);
+        }}
         onSuccess={() => {
           setDestinationsModalOpen(false);
+          setSelectedSection(null);
           loadSections();
         }}
+        isMobile={isMobile}
+      />
+
+      {/* Countries Selection Modal */}
+      <CountriesSelectionModal
+        open={countriesModalOpen}
+        section={selectedSection}
+        onClose={() => {
+          setCountriesModalOpen(false);
+          setSelectedSection(null);
+        }}
+        onSuccess={handleCountriesSuccess}
+        isMobile={isMobile}
+      />
+
+      {/* Themes Selection Modal */}
+      <ThemesSelectionModal
+        open={themesModalOpen}
+        section={selectedSection}
+        onClose={() => {
+          setThemesModalOpen(false);
+          setSelectedSection(null);
+        }}
+        onSuccess={handleThemesSuccess}
         isMobile={isMobile}
       />
 
@@ -983,7 +1105,10 @@ function HomePageContent() {
       <ConfigurationBuilderModal
         open={configBuilderModalOpen}
         sectionType={selectedSectionType}
-        onClose={() => setConfigBuilderModalOpen(false)}
+        onClose={() => {
+          setConfigBuilderModalOpen(false);
+          setSelectedSectionType('');
+        }}
         onSuccess={handleConfigBuilderSuccess}
         isMobile={isMobile}
       />
@@ -1952,6 +2077,327 @@ function DestinationsSelectionModal({
           showTotal: (total) => `Total ${total} destinations`,
         }}
         scroll={{ x: 600 }}
+      />
+    </Modal>
+  );
+}
+
+// Countries Selection Modal Component
+function CountriesSelectionModal({
+  open,
+  section,
+  onClose,
+  onSuccess,
+  isMobile,
+}: {
+  open: boolean;
+  section: HomePageSection | null;
+  onClose: () => void;
+  onSuccess: (selectedIds: string[]) => void;
+  isMobile: boolean;
+}) {
+  const { message } = App.useApp();
+  const [loading, setLoading] = useState(false);
+  const [countries, setCountries] = useState<any[]>([]);
+  const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open && section) {
+      const config = section.configuration as any;
+      setSelectedCountryIds(config?.countryIds || []);
+      loadCountries();
+    }
+  }, [open, section]);
+
+  const loadCountries = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sunhotels/countries`);
+      
+      if (!response.ok) throw new Error('Failed to load countries');
+
+      const data = await response.json();
+      const countriesData = data.data || data;
+      setCountries(countriesData);
+    } catch (error) {
+      message.error('Failed to load countries');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!section) return;
+
+    try {
+      const token = localStorage.getItem('admin_token');
+      const config = {
+        ...section.configuration,
+        countryIds: selectedCountryIds,
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...section,
+          configuration: config,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update section');
+
+      message.success('Countries updated successfully');
+      onSuccess(selectedCountryIds);
+      onClose();
+    } catch (error) {
+      message.error('Failed to save countries');
+      console.error(error);
+    }
+  };
+
+  const toggleCountry = (id: string) => {
+    if (selectedCountryIds.includes(id)) {
+      setSelectedCountryIds(selectedCountryIds.filter(i => i !== id));
+    } else {
+      setSelectedCountryIds([...selectedCountryIds, id]);
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Country',
+      key: 'country',
+      render: (_: any, item: any) => (
+        <Space>
+          <span style={{ fontSize: '24px' }}>
+            {String.fromCodePoint(...[...item.code.toUpperCase()].map((char: string) => 127397 + char.charCodeAt(0)))}
+          </span>
+          <div>
+            <div>{item.name}</div>
+            <div style={{ fontSize: '12px', color: '#888' }}>{item.destinationCount} destinations</div>
+          </div>
+        </Space>
+      ),
+    },
+    {
+      title: 'Select',
+      key: 'select',
+      render: (_: any, item: any) => (
+        <Button
+          type={selectedCountryIds.includes(item.countryId) ? 'primary' : 'default'}
+          size="small"
+          onClick={() => toggleCountry(item.countryId)}
+        >
+          {selectedCountryIds.includes(item.countryId) ? 'Selected' : 'Select'}
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <Modal
+      title="Select Countries"
+      open={open}
+      onCancel={onClose}
+      onOk={handleSave}
+      width={isMobile ? '100%' : 800}
+      okText="Save"
+      cancelText="Cancel"
+    >
+      <div style={{ marginBottom: 16 }}>
+        <Text strong>Selected Countries ({selectedCountryIds.length}):</Text>
+        <div style={{ marginTop: 8 }}>
+          {selectedCountryIds.map(id => {
+            const country = countries.find(c => c.countryId === id);
+            return country ? (
+              <Tag
+                key={id}
+                closable
+                onClose={() => toggleCountry(id)}
+                style={{ marginBottom: 4 }}
+              >
+                {country.name}
+              </Tag>
+            ) : null;
+          })}
+        </div>
+      </div>
+
+      <Table
+        loading={loading}
+        dataSource={countries}
+        columns={columns}
+        rowKey="countryId"
+        size="small"
+        pagination={{
+          pageSize: 10,
+          showTotal: (total) => `Total ${total} countries`,
+        }}
+        scroll={{ x: 400 }}
+      />
+    </Modal>
+  );
+}
+
+// Themes Selection Modal Component
+function ThemesSelectionModal({
+  open,
+  section,
+  onClose,
+  onSuccess,
+  isMobile,
+}: {
+  open: boolean;
+  section: HomePageSection | null;
+  onClose: () => void;
+  onSuccess: (selectedIds: string[]) => void;
+  isMobile: boolean;
+}) {
+  const { message } = App.useApp();
+  const [loading, setLoading] = useState(false);
+  const [themes, setThemes] = useState<any[]>([]);
+  const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open && section) {
+      const config = section.configuration as any;
+      setSelectedThemeIds(config?.themeIds?.map((id: number) => id.toString()) || []);
+      loadThemes();
+    }
+  }, [open, section]);
+
+  const loadThemes = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sunhotels/themes`);
+      
+      if (!response.ok) throw new Error('Failed to load themes');
+
+      const data = await response.json();
+      const themesData = data.data || data;
+      setThemes(themesData);
+    } catch (error) {
+      message.error('Failed to load themes');
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!section) return;
+
+    try {
+      const token = localStorage.getItem('admin_token');
+      const config = {
+        ...section.configuration,
+        themeIds: selectedThemeIds.map(id => parseInt(id)),
+      };
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...section,
+          configuration: config,
+        }),
+      });
+
+      if (!response.ok) throw new Error('Failed to update section');
+
+      message.success('Themes updated successfully');
+      onSuccess(selectedThemeIds);
+      onClose();
+    } catch (error) {
+      message.error('Failed to save themes');
+      console.error(error);
+    }
+  };
+
+  const toggleTheme = (id: string) => {
+    if (selectedThemeIds.includes(id)) {
+      setSelectedThemeIds(selectedThemeIds.filter(i => i !== id));
+    } else {
+      setSelectedThemeIds([...selectedThemeIds, id]);
+    }
+  };
+
+  const columns = [
+    {
+      title: 'Theme',
+      key: 'theme',
+      render: (_: any, item: any) => (
+        <div>
+          <div>{item.name}</div>
+          {item.englishName && item.englishName !== item.name && (
+            <div style={{ fontSize: '12px', color: '#888' }}>{item.englishName}</div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: 'Select',
+      key: 'select',
+      render: (_: any, item: any) => (
+        <Button
+          type={selectedThemeIds.includes(item.themeId.toString()) ? 'primary' : 'default'}
+          size="small"
+          onClick={() => toggleTheme(item.themeId.toString())}
+        >
+          {selectedThemeIds.includes(item.themeId.toString()) ? 'Selected' : 'Select'}
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <Modal
+      title="Select Themes"
+      open={open}
+      onCancel={onClose}
+      onOk={handleSave}
+      width={isMobile ? '100%' : 800}
+      okText="Save"
+      cancelText="Cancel"
+    >
+      <div style={{ marginBottom: 16 }}>
+        <Text strong>Selected Themes ({selectedThemeIds.length}):</Text>
+        <div style={{ marginTop: 8 }}>
+          {selectedThemeIds.map(id => {
+            const theme = themes.find(t => t.themeId.toString() === id);
+            return theme ? (
+              <Tag
+                key={id}
+                closable
+                onClose={() => toggleTheme(id)}
+                style={{ marginBottom: 4 }}
+              >
+                {theme.name}
+              </Tag>
+            ) : null;
+          })}
+        </div>
+      </div>
+
+      <Table
+        loading={loading}
+        dataSource={themes}
+        columns={columns}
+        rowKey="themeId"
+        size="small"
+        pagination={{
+          pageSize: 10,
+          showTotal: (total) => `Total ${total} themes`,
+        }}
+        scroll={{ x: 400 }}
       />
     </Modal>
   );

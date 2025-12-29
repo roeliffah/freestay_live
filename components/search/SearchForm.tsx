@@ -82,8 +82,8 @@ export function SearchForm() {
 
     // Tarihler varsa ekle (real-time search için)
     if (dateRange?.from && dateRange?.to) {
-      searchUrl.append('checkIn', format(dateRange.from, 'yyyy-MM-dd'));
-      searchUrl.append('checkOut', format(dateRange.to, 'yyyy-MM-dd'));
+      searchUrl.append('checkInDate', format(dateRange.from, 'yyyy-MM-dd'));
+      searchUrl.append('checkOutDate', format(dateRange.to, 'yyyy-MM-dd'));
       searchUrl.append('mode', 'realtime');
     } else {
       searchUrl.append('mode', 'static');

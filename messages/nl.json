@@ -145,14 +145,27 @@
   "search": {
     "title": "Zoekresultaten",
     "hotelsFound": "hotels gevonden",
+    "staticMode": "Statisch Zoeken",
+    "realtimeMode": "Live Prijzen",
+    "staticModeInfo": "Geschatte prijzen worden getoond. Selecteer datums in het zoekformulier voor actuele prijzen en beschikbaarheid.",
     "filters": "Filters",
     "sortBy": "Sorteer op",
     "price": "Prijs",
     "rating": "Beoordeling",
     "name": "Naam",
     "stars": "Sterren",
+    "dates": "Data",
+    "checkIn": "Inchecken",
+    "checkOut": "Uitchecken",
+    "country": "Land",
+    "city": "Stad",
+    "themes": "Thema's",
+    "features": "Voorzieningen",
+    "resorts": "Resorts",
+    "roomTypes": "Kamertypes",
     "priceRange": "Prijsklasse",
     "all": "Alle",
+    "allStars": "Alle Sterren",
     "clearFilters": "Filters wissen",
     "perNight": "Vanaf prijs per nacht",
     "taxIncluded": "Inclusief belasting",
@@ -165,6 +178,8 @@
     "allStars": "Alle Sterren",
     "tryAgain": "Probeer opnieuw",
     "loading": "Hotels laden...",
+    "previous": "Vorige",
+    "next": "Volgende",
     "sortOptions": {
       "priceAsc": "Prijs (Laag naar Hoog)",
       "priceDesc": "Prijs (Hoog naar Laag)",
@@ -176,10 +191,7 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    },
-    "staticMode": "Statisch Zoeken",
-    "realtimeMode": "Live Prijzen",
-    "staticModeInfo": "Geschatte prijzen worden getoond. Selecteer datums in het zoekformulier voor actuele prijzen en beschikbaarheid."
+    }
   },
   "hotel": {
     "deal": "Aanbieding!",
@@ -196,7 +208,15 @@
     "freeCancellation": "Gratis annuleren",
     "noPayment": "Geen vooruitbetaling",
     "instantConfirm": "Directe bevestiging",
-    "location": "Locatie"
+    "location": "Locatie",
+    "priceNotAvailable": "Selecteer datums om de prijs te zien",
+    "selectDates": "Datums selecteren",
+    "selectDatesForPrice": "Selecteer datums om de prijs te zien",
+    "searchWithDates": "Zoeken met deze datums",
+    "checkIn": "Inchecken",
+    "checkOut": "Uitchecken",
+    "selectDate": "Datum selecteren",
+    "reviews": "beoordelingen"
   },
   "about": {
     "hero": {

@@ -111,12 +111,16 @@ export function PopularCountries({ locale, countryIds, title }: PopularCountries
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {countries.map((country) => (
-            <Link
-              key={country.countryId}
-              href={`/${locale}/search?country=${country.code}`}
-              className="group"
-            >
+          {countries.map((country) => {
+            const countryUrl = `/${locale}/search?country=${country.code}`;
+            console.log('🔗 Country link:', country.name, '→', countryUrl, 'code:', country.code);
+            
+            return (
+              <Link
+                key={country.countryId}
+                href={countryUrl}
+                className="group"
+              >
               <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                 <div className="relative h-48">
                   <img
@@ -138,7 +142,8 @@ export function PopularCountries({ locale, countryIds, title }: PopularCountries
                 </div>
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

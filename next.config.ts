@@ -11,6 +11,19 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'http',
+        hostname: 'xml.sunhotels.net',
+      },
+      {
+        protocol: 'https',
+        hostname: 'xml.sunhotels.net',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5240',
+      },
     ],
   },
 };

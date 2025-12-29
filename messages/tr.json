@@ -164,6 +164,15 @@
     "rating": "Değerlendirme",
     "name": "İsim",
     "stars": "Yıldız Sayısı",
+    "dates": "Tarihler",
+    "checkIn": "Giriş Tarihi",
+    "checkOut": "Çıkış Tarihi",
+    "country": "Ülke",
+    "city": "Şehir",
+    "themes": "Tema",
+    "features": "Özellikler",
+    "resorts": "Bolgeler",
+    "roomTypes": "Oda Tipi",
     "priceRange": "Fiyat Aralığı",
     "all": "Tümü",
     "allStars": "Tüm Yıldızlar",
@@ -178,6 +187,8 @@
     "featuredHotelsInfo": "Aşağıda önerilen otellerimizi görebilirsiniz.",
     "tryAgain": "Tekrar Dene",
     "loading": "Oteller yükleniyor...",
+    "previous": "Önceki",
+    "next": "Sonraki",
     "sortOptions": {
       "priceAsc": "Fiyat (Düşükten Yükseğe)",
       "priceDesc": "Fiyat (Yüksekten Düşüğe)",
@@ -206,7 +217,15 @@
     "freeCancellation": "Ücretsiz iptal",
     "noPayment": "Ön ödeme yok",
     "instantConfirm": "Anında onay",
-    "location": "Konum"
+    "location": "Konum",
+    "priceNotAvailable": "Fiyat için tarih seçin",
+    "selectDates": "Tarih Seç",
+    "selectDatesForPrice": "Fiyat Görmek İçin Tarih Seçin",
+    "searchWithDates": "Bu Tarihlerle Ara",
+    "checkIn": "Giriş Tarihi",
+    "checkOut": "Çıkış Tarihi",
+    "selectDate": "Tarih seçin",
+    "reviews": "değerlendirme"
   },
   "about": {
     "hero": {

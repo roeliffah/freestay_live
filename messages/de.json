@@ -145,14 +145,27 @@
   "search": {
     "title": "Suchergebnisse",
     "hotelsFound": "Hotels gefunden",
+    "staticMode": "Statische Suche",
+    "realtimeMode": "Live-Preise",
+    "staticModeInfo": "Ungefähre Preise werden angezeigt. Wählen Sie Daten im Suchformular für aktuelle Preise und Verfügbarkeit.",
     "filters": "Filter",
     "sortBy": "Sortieren nach",
     "price": "Preis",
     "rating": "Bewertung",
     "name": "Name",
     "stars": "Sterne",
+    "dates": "Daten",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "country": "Land",
+    "city": "Stadt",
+    "themes": "Themen",
+    "features": "Ausstattung",
+    "resorts": "Resorts",
+    "roomTypes": "Zimmertypen",
     "priceRange": "Preisspanne",
     "all": "Alle",
+    "allStars": "Alle Sterne",
     "clearFilters": "Filter löschen",
     "perNight": "Preis pro Nacht ab",
     "taxIncluded": "Inkl. Steuern",
@@ -165,6 +178,8 @@
     "allStars": "Alle Sterne",
     "tryAgain": "Erneut versuchen",
     "loading": "Hotels werden geladen...",
+    "previous": "Zurück",
+    "next": "Weiter",
     "sortOptions": {
       "priceAsc": "Preis (Niedrig bis Hoch)",
       "priceDesc": "Preis (Hoch bis Niedrig)",
@@ -176,10 +191,7 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    },
-    "staticMode": "Statische Suche",
-    "realtimeMode": "Live-Preise",
-    "staticModeInfo": "Ungefähre Preise werden angezeigt. Wählen Sie Daten im Suchformular für aktuelle Preise und Verfügbarkeit."
+    }
   },
   "hotel": {
     "deal": "Angebot!",
@@ -196,7 +208,15 @@
     "freeCancellation": "Kostenlose Stornierung",
     "noPayment": "Keine Vorauszahlung",
     "instantConfirm": "Sofortige Bestätigung",
-    "location": "Lage"
+    "location": "Lage",
+    "priceNotAvailable": "Wählen Sie Daten für den Preis",
+    "selectDates": "Daten auswählen",
+    "selectDatesForPrice": "Daten auswählen um Preis zu sehen",
+    "searchWithDates": "Mit diesen Daten suchen",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "selectDate": "Datum auswählen",
+    "reviews": "Bewertungen"
   },
   "about": {
     "hero": {

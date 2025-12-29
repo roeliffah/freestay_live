@@ -145,14 +145,27 @@
   "search": {
     "title": "Risultati ricerca",
     "hotelsFound": "hotel trovati",
+    "staticMode": "Ricerca Statica",
+    "realtimeMode": "Prezzi in Tempo Reale",
+    "staticModeInfo": "Mostrando prezzi approssimativi. Seleziona le date nel modulo di ricerca per i prezzi attuali e la disponibilità.",
     "filters": "Filtri",
     "sortBy": "Ordina per",
     "price": "Prezzo",
     "rating": "Valutazione",
     "name": "Nome",
     "stars": "Stelle",
+    "dates": "Date",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "country": "Paese",
+    "city": "Città",
+    "themes": "Temi",
+    "features": "Servizi",
+    "resorts": "Resort",
+    "roomTypes": "Tipi di camera",
     "priceRange": "Fascia di prezzo",
     "all": "Tutti",
+    "allStars": "Tutte le Stelle",
     "clearFilters": "Cancella filtri",
     "perNight": "Prezzo a partire da per notte",
     "taxIncluded": "Tasse incluse",
@@ -165,6 +178,8 @@
     "allStars": "Tutte le Stelle",
     "tryAgain": "Riprova",
     "loading": "Caricamento hotel...",
+    "previous": "Precedente",
+    "next": "Successivo",
     "sortOptions": {
       "priceAsc": "Prezzo (Dal più basso)",
       "priceDesc": "Prezzo (Dal più alto)",
@@ -176,10 +191,7 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    },
-    "staticMode": "Ricerca Statica",
-    "realtimeMode": "Prezzi in Tempo Reale",
-    "staticModeInfo": "Mostrando prezzi approssimativi. Seleziona le date nel modulo di ricerca per i prezzi attuali e la disponibilità."
+    }
   },
   "hotel": {
     "deal": "Offerta!",
@@ -196,7 +208,15 @@
     "freeCancellation": "Cancellazione gratuita",
     "noPayment": "Nessun pagamento anticipato",
     "instantConfirm": "Conferma istantanea",
-    "location": "Posizione"
+    "location": "Posizione",
+    "priceNotAvailable": "Seleziona le date per vedere il prezzo",
+    "selectDates": "Seleziona date",
+    "selectDatesForPrice": "Seleziona le date per vedere il prezzo",
+    "searchWithDates": "Cerca con queste date",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "selectDate": "Seleziona data",
+    "reviews": "recensioni"
   },
   "about": {
     "hero": {

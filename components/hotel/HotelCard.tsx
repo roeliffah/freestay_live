@@ -1,13 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { Star, MapPin, Wifi, Coffee, Dumbbell, Waves, UtensilsCrossed } from 'lucide-react';
+import { Star, MapPin, Wifi, Coffee, Dumbbell, Waves, UtensilsCrossed, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { tr, enUS, de, fr, es, it, el, ru, nl, type Locale } from 'date-fns/locale';
 
 interface Hotel {
   hotelId: number;
@@ -19,8 +25,9 @@ interface Hotel {
   category: number;
   resortName: string;
   minPrice: number;
-  currency: string;
-  images: Array<{ url: string; order: number }>;
+  currency?: string;
+  images?: Array<{ url: string; order: number }>;
+  imageUrls?: string[];
   reviewScore?: number;
   reviewCount?: number;
   featureIds?: number[];
@@ -58,7 +65,17 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const t = useTranslations('hotel');
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const locale = params.locale as string;
+  
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [checkInDate, setCheckInDate] = useState<Date>();
+  const [checkOutDate, setCheckOutDate] = useState<Date>();
+  
+  const localeMap: Record<string, Locale> = {
+    tr, en: enUS, de, fr, es, it, el, ru, nl
+  };
+  const dateLocale = localeMap[locale] || enUS;
 
   // Build hotel detail URL with search parameters
   const checkIn = searchParams.get('checkIn') || getDefaultCheckIn();
@@ -71,13 +88,31 @@ export function HotelCard({ hotel }: HotelCardProps) {
   // Backend'den gelen özellikler listesi yoksa default liste kullan
   const facilities = ['WiFi', 'Restaurant', 'Pool', 'Spa', 'Gym', 'Beach'];
 
+  // imageUrls (unified endpoint) veya images (legacy) kullan
+  const imageUrl = hotel.imageUrls?.[0] || hotel.images?.[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
+  const currency = hotel.currency || 'EUR';
+  
+  const hasPrice = hotel.minPrice && hotel.minPrice > 0;
+  const hasDates = checkIn && checkOut;
+  
+  const handleDateSearch = () => {
+    if (checkInDate && checkOutDate) {
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set('checkIn', format(checkInDate, 'yyyy-MM-dd'));
+      newParams.set('checkOut', format(checkOutDate, 'yyyy-MM-dd'));
+      
+      router.push(`/${locale}/search?${newParams.toString()}`);
+      setShowDatePicker(false);
+    }
+  };
+
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-shadow">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-0">
         {/* Görsel */}
         <div className="relative h-48 sm:h-56 md:h-auto md:min-h-[250px]">
           <Image
-            src={hotel.images[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800'}
+            src={imageUrl}
             alt={hotel.name}
             fill
             className="object-cover"
@@ -143,12 +178,32 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
           {/* Fiyat ve CTA */}
           <div className="mt-4 pt-4 border-t flex items-end justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">{t('startingPrice')}</p>
-              <p className="text-3xl font-bold text-primary">
-                {hotel.currency === 'EUR' ? '€' : hotel.currency === 'USD' ? '$' : '₺'}{hotel.minPrice?.toLocaleString(locale) || '0'}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">{t('taxIncluded')}</p>
+            <div className="flex-1">
+              {hasPrice ? (
+                <>
+                  <p className="text-sm text-muted-foreground">{t('startingPrice')}</p>
+                  <p className="text-3xl font-bold text-primary">
+                    {currency === 'EUR' ? '€' : currency === 'USD' ? '$' : '₺'}{hotel.minPrice?.toLocaleString(locale)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">{t('taxIncluded')}</p>
+                </>
+              ) : (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">{t('priceNotAvailable')}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShowDatePicker(true);
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    {t('selectDates')}
+                  </Button>
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -164,6 +219,66 @@ export function HotelCard({ hotel }: HotelCardProps) {
           </div>
         </div>
       </div>
+      
+      {/* Tarih Seçme Modalı */}
+      <Dialog open={showDatePicker} onOpenChange={setShowDatePicker}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{t('selectDatesForPrice')}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">{t('checkIn')}</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {checkInDate ? format(checkInDate, 'PPP', { locale: dateLocale }) : t('selectDate')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkInDate}
+                      onSelect={setCheckInDate}
+                      disabled={(date) => date < new Date()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">{t('checkOut')}</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal">
+                      <Calendar className="mr-2 h-4 w-4" />
+                      {checkOutDate ? format(checkOutDate, 'PPP', { locale: dateLocale }) : t('selectDate')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkOutDate}
+                      onSelect={setCheckOutDate}
+                      disabled={(date) => !checkInDate || date <= checkInDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <Button 
+              onClick={handleDateSearch}
+              disabled={!checkInDate || !checkOutDate}
+              className="w-full"
+            >
+              {t('searchWithDates')}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
