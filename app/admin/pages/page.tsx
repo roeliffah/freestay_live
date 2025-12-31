@@ -234,7 +234,7 @@ function PagesContent() {
           <Button
             type="text"
             icon={<EyeOutlined />}
-            onClick={() => window.open(`/tr/${record.slug}`, '_blank')}
+            onClick={() => window.open(`/tr/pages/${record.slug}`, '_blank')}
           />
           <Popconfirm
             title="Delete Page"
