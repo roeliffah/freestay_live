@@ -961,7 +961,7 @@ function SettingsContent() {
           onFinish={(values) => handleSave('affiliate', values)}
         >
           <Alert
-            message="Affiliate Programs"
+            title="Affiliate Programs"
             description="Configure affiliate links for travel services. When active, these links will appear in the header dropdown menu and travel CTA cards."
             type="info"
             showIcon

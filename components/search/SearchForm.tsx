@@ -24,8 +24,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { sunhotelsAPI } from '@/lib/api/client';
 
 interface Destination {
-  id: number;
+  id: string; // Backend UUID
+  destinationId: string | number; // SunHotels location ID (API döndürüyor)
   name: string;
+  country?: string;
   countryCode?: string;
   countryName?: string;
   resortCount?: number;
@@ -59,8 +61,21 @@ export function SearchForm() {
     const timer = setTimeout(async () => {
       setLoadingDestinations(true);
       try {
-        const results = await sunhotelsAPI.searchDestinations(destination) as Destination[];
-        setDestinations(Array.isArray(results) ? results : []);
+        const response: any = await sunhotelsAPI.searchDestinations(destination);
+        console.log('🔍 Search destinations response:', response);
+        
+        // Handle different response formats
+        let results: Destination[] = [];
+        if (Array.isArray(response)) {
+          results = response;
+        } else if (response?.data && Array.isArray(response.data)) {
+          results = response.data;
+        } else if (response?.destinations && Array.isArray(response.destinations)) {
+          results = response.destinations;
+        }
+        
+        console.log('✅ Formatted destinations:', results.length, results);
+        setDestinations(results);
       } catch (error) {
         console.error('❌ Destinasyon arama hatası:', error);
         setDestinations([]);
@@ -156,7 +171,7 @@ export function SearchForm() {
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                     onClick={() => {
                       setDestination(dest.name);
-                      setSelectedDestinationId(dest.id);
+                      setSelectedDestinationId(Number(dest.destinationId));
                       setShowDestinations(false);
                     }}
                   >

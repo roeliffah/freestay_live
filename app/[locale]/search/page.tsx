@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useSearchParams, useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { HotelCard } from '@/components/hotel/HotelCard';
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SlidersHorizontal, Star, MapPin, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { getCountryName } from '@/lib/functions/functions';
 
 interface Hotel {
   hotelId: number;
@@ -52,6 +53,8 @@ interface Filters {
   sortOrder?: 'asc' | 'desc';
   countries?: string[];
   cities?: string[];
+  destinations?: string[]; // UUID strings for destinations
+  hotelName?: string; // Hotel name search
   themes?: string[]; // UUID strings, not numbers
   features?: string[]; // UUID strings, not numbers
   resorts?: string[]; // UUID strings, not numbers
@@ -85,6 +88,12 @@ interface Resort {
   destinationName?: string;
 }
 
+interface Destination {
+  id: string; // Backend UUID
+  sunHotelsId?: number; // SunHotels integer ID
+  name: string;
+  countryCode: string;
+}
 
 function SearchPage() {
   const searchParams = useSearchParams();
@@ -115,100 +124,164 @@ function SearchPage() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [roomTypes, setRoomTypes] = useState<RoomType[]>([]);
   const [resorts, setResorts] = useState<Resort[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [availableCountries, setAvailableCountries] = useState<string[]>([]);
   const [availableCities, setAvailableCities] = useState<string[]>([]);
+  
+  // Cache filter options to avoid re-fetching
+  const filterOptionsCache = useRef<Record<string, { themes: Theme[], features: Feature[], roomTypes: RoomType[], resorts: Resort[] }>>({});
+  
+  // Debounce timer for filter changes
+  const filterDebounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setCurrentPage(1); // Reset to page 1 when search params change
     loadHotels(1);
   }, [searchParams, locale]);
 
+  // Debounced filter effect - wait before making API call
   useEffect(() => {
-    loadHotels(currentPage);
-  }, [currentPage, filters.starRating, filters.countries, filters.cities, filters.themes, filters.features, filters.resorts, filters.roomTypes, filters.checkIn, filters.checkOut]);
+    if (filterDebounceTimer.current) {
+      clearTimeout(filterDebounceTimer.current);
+    }
+    filterDebounceTimer.current = setTimeout(() => {
+      loadHotels(1);
+    }, 300); // Wait 300ms after filter change before making request
+
+    return () => {
+      if (filterDebounceTimer.current) {
+        clearTimeout(filterDebounceTimer.current);
+      }
+    };
+  }, [filters.starRating, filters.countries, filters.cities, filters.themes, filters.features, filters.resorts, filters.roomTypes, filters.checkIn, filters.checkOut, filters.hotelName, filters.destinations]);
+
+  // Separate pagination effect - immediate response
+  useEffect(() => {
+    if (currentPage > 1) {
+      loadHotels(currentPage);
+    }
+  }, [currentPage]);
   
-  // Load filter options on mount
+  // Load destinations when country is selected (for non-static searches)
   useEffect(() => {
+    const isNonStatic = filters.checkIn && filters.checkOut;
+    
+    if (isNonStatic && filters.countries && filters.countries.length > 0) {
+      loadDestinations(filters.countries);
+    } else {
+      setDestinations([]);
+    }
+  }, [filters.countries, filters.checkIn, filters.checkOut]);
+  
+  // Load filter options on mount - with caching
+  useEffect(() => {
+    const lang = selectedLang;
+    
+    // Check cache first
+    if (filterOptionsCache.current[lang]) {
+      const cached = filterOptionsCache.current[lang];
+      setThemes(cached.themes);
+      setFeatures(cached.features);
+      setRoomTypes(cached.roomTypes);
+      setResorts(cached.resorts);
+      return;
+    }
+    
     loadFilterOptions();
-  }, [locale]);
+  }, [locale, selectedLang]);
   
   const loadFilterOptions = async () => {
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL;
-      const lang = selectedLang; // Use selectedLang which falls back to 'en' if locale not supported
+      const lang = selectedLang;
+      const filterStartTime = performance.now();
       
       console.log('🔧 Loading filter options for language:', lang, '(original locale:', locale, ')');
       
-      // Load themes with proper headers
-      const themesRes = await fetch(`${API_URL}/sunhotels/themes?language=${lang}`, {
-        headers: {
-          'Accept-Language': lang,
-          'Content-Type': 'application/json',
-        }
-      });
+      // Load only themes and features (room-types and resorts are too large and not needed for search filters)
+      const [themesRes, featuresRes] = await Promise.all([
+        fetch(`${API_URL}/sunhotels/themes?language=${lang}`, {
+          headers: {
+            'Accept-Language': lang,
+            'Content-Type': 'application/json',
+          }
+        }),
+        fetch(`${API_URL}/sunhotels/features?language=${lang}`, {
+          headers: {
+            'Accept-Language': lang,
+            'Content-Type': 'application/json',
+          }
+        })
+      ]);
+
+      let themesData: Theme[] = [];
+      let featuresData: Feature[] = [];
+
       if (themesRes.ok) {
-        const themesData = await themesRes.json();
+        themesData = await themesRes.json();
         console.log('✅ Themes loaded:', themesData.length);
-        console.log('📋 First theme sample:', themesData[0]);
-        setThemes(themesData);
       } else {
         console.error('❌ Failed to load themes:', themesRes.status);
       }
-      
-      // Load features
-      console.log('🌍 Requesting features for language:', lang);
-      const featuresRes = await fetch(`${API_URL}/sunhotels/features?language=${lang}`, {
-        headers: {
-          'Accept-Language': lang,
-          'Content-Type': 'application/json',
-        }
-      });
+
       if (featuresRes.ok) {
-        const featuresData = await featuresRes.json();
+        featuresData = await featuresRes.json();
         console.log('✅ Features loaded:', featuresData.length);
-        console.log('📋 FULL Features data:', featuresData); // FULL veri
-        console.log('📋 First feature detailed:', JSON.stringify(featuresData[0], null, 2)); // İlk öğenin tüm alanları
-        console.log('⚠️ Checking languageCode field:', featuresData.map((f: any) => ({ id: f.id, name: f.name, languageCode: f.languageCode, sunHotelsId: f.sunHotelsId })));
-        setFeatures(featuresData);
       } else {
         console.error('❌ Failed to load features:', featuresRes.status);
       }
-      
-      // Load room types
-      const roomTypesRes = await fetch(`${API_URL}/sunhotels/room-types?language=${lang}`, {
-        headers: {
-          'Accept-Language': lang,
-          'Content-Type': 'application/json',
-        }
-      });
-      if (roomTypesRes.ok) {
-        const roomTypesData = await roomTypesRes.json();
-        console.log('✅ Room types loaded:', roomTypesData.length);
-        console.log('📋 First room type sample:', roomTypesData[0]);
-        setRoomTypes(roomTypesData);
-      } else {
-        console.error('❌ Failed to load room types:', roomTypesRes.status);
-      }
-      
-      // Load resorts
-      console.log('🌍 Requesting resorts for language:', lang);
-      const resortsRes = await fetch(`${API_URL}/sunhotels/resorts?language=${lang}`, {
-        headers: {
-          'Accept-Language': lang,
-          'Content-Type': 'application/json',
-        }
-      });
-      if (resortsRes.ok) {
-        const resortsData = await resortsRes.json();
-        console.log('✅ Resorts loaded:', resortsData.length);
-        console.log('📋 First 3 resort samples:', resortsData.slice(0, 3));
-        console.log('⚠️ Check if resort names are in correct language:', lang);
-        setResorts(resortsData);
-      } else {
-        console.error('❌ Failed to load resorts:', resortsRes.status);
-      }
+
+      const filterEndTime = performance.now();
+      console.log(`⏱️ Filter options loading took: ${(filterEndTime - filterStartTime).toFixed(2)}ms`);
+
+      // Update state
+      setThemes(themesData);
+      setFeatures(featuresData);
+      // Empty room types and resorts (not needed for search)
+      setRoomTypes([]);
+      setResorts([]);
+
+      // Cache the results
+      filterOptionsCache.current[lang] = {
+        themes: themesData,
+        features: featuresData,
+        roomTypes: [],
+        resorts: []
+      };
     } catch (error) {
       console.error('❌ Failed to load filter options:', error);
+    }
+  };
+
+  const loadDestinations = async (countryCodes: string[]) => {
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+      
+      console.log('🌍 Loading destinations for countries:', countryCodes);
+      
+      // Fetch destinations for each country
+      const destinationRes = await fetch(`${API_URL}/sunhotels/destinations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          countryCodes: countryCodes,
+          language: selectedLang
+        }),
+      });
+
+      if (destinationRes.ok) {
+        const destinationsData: Destination[] = await destinationRes.json();
+        console.log('✅ Destinations loaded:', destinationsData.length);
+        setDestinations(destinationsData);
+      } else {
+        console.error('❌ Failed to load destinations:', destinationRes.status);
+        setDestinations([]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading destinations:', error);
+      setDestinations([]);
     }
   };
 
@@ -226,6 +299,7 @@ function SearchPage() {
       // Get all search parameters
       const destination = searchParams.get('destination') || '';
       const destinationId = searchParams.get('destinationId');
+      const hotelId = searchParams.get('hotelId');
       const countryCode = searchParams.get('country');
       const themeId = searchParams.get('themeId');
       // Tarihleri önce filters'dan al, yoksa query string'den al
@@ -237,6 +311,7 @@ function SearchPage() {
       console.log('🔍 Unified Search Parameters:', {
         destination,
         destinationId,
+        hotelId,
         countryCode,
         themeId,
         checkIn,
@@ -268,6 +343,10 @@ function SearchPage() {
       }
 
       // Add filters
+      // Belirli bir otel aranıyorsa (date picker'dan geldiyse)
+      if (hotelId) {
+        requestBody.hotelIds = [parseInt(hotelId)];
+      }
       if (destinationId) {
         requestBody.destinationIds = [destinationId];
       }
@@ -291,6 +370,28 @@ function SearchPage() {
       // Yeni filtreler - sadece dolu olanları gönder
       if (filters.countries && filters.countries.length > 0) {
         requestBody.countryCodes = filters.countries;
+      }
+      if (filters.cities && filters.cities.length > 0) {
+        requestBody.cityNames = filters.cities;
+      }
+      if (filters.hotelName && filters.hotelName.trim()) {
+        requestBody.searchTerm = filters.hotelName.trim();
+      }
+      
+      // Non-static search: Send destination IDs when dates are selected
+      const isNonStaticSearch = checkIn && checkOut;
+      if (isNonStaticSearch && filters.destinations && filters.destinations.length > 0) {
+        // Convert destination UUIDs to sunHotelsIds (numbers)
+        const destinationNumbers = filters.destinations
+          .map(destId => {
+            const dest = destinations.find(d => d.id === destId);
+            return dest?.sunHotelsId;
+          })
+          .filter(id => id !== undefined && id !== null) as number[];
+        if (destinationNumbers.length > 0) {
+          requestBody.destinationIds = destinationNumbers;
+          console.log('📍 Non-static search with destinations:', destinationNumbers);
+        }
       }
       if (filters.themes && filters.themes.length > 0) {
         // Theme ID'lerini sunHotelsId (sayı) olarak gönder
@@ -343,39 +444,86 @@ function SearchPage() {
 
       console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
       console.log('🔐 Using language:', selectedLang, '(original locale:', locale, ', supported languages:', sunhotelsLanguages.includes(locale) ? 'YES' : 'NO', ')');
-      // Call unified search endpoint
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sunhotels/search/unified`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        }
-      );
+      
+      // Measure API call time
+      const apiStartTime = performance.now();
+      console.log('🚀 API request starting at:', new Date().toLocaleTimeString());
+      
+      // Call unified search endpoint with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/sunhotels/search/unified`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+          }
+        );
 
-      if (response.ok) {
-        const result: SearchResponse = await response.json();
-        console.log('✅ Unified search result:', result);
-        console.log('📊 Search Type:', result.searchType, '| Hotels count:', result.hotels.length, '| Total:', result.totalCount);
-        console.log('🏨 FULL Hotels data:', result.hotels);
-        if (result.hotels.length > 0) {
-          console.log('📍 First hotel detailed:', JSON.stringify(result.hotels[0], null, 2));
+        clearTimeout(timeoutId);
+        const apiEndTime = performance.now();
+        const apiDuration = apiEndTime - apiStartTime;
+        console.log(`⏱️ API response received in: ${apiDuration.toFixed(2)}ms (${(apiDuration / 1000).toFixed(2)}s)`);
+
+        if (response.ok) {
+          const jsonStartTime = performance.now();
+          const result: SearchResponse = await response.json();
+          const jsonEndTime = performance.now();
+          console.log(`⏱️ JSON parsing took: ${(jsonEndTime - jsonStartTime).toFixed(2)}ms`);
+          
+          console.log('✅ Unified search result:', result);
+          console.log('📊 Search Type:', result.searchType, '| Hotels count:', result.hotels.length, '| Total:', result.totalCount);
+          console.log('🏨 FULL Hotels data:', result.hotels);
+          if (result.hotels.length > 0) {
+            console.log('📍 First hotel detailed:', JSON.stringify(result.hotels[0], null, 2));
+          }
+          
+          // Enrich hotels with feature and theme names
+          const enrichedHotels = result.hotels.map(hotel => {
+            const hotelFeatures = hotel.featureIds
+              ?.map(id => features.find(f => f.sunHotelsId === id)?.name)
+              .filter(Boolean) as string[] || [];
+            
+            const hotelThemes = hotel.themeIds
+              ?.map(id => themes.find(t => t.sunHotelsId === id)?.name)
+              .filter(Boolean) as string[] || [];
+            
+            return {
+              ...hotel,
+              features: hotelFeatures,
+              themes: hotelThemes
+            };
+          });
+          
+          setSearchResponse({ ...result, hotels: enrichedHotels });
+          
+          // Extract unique countries and cities from results
+          const countries = Array.from(new Set(result.hotels.map(h => h.countryCode).filter(Boolean)));
+          const cities = Array.from(new Set(result.hotels.map(h => h.city).filter(Boolean)));
+          setAvailableCountries(countries);
+          setAvailableCities(cities);
+        } else {
+          // Log detailed error
+          const errorText = await response.text();
+          console.error('❌ Unified search failed:', response.status);
+          console.error('❌ Error details:', errorText);
+          console.error('❌ Request was:', JSON.stringify(requestBody, null, 2));
+          setSearchResponse({ hotels: [], totalCount: 0, totalPages: 0, currentPage: 0, pageSize: 20, searchType: 'error' });
         }
-        setSearchResponse(result);
-        
-        // Extract unique countries and cities from results
-        const countries = Array.from(new Set(result.hotels.map(h => h.countryCode).filter(Boolean)));
-        const cities = Array.from(new Set(result.hotels.map(h => h.city).filter(Boolean)));
-        setAvailableCountries(countries);
-        setAvailableCities(cities);
-      } else {
-        // Log detailed error
-        const errorText = await response.text();
-        console.error('❌ Unified search failed:', response.status);
-        console.error('❌ Error details:', errorText);
-        console.error('❌ Request was:', JSON.stringify(requestBody, null, 2));
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          console.error('⏱️ API request TIMEOUT - took more than 15 seconds');
+          console.error('⚠️ This indicates the backend is very slow or unresponsive');
+        } else {
+          console.error('❌ Fetch error:', fetchError);
+        }
         setSearchResponse({ hotels: [], totalCount: 0, totalPages: 0, currentPage: 0, pageSize: 20, searchType: 'error' });
       }
     } catch (error) {
@@ -390,6 +538,16 @@ function SearchPage() {
   const isStaticSearch = !searchParams.get('checkInDate') && !searchParams.get('checkindate') && !searchParams.get('checkIn') && !searchParams.get('checkOutDate') && !searchParams.get('checkoutdate') && !searchParams.get('checkOut');
 
   const filteredAndSortedHotels = hotels
+    // Client-side filtering (backend cityNames parametresini görmezden geldiği için)
+    .filter(hotel => {
+      // Şehir filtresi - backend bunu uygulamıyor, client-side'da filtreleyelim
+      if (filters.cities && filters.cities.length > 0) {
+        if (!hotel.city || !filters.cities.includes(hotel.city)) {
+          return false;
+        }
+      }
+      return true;
+    })
     .sort((a, b) => {
       if (filters.sortBy === 'price') {
         const priceA = a.minPrice || 0;
@@ -437,6 +595,15 @@ function SearchPage() {
     setCurrentPage(1);
   };
   
+  const toggleDestinationFilter = (destinationId: string) => {
+    const current = filters.destinations || [];
+    const updated = current.includes(destinationId)
+      ? current.filter((id) => id !== destinationId)
+      : [...current, destinationId];
+    setFilters({ ...filters, destinations: updated });
+    setCurrentPage(1);
+  };
+  
   const toggleThemeFilter = (themeId: string) => {
     const current = filters.themes || [];
     const updated = current.includes(themeId)
@@ -477,9 +644,10 @@ function SearchPage() {
     setFilters({
       sortBy: 'price',
       sortOrder: 'asc',
-      // Tarihleri de temizle
       checkIn: undefined,
       checkOut: undefined,
+      hotelName: undefined,
+      destinations: undefined,
     });
     setCurrentPage(1);
   };
@@ -488,6 +656,8 @@ function SearchPage() {
     (filters.starRating?.length || 0) +
     (filters.countries?.length || 0) +
     (filters.cities?.length || 0) +
+    (filters.destinations?.length || 0) +
+    (filters.hotelName ? 1 : 0) +
     (filters.themes?.length || 0) +
     (filters.features?.length || 0) +
     (filters.resorts?.length || 0) +
@@ -578,6 +748,20 @@ function SearchPage() {
                   </Select>
                 </div>
 
+                {/* Otel Adı Arama */}
+                <div className="mb-6">
+                  <label className="text-sm font-medium mb-2 block">Otel Adı</label>
+                  <Input
+                    placeholder="Otel adını yazın..."
+                    value={filters.hotelName || ''}
+                    onChange={(e) => {
+                      setFilters({ ...filters, hotelName: e.target.value || undefined });
+                      setCurrentPage(1);
+                    }}
+                    className="w-full"
+                  />
+                </div>
+
                 {/* Yıldız Sayısı */}
                 <div className="mb-6">
                   <label className="text-sm font-medium mb-3 block">{t('stars')}</label>
@@ -652,7 +836,7 @@ function SearchPage() {
                               htmlFor={`country-${country}`}
                               className="text-sm cursor-pointer flex-1"
                             >
-                              {country}
+                              {getCountryName(country)}
                             </Label>
                           </div>
                         ))}
@@ -684,6 +868,37 @@ function SearchPage() {
                               className="text-sm cursor-pointer flex-1"
                             >
                               {city}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )}
+
+                {/* Destination/Bölge Filtresi */}
+                {destinations && destinations.length > 0 && (
+                  <div className="mb-6">
+                    <label className="text-sm font-medium mb-3 block">
+                      🌍 Bölge/Destinasyon
+                      {filters.destinations && filters.destinations.length > 0 && (
+                        <Badge variant="secondary" className="ml-2">{filters.destinations.length}</Badge>
+                      )}
+                    </label>
+                    <ScrollArea className="h-40">
+                      <div className="space-y-2 pr-3">
+                        {destinations.map((dest) => (
+                          <div key={dest.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`destination-${dest.id}`}
+                              checked={filters.destinations?.includes(dest.id) || false}
+                              onCheckedChange={() => toggleDestinationFilter(dest.id)}
+                            />
+                            <Label
+                              htmlFor={`destination-${dest.id}`}
+                              className="text-sm cursor-pointer flex-1"
+                            >
+                              {dest.name}
                             </Label>
                           </div>
                         ))}
@@ -758,8 +973,8 @@ function SearchPage() {
                   </div>
                 )}
 
-                {/* Resort Filtresi */}
-                {resorts.length > 0 && (
+                {/* Resort Filtresi - DISABLED: Too much data (34k+) */}
+                {/* {resorts.length > 0 && (
                   <div className="mb-6">
                     <label className="text-sm font-medium mb-3 block">
                       {t('resorts')}
@@ -789,10 +1004,10 @@ function SearchPage() {
                       </div>
                     </ScrollArea>
                   </div>
-                )}
+                )} */}
 
-                {/* Oda Tipi Filtresi */}
-                {roomTypes.length > 0 && (
+                {/* Oda Tipi Filtresi - DISABLED: Too much data (184k+) */}
+                {/* {roomTypes.length > 0 && (
                   <div className="mb-6">
                     <label className="text-sm font-medium mb-3 block">
                       {t('roomTypes')}
@@ -822,7 +1037,7 @@ function SearchPage() {
                       </div>
                     </ScrollArea>
                   </div>
-                )}
+                )} */}
               </ScrollArea>
 
               <Button

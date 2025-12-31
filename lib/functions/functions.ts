@@ -247,3 +247,13 @@ export function getCountryLists(): Record<string, string> {
 		ZW: 'Zimbabwe',
 	};
 }
+
+/**
+ * Get country name by country code
+ * @param countryCode - ISO 3166-1 alpha-2 country code (e.g., 'TR', 'DE', 'US')
+ * @returns Country name in English or the code if not found
+ */
+export function getCountryName(countryCode: string): string {
+	const countries = getCountryLists();
+	return countries[countryCode] || countryCode;
+}
