@@ -269,6 +269,13 @@ function JobsContent() {
   };
 
   const handleSyncAll = async () => {
+    // Prevent double execution
+    if (loading !== null) {
+      console.warn('⚠️ Sync already in progress, ignoring duplicate call');
+      return;
+    }
+    
+    console.log('🚀 Starting SunHotels sync job...');
     setLoading('sync-all');
     const startTime = new Date().toISOString();
     
@@ -282,7 +289,9 @@ function JobsContent() {
     setJobLogs(prev => [tempLog, ...prev]);
 
     try {
+      console.log('📡 Calling adminAPI.syncSunHotels()...');
       const response = await adminAPI.syncSunHotels();
+      console.log('✅ Sync job started:', response);
       
       message.success(response.message || 'Sync job started successfully!');
       
