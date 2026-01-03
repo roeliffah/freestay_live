@@ -112,6 +112,8 @@ function SearchPage() {
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [profitMargin, setProfitMargin] = useState(0); // Kar marjı %
+  const [defaultVatRate, setDefaultVatRate] = useState(0); // KDV %
   const [filters, setFilters] = useState<Filters>({
     sortBy: 'price',
     sortOrder: 'asc',
@@ -133,6 +135,42 @@ function SearchPage() {
   
   // Debounce timer for filter changes
   const filterDebounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Fiyat hesaplama fonksiyonu
+  // basePrice: API'den gelen otel fiyatı
+  // Returns: basePrice + (basePrice * profitMargin% * (1 + vatRate%))
+  const calculateFinalPrice = (basePrice: number): number => {
+    if (!basePrice) return 0;
+    const profitAmount = basePrice * (profitMargin / 100); // Kar tutarı
+    const vatAmount = profitAmount * (defaultVatRate / 100); // Kar üzerine KDV
+    return Math.round((basePrice + profitAmount + vatAmount) * 100) / 100; // Son fiyat, 2 ondalık
+  };
+
+  // Settings'ten kar marjı ve KDV'yi yükle
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${API_URL}/settings/site`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProfitMargin(data.profitMargin || 0);
+          setDefaultVatRate(data.defaultVatRate || 0);
+          console.log('✅ Settings yüklendi:', { profitMargin: data.profitMargin, defaultVatRate: data.defaultVatRate });
+        }
+      } catch (error) {
+        console.warn('⚠️ Settings yüklenemedi, varsayılan değerler kullanılıyor:', error);
+      }
+    };
+    
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1); // Reset to page 1 when search params change
@@ -484,7 +522,7 @@ function SearchPage() {
             console.log('📍 First hotel detailed:', JSON.stringify(result.hotels[0], null, 2));
           }
           
-          // Enrich hotels with feature and theme names
+          // Enrich hotels with feature and theme names, and calculate final prices
           const enrichedHotels = result.hotels.map(hotel => {
             const hotelFeatures = hotel.featureIds
               ?.map(id => features.find(f => f.sunHotelsId === id)?.name)
@@ -494,10 +532,15 @@ function SearchPage() {
               ?.map(id => themes.find(t => t.sunHotelsId === id)?.name)
               .filter(Boolean) as string[] || [];
             
+            // Kar marjı ve KDV eklenmiş fiyatını hesapla
+            const finalPrice = calculateFinalPrice(hotel.minPrice);
+            
             return {
               ...hotel,
+              minPrice: finalPrice, // Original API fiyatını override et
               features: hotelFeatures,
-              themes: hotelThemes
+              themes: hotelThemes,
+              originalPrice: hotel.minPrice, // Orijinal fiyatı saklayalım (isteğe bağlı)
             };
           });
           

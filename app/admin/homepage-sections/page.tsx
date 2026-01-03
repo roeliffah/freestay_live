@@ -1447,8 +1447,8 @@ function HotelsSelectionModal({
 
       <Table
         columns={columns}
-        dataSource={filteredHotels}
-        rowKey="id"
+        dataSource={filteredHotels || []}
+        rowKey={(record) => record.id || `hotel-${Math.random()}`}
         loading={loading}
         pagination={{
           pageSize: pageSize,
@@ -1786,8 +1786,8 @@ function ConfigurationBuilderModal({
 
       <Table
         columns={columns}
-        dataSource={items}
-        rowKey="id"
+        dataSource={items || []}
+        rowKey={(record) => record.id || `item-${Math.random()}`}
         loading={loading}
         pagination={{
           pageSize: pageSize,
@@ -2065,8 +2065,8 @@ function DestinationsSelectionModal({
 
       <Table
         columns={columns}
-        dataSource={filteredDestinations}
-        rowKey="id"
+        dataSource={filteredDestinations || []}
+        rowKey={(record) => record.id || `dest-${Math.random()}`}
         loading={loading}
         pagination={{
           pageSize: pageSize,
@@ -2230,9 +2230,9 @@ function CountriesSelectionModal({
 
       <Table
         loading={loading}
-        dataSource={countries}
+        dataSource={countries || []}
         columns={columns}
-        rowKey="countryId"
+        rowKey={(record) => record.countryId || `country-${Math.random()}`}
         size="small"
         pagination={{
           pageSize: 10,
@@ -2389,9 +2389,9 @@ function ThemesSelectionModal({
 
       <Table
         loading={loading}
-        dataSource={themes}
+        dataSource={themes || []}
         columns={columns}
-        rowKey="themeId"
+        rowKey={(record) => record.themeId || `theme-${Math.random()}`}
         size="small"
         pagination={{
           pageSize: 10,

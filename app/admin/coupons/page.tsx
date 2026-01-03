@@ -440,8 +440,8 @@ const handleDelete = async (id: string) => {
 
         <Table
           columns={columns}
-          dataSource={filteredCoupons}
-          rowKey="id"
+          dataSource={filteredCoupons || []}
+          rowKey={(record) => record.id || `coupon-${Math.random()}`}
           scroll={{ x: 'max-content' }}
           pagination={{
             pageSize: 10,

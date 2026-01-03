@@ -254,10 +254,10 @@ export default function AdminDashboard() {
           >
             <Table 
               columns={bookingColumns} 
-              dataSource={bookingsData} 
+              dataSource={bookingsData || []} 
               pagination={false}
               size="small"
-              rowKey="id"
+              rowKey={(record) => record.id || `booking-${Math.random()}`}
             />
           </Card>
         </Col>

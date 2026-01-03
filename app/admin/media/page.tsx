@@ -502,9 +502,9 @@ function MediaManagementPageContent() {
       <Card>
         <Table
           loading={loading}
-          dataSource={files}
+          dataSource={files || []}
           columns={columns}
-          rowKey="id"
+          rowKey={(record) => record.id || `file-${Math.random()}`}
           scroll={{ x: 800 }}
           pagination={{
             current: currentPage,

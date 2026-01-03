@@ -425,8 +425,8 @@ function PaymentSettingsContent() {
 
           <Table
             columns={transactionColumns}
-            dataSource={transactions}
-            rowKey="id"
+            dataSource={transactions || []}
+            rowKey={(record) => record.id || `transaction-${Math.random()}`}
             scroll={{ x: 'max-content' }}
             pagination={{ pageSize: 10 }}
           />

@@ -481,8 +481,8 @@ function CustomersContent() {
 
         <Table
           columns={columns}
-          dataSource={customers}
-          rowKey="id"
+          dataSource={customers || []}
+          rowKey={(record) => record.id || `customer-${Math.random()}`}
           loading={loading}
           onChange={handleTableChange}
           pagination={{

@@ -382,8 +382,8 @@ function FAQContent() {
           <SortableContext items={filteredFaqs.map(f => f.id)} strategy={verticalListSortingStrategy}>
             <Table
               columns={columns}
-              dataSource={filteredFaqs}
-              rowKey="id"
+              dataSource={filteredFaqs || []}
+              rowKey={(record) => record.id || `faq-${Math.random()}`}
               scroll={{ x: 'max-content' }}
               pagination={{
                 current: currentPage,

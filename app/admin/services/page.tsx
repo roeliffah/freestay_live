@@ -310,8 +310,8 @@ function ServicesContent() {
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={services}
-            rowKey="id"
+            dataSource={services || []}
+            rowKey={(record) => record.id || `service-${Math.random()}`}
             scroll={{ x: 'max-content' }}
             pagination={false}
           />

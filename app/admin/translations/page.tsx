@@ -305,8 +305,8 @@ export default function TranslationsPage() {
 
         <Table
           columns={columns}
-          dataSource={filteredTranslations}
-          rowKey="key"
+          dataSource={filteredTranslations || []}
+          rowKey={(record) => record.key || `trans-${Math.random()}`}
           scroll={{ x: 'max-content' }}
           pagination={{
             pageSize: 20,

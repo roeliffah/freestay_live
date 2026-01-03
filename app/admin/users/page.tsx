@@ -473,8 +473,8 @@ export default function UsersPage() {
 
         <Table
           columns={columns}
-          dataSource={users}
-          rowKey="id"
+          dataSource={users || []}
+          rowKey={(record) => record.id || `user-${Math.random()}`}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,

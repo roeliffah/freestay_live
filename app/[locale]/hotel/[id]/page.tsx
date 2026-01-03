@@ -47,6 +47,42 @@ export default function HotelDetailPage() {
   const [rooms, setRooms] = useState<RoomType[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [profitMargin, setProfitMargin] = useState(0); // Kar marjı %
+  const [defaultVatRate, setDefaultVatRate] = useState(0); // KDV %
+
+  // Fiyat hesaplama fonksiyonu
+  const calculateFinalPrice = (basePrice: number): number => {
+    if (!basePrice) return 0;
+    const profitAmount = basePrice * (profitMargin / 100);
+    const vatAmount = profitAmount * (defaultVatRate / 100);
+    return Math.round((basePrice + profitAmount + vatAmount) * 100) / 100;
+  };
+
+  // Settings'ten kar marjı ve KDV'yi yükle
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
+        const response = await fetch(`${API_URL}/settings/site`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          setProfitMargin(data.profitMargin || 0);
+          setDefaultVatRate(data.defaultVatRate || 0);
+          console.log('✅ Settings yüklendi (Hotel Detail):', { profitMargin: data.profitMargin, defaultVatRate: data.defaultVatRate });
+        }
+      } catch (error) {
+        console.warn('⚠️ Settings yüklenemedi, varsayılan değerler kullanılıyor:', error);
+      }
+    };
+    
+    loadSettings();
+  }, []);
 
   // Get search params for booking
   const checkIn = searchParams.get('checkIn') || '';
@@ -106,11 +142,20 @@ export default function HotelDetailPage() {
         });
 
         setHotel(response.hotel);
-        setRooms(response.rooms);
+        
+        // Oda fiyatlarını kar marjı ve KDV ile hesapla
+        const roomsWithCalculatedPrices = response.rooms.map(room => ({
+          ...room,
+          originalPrice: room.price,
+          price: calculateFinalPrice(room.price),
+        }));
+        
+        setRooms(roomsWithCalculatedPrices);
         
         console.log('✅ Hotel detail loaded:', {
           name: response.hotel.hotelName,
           rooms: response.rooms.length,
+          priceCalculated: true,
         });
       } catch (error) {
         console.error('❌ Hotel detail loading error:', error);

@@ -271,8 +271,8 @@ function PagesContent() {
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={pages}
-            rowKey="id"
+            dataSource={pages || []}
+            rowKey={(record) => record.id || `page-${Math.random()}`}
             scroll={{ x: 'max-content' }}
             pagination={{
               pageSize: 10,

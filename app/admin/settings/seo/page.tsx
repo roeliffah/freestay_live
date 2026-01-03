@@ -372,8 +372,8 @@ function SEOSettingsContent() {
             <Card title="Pages" size="small">
               <Table
                 columns={pageColumns}
-                dataSource={localePages}
-                rowKey="pageType"
+                dataSource={localePages || []}
+                rowKey={(record) => record.pageType || `page-${Math.random()}`}
                 size="small"
                 pagination={false}
                 onRow={(record) => ({

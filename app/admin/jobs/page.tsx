@@ -592,8 +592,8 @@ function JobsContent() {
       >
         <Table
           columns={columns}
-          dataSource={jobLogs}
-          rowKey="id"
+          dataSource={jobLogs || []}
+          rowKey={(record) => record.id || `job-${Math.random()}`}
           pagination={{
             current: currentPage,
             pageSize: pageSize,
@@ -713,8 +713,8 @@ function JobsContent() {
                   }
                 >
                   <Table
-                    dataSource={recurringJobs}
-                    rowKey="id"
+                    dataSource={recurringJobs || []}
+                    rowKey={(record) => record.id || `recurring-${Math.random()}`}
                     size="small"
                     pagination={false}
                     columns={[
@@ -788,8 +788,8 @@ function JobsContent() {
                   style={{ marginBottom: 24 }}
                 >
                   <Table
-                    dataSource={processingJobs}
-                    rowKey="id"
+                    dataSource={processingJobs || []}
+                    rowKey={(record) => record.id || `processing-${Math.random()}`}
                     size="small"
                     pagination={false}
                     columns={[

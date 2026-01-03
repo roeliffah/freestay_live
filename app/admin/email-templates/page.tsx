@@ -313,8 +313,8 @@ function EmailTemplatesContent() {
         <Spin spinning={loading}>
           <Table
             columns={columns}
-            dataSource={templates}
-            rowKey="id"
+            dataSource={templates || []}
+            rowKey={(record) => record.id || `template-${Math.random()}`}
             scroll={{ x: 'max-content' }}
             pagination={{
               pageSize: 10,

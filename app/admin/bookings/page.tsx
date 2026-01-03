@@ -584,8 +584,8 @@ function BookingsContent() {
 
         <Table
           columns={columns}
-          dataSource={filteredBookings}
-          rowKey="id"
+          dataSource={filteredBookings || []}
+          rowKey={(record) => record.id || `booking-${Math.random()}`}
           scroll={{ x: 'max-content' }}
           pagination={{
             current: currentPage,
