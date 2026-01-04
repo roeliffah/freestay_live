@@ -119,6 +119,43 @@ const SECTION_TYPES = [
     hasDestinations: false,
   },
   { 
+    value: 'how-it-works', 
+    label: 'How It Works', 
+    icon: '📋', 
+    description: 'Step-by-step process explanation',
+    hasTranslations: true,
+    hasHotels: false,
+    hasDestinations: false,
+  },
+  { 
+    value: 'last-minute-deals', 
+    label: 'Last Minute Deals', 
+    icon: '⏰', 
+    description: 'Limited time offers and deals',
+    hasTranslations: true,
+    hasHotels: false,
+    hasDestinations: false,
+  },
+  { 
+    value: 'price-comparison', 
+    label: 'Price Comparison', 
+    icon: '💰', 
+    description: 'Compare prices with competitors',
+    hasTranslations: true,
+    hasHotels: false,
+    hasDestinations: false,
+  },
+  { 
+    value: 'cta-section', 
+    label: 'CTA Section', 
+    icon: '🎯', 
+    description: 'Call-to-action section with buttons',
+    hasTranslations: true,
+    hasHotels: false,
+    hasDestinations: false,
+    hasButtonText: true,
+  },
+  { 
     value: 'featured-hotels', 
     label: 'Featured Hotels', 
     icon: '⭐', 
@@ -402,14 +439,24 @@ function HomePageContent() {
         return;
       }
 
-      if (!response.ok) throw new Error('Failed to save section');
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to save section' }));
+        console.error('❌ Save section error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          payload
+        });
+        throw new Error(errorData.message || errorData.title || 'Failed to save section');
+      }
 
       message.success(editingSection ? 'Section updated successfully' : 'Section created successfully');
       setModalOpen(false);
       loadSections();
-    } catch (error) {
-      message.error('Operation failed');
-      console.error(error);
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Operation failed';
+      message.error(errorMessage);
+      console.error('❌ Save section failed:', error);
     }
   };
 
@@ -980,6 +1027,16 @@ function HomePageContent() {
             </Button>
           )}
 
+          {selectedSectionType && getSectionTypeInfo(selectedSectionType).hasButtonText && (
+            <Form.Item
+              name={['configuration', 'buttonText']}
+              label="Button Text"
+              help="Custom button text for CTA section"
+            >
+              <Input placeholder="e.g., Book Now, Get Started" />
+            </Form.Item>
+          )}
+
           <Form.Item
             name="configuration"
             label={selectedSectionType === 'custom-html' ? 'HTML Content' : 'Configuration (JSON)'}
@@ -1222,34 +1279,21 @@ function HotelsSelectionModal({
     if (!section) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        message.error('Session expired. Please login again.');
-        window.location.href = '/admin/login';
-        return;
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}/hotels`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+      // Parse configuration from section
+      let config: any = {};
+      if (section.configuration) {
+        if (typeof section.configuration === 'string') {
+          try {
+            config = JSON.parse(section.configuration);
+          } catch (e) {
+            console.error('Failed to parse configuration:', e);
+          }
+        } else {
+          config = section.configuration;
         }
-      );
-
-      if (response.status === 401) {
-        message.error('Session expired. Please login again.');
-        localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
-        return;
       }
 
-      if (!response.ok) throw new Error('Failed to load selected hotels');
-
-      const data = await response.json();
-      const hotelIds = (data.data || data).map((h: any) => h.hotelId || h.id);
+      const hotelIds = config.hotelIds || [];
       setSelectedHotelIds(hotelIds);
     } catch (error) {
       console.error('Error loading selected hotels:', error);
@@ -1267,19 +1311,24 @@ function HotelsSelectionModal({
         return;
       }
 
+      // Update section configuration with selected hotel IDs
+      const configData = {
+        hotelIds: selectedHotelIds
+      };
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}/hotels`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            hotels: selectedHotelIds.map((hotelId, index) => ({
-              hotelId,
-              displayOrder: index + 1
-            }))
+          body: JSON.stringify({
+            sectionType: section.sectionType,
+            isActive: section.isActive,
+            displayOrder: section.displayOrder,
+            configuration: JSON.stringify(configData),
           }),
         }
       );
@@ -1881,34 +1930,21 @@ function DestinationsSelectionModal({
     if (!section) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        message.error('Session expired. Please login again.');
-        window.location.href = '/admin/login';
-        return;
-      }
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}/destinations`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
+      // Parse configuration from section
+      let config: any = {};
+      if (section.configuration) {
+        if (typeof section.configuration === 'string') {
+          try {
+            config = JSON.parse(section.configuration);
+          } catch (e) {
+            console.error('Failed to parse configuration:', e);
+          }
+        } else {
+          config = section.configuration;
         }
-      );
-
-      if (response.status === 401) {
-        message.error('Session expired. Please login again.');
-        localStorage.removeItem('admin_token');
-        window.location.href = '/admin/login';
-        return;
       }
 
-      if (!response.ok) throw new Error('Failed to load selected destinations');
-
-      const data = await response.json();
-      const destinationIds = (data.data || data).map((d: any) => d.destinationId || d.id);
+      const destinationIds = config.destinationIds || [];
       setSelectedDestinationIds(destinationIds);
     } catch (error) {
       console.error('Error loading selected destinations:', error);
@@ -1926,19 +1962,24 @@ function DestinationsSelectionModal({
         return;
       }
 
+      // Update section configuration with selected destination IDs
+      const configData = {
+        destinationIds: selectedDestinationIds
+      };
+
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}/destinations`,
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/homepage/sections/${section.id}`,
         {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            destinations: selectedDestinationIds.map((destinationId, index) => ({
-              destinationId,
-              displayOrder: index + 1
-            }))
+          body: JSON.stringify({
+            sectionType: section.sectionType,
+            isActive: section.isActive,
+            displayOrder: section.displayOrder,
+            configuration: JSON.stringify(configData),
           }),
         }
       );
@@ -2132,8 +2173,23 @@ function CountriesSelectionModal({
 
     try {
       const token = localStorage.getItem('admin_token');
+      
+      // Parse existing configuration
+      let existingConfig: any = {};
+      if (section.configuration) {
+        if (typeof section.configuration === 'string') {
+          try {
+            existingConfig = JSON.parse(section.configuration);
+          } catch (e) {
+            console.error('Failed to parse configuration:', e);
+          }
+        } else {
+          existingConfig = section.configuration;
+        }
+      }
+
       const config = {
-        ...section.configuration,
+        ...existingConfig,
         countryIds: selectedCountryIds,
       };
 
@@ -2144,8 +2200,10 @@ function CountriesSelectionModal({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...section,
-          configuration: config,
+          sectionType: section.sectionType,
+          isActive: section.isActive,
+          displayOrder: section.displayOrder,
+          configuration: JSON.stringify(config),
         }),
       });
 
@@ -2294,8 +2352,23 @@ function ThemesSelectionModal({
 
     try {
       const token = localStorage.getItem('admin_token');
+      
+      // Parse existing configuration
+      let existingConfig: any = {};
+      if (section.configuration) {
+        if (typeof section.configuration === 'string') {
+          try {
+            existingConfig = JSON.parse(section.configuration);
+          } catch (e) {
+            console.error('Failed to parse configuration:', e);
+          }
+        } else {
+          existingConfig = section.configuration;
+        }
+      }
+
       const config = {
-        ...section.configuration,
+        ...existingConfig,
         themeIds: selectedThemeIds.map(id => parseInt(id)),
       };
 
@@ -2306,8 +2379,10 @@ function ThemesSelectionModal({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...section,
-          configuration: config,
+          sectionType: section.sectionType,
+          isActive: section.isActive,
+          displayOrder: section.displayOrder,
+          configuration: JSON.stringify(config),
         }),
       });
 

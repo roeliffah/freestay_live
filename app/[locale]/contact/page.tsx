@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, useEffect } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useSiteSettings } from '@/lib/hooks/useSiteSettings';
+import { facsAPI } from '@/lib/api/client';
 import { 
   MapPin, 
   Phone, 
@@ -17,48 +19,27 @@ import {
   ChevronUp
 } from 'lucide-react';
 
-interface FAQ {
-  question: string;
-  answer: string;
+interface FaqItem {
+  id: string;
+  order: number;
+  isActive: boolean;
+  category: string;
+  createdAt: string;
+  updatedAt: string | null;
+  translations: Array<{
+    id: string;
+    locale: string;
+    question: string;
+    answer: string;
+  }>;
 }
 
 export default function ContactPage() {
   const t = useTranslations('contact');
-  
-  const faqs: FAQ[] = [
-    {
-      question: t('faq.items.0.question'),
-      answer: t('faq.items.0.answer'),
-    },
-    {
-      question: t('faq.items.1.question'),
-      answer: t('faq.items.1.answer'),
-    },
-    {
-      question: t('faq.items.2.question'),
-      answer: t('faq.items.2.answer'),
-    },
-    {
-      question: t('faq.items.3.question'),
-      answer: t('faq.items.3.answer'),
-    },
-    {
-      question: t('faq.items.4.question'),
-      answer: t('faq.items.4.answer'),
-    },
-    {
-      question: t('faq.items.5.question'),
-      answer: t('faq.items.5.answer'),
-    },
-    {
-      question: t('faq.items.6.question'),
-      answer: t('faq.items.6.answer'),
-    },
-    {
-      question: t('faq.items.7.question'),
-      answer: t('faq.items.7.answer'),
-    },
-  ];
+  const locale = useLocale();
+  const { settings, loading: settingsLoading } = useSiteSettings();
+  const [faqs, setFaqs] = useState<FaqItem[]>([]);
+  const [loadingFaqs, setLoadingFaqs] = useState(true);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -67,13 +48,53 @@ export default function ContactPage() {
     message: '',
   });
 
+  // Debug
+  useEffect(() => {
+    console.log('Contact Page - Settings:', settings);
+    console.log('Contact Page - Loading:', settingsLoading);
+    console.log('Address check:', settings?.contact?.address);
+    console.log('WorkingHours check:', settings?.contact?.workingHours);
+    console.log('MapLatitude:', settings?.contact?.mapLatitude);
+    console.log('MapLongitude:', settings?.contact?.mapLongitude);
+  }, [settings, settingsLoading]);
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        setLoadingFaqs(true);
+        const data = await facsAPI.getFaqsByCategory(locale, 'general');
+        setFaqs(data);
+      } catch (error) {
+        console.error('Failed to load FAQs:', error);
+        setFaqs([]);
+      } finally {
+        setLoadingFaqs(false);
+      }
+    };
+
+    fetchFaqs();
+  }, [locale]);
+
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Form submit logic
+    // Form submit logic - contactEmail'e gönder
+    const message = `
+Name: ${formData.name}
+Email: ${formData.email}
+Subject: ${formData.subject}
+
+Message:
+${formData.message}
+    `;
+    
+    if (settings?.contactEmail) {
+      window.location.href = `mailto:${settings.contactEmail}?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(message)}`;
+    }
+    
     alert(t('form.successMessage'));
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
@@ -98,35 +119,59 @@ export default function ContactPage() {
       </section>
 
       <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {/* İletişim Bilgileri */}
-          <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-              <Phone className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="font-bold text-lg mb-2">{t('info.phone.title')}</h3>
-            <p className="text-muted-foreground mb-2">{t('info.phone.number')}</p>
-            <p className="text-sm text-muted-foreground">{t('info.phone.hours')}</p>
-          </Card>
+        {/* Loading State */}
+        {settingsLoading && (
+          <div className="text-center py-16">
+            <p className="text-muted-foreground">Yükleniyor...</p>
+          </div>
+        )}
 
-          <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-secondary" />
-            </div>
-            <h3 className="font-bold text-lg mb-2">{t('info.email.title')}</h3>
-            <p className="text-muted-foreground mb-2">{t('info.email.address')}</p>
-            <p className="text-sm text-muted-foreground">{t('info.email.response')}</p>
-          </Card>
+        {/* Contact Cards */}
+        {!settingsLoading && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+            {/* Telefon */}
+            {(settings?.contact?.phone || settings?.supportPhone) && (
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                  <Phone className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">{t('info.phone.title')}</h3>
+                <a href={`tel:${settings?.contact?.phone || settings?.supportPhone}`} className="text-muted-foreground hover:text-primary mb-2 block">
+                  {settings?.contact?.phone || settings?.supportPhone}
+                </a>
+                {settings?.contact?.workingHours && (
+                  <p className="text-sm text-muted-foreground">{settings?.contact?.workingHours}</p>
+                )}
+              </Card>
+            )}
 
-          <Card className="p-6 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
-              <MapPin className="h-6 w-6 text-accent" />
-            </div>
-            <h3 className="font-bold text-lg mb-2">{t('info.address.title')}</h3>
-            <p className="text-muted-foreground mb-2">{t('info.address.line1')}</p>
-            <p className="text-sm text-muted-foreground">{t('info.address.line2')}</p>
-          </Card>
-        </div>
+            {/* E-posta */}
+            {(settings?.contact?.email || settings?.supportEmail) && (
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-secondary/10 rounded-full flex items-center justify-center mb-4">
+                  <Mail className="h-6 w-6 text-secondary" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">{t('info.email.title')}</h3>
+                <a href={`mailto:${settings?.contact?.email || settings?.supportEmail}`} className="text-muted-foreground hover:text-secondary mb-2 block">
+                  {settings?.contact?.email || settings?.supportEmail}
+                </a>
+                <p className="text-sm text-muted-foreground">{t('info.email.response')}</p>
+              </Card>
+            )}
+
+            {/* Adres */}
+            {settings && settings.contact && settings.contact.address ? (
+              <Card className="p-6 hover:shadow-lg transition-shadow">
+                <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                  <MapPin className="h-6 w-6 text-accent" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">{t('info.address.title')}</h3>
+                <p className="text-muted-foreground mb-2">{settings.contact.address}</p>
+                {settings.contact.postalCode && <p className="text-sm text-muted-foreground">{settings.contact.postalCode} {settings.contact.city}</p>}
+              </Card>
+            ) : null}
+          </div>
+        )}
 
         {/* Form ve Harita */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
@@ -197,38 +242,19 @@ export default function ContactPage() {
             </form>
           </Card>
 
-          {/* Harita */}
-          <Card className="p-0 overflow-hidden">
-            <div className="h-full min-h-[500px] bg-muted relative">
-              {/* Google Maps iframe veya başka harita servisi buraya eklenebilir */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                  <MapPin className="h-10 w-10 text-primary" />
-                </div>
-                <h3 className="font-bold text-xl mb-2">{t('map.title')}</h3>
-                <p className="text-muted-foreground mb-4">
-                  {t('info.address.line1')}<br />
-                  {t('info.address.line2')}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t('map.coordinates')}
-                </p>
-                
-                {/* Alternatif olarak gerçek harita iframe'i */}
-                {/* <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d..."
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                /> */}
-              </div>
-            </div>
-          </Card>
+          {/* Google Maps iframe */}
+          {!settingsLoading && settings?.contact?.googleMapsIframe && (
+            <Card className="p-4 overflow-hidden h-full">
+              <div 
+                className="w-full h-full min-h-[500px]"
+                dangerouslySetInnerHTML={{ __html: settings?.contact?.googleMapsIframe }}
+              />
+            </Card>
+          )}
         </div>
 
         {/* Çalışma Saatleri */}
+        {!settingsLoading && settings?.contact?.workingHours && (
         <Card className="p-8 mb-16 bg-gradient-to-br from-primary/5 to-secondary/5">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
@@ -238,31 +264,36 @@ export default function ContactPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{t('hours.weekdays')}</span>
-                <span className="text-muted-foreground">{t('hours.weekdaysTime')}</span>
+            {settings?.contact?.workingHours && (
+              <div className="bg-card p-4 rounded-lg">
+                <p className="text-sm font-medium mb-2">
+                  <Clock className="inline h-4 w-4 mr-2" />
+                  {t('hours.title')}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {settings?.contact?.workingHours}
+                </p>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{t('hours.saturday')}</span>
-                <span className="text-muted-foreground">{t('hours.saturdayTime')}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="font-medium">{t('hours.sunday')}</span>
-                <span className="text-muted-foreground">{t('hours.sundayTime')}</span>
-              </div>
-            </div>
+            )}
 
-            <div className="bg-card p-4 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">
-                <strong>{t('hours.emergency.title')}</strong> {t('hours.emergency.time')}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {t('hours.emergency.description')}
-              </p>
-            </div>
+            {settings?.contact?.whatsapp && (
+              <div className="bg-card p-4 rounded-lg">
+                <p className="text-sm font-medium mb-2">WhatsApp</p>
+                <a 
+                  href={`https://wa.me/${settings?.contact?.whatsapp.replace(/\D/g, '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                >
+                  {settings?.contact?.whatsapp}
+                </a>
+              </div>
+            )}
           </div>
         </Card>
+        )}
+
+        
 
         {/* FAQ Bölümü */}
         <div>
@@ -273,46 +304,50 @@ export default function ContactPage() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto space-y-4">
-            {faqs.map((faq, index) => (
-              <Card
-                key={index}
-                className="overflow-hidden hover:shadow-md transition-shadow"
-              >
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"
-                >
-                  <span className="font-semibold pr-4">{faq.question}</span>
-                  {openFaqIndex === index ? (
-                    <ChevronUp className="h-5 w-5 text-primary shrink-0" />
-                  ) : (
-                    <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
-                  )}
-                </button>
-                
-                {openFaqIndex === index && (
-                  <div className="px-6 pb-6 text-muted-foreground">
-                    {faq.answer}
-                  </div>
-                )}
-              </Card>
-            ))}
-          </div>
-        </div>
+          {loadingFaqs ? (
+            <div className="max-w-4xl mx-auto text-center py-12">
+              <p className="text-muted-foreground">Yükleniyor...</p>
+            </div>
+          ) : faqs.length === 0 ? (
+            <div className="max-w-4xl mx-auto text-center py-12">
+              <p className="text-muted-foreground">Henüz SSS bulunmamaktadır.</p>
+            </div>
+          ) : (
+            <div className="max-w-4xl mx-auto space-y-4">
+              {faqs.map((faq, index) => {
+                // Find translation for current locale
+                const translation = faq.translations?.find(t => t.locale === locale);
+                const question = translation?.question || '';
+                const answer = translation?.answer || '';
 
-        {/* Yardım Merkezi CTA */}
-        <Card className="mt-16 p-8 bg-gradient-to-r from-primary to-secondary text-white text-center">
-          <h3 className="text-2xl font-bold mb-4">
-            {t('help.title')}
-          </h3>
-          <p className="mb-6 opacity-90">
-            {t('help.description')}
-          </p>
-          <Button variant="secondary" size="lg">
-            {t('help.button')}
-          </Button>
-        </Card>
+                return (
+                  <Card
+                    key={faq.id}
+                    className="overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <button
+                      onClick={() => toggleFaq(index)}
+                      className="w-full p-6 text-left flex items-center justify-between hover:bg-muted/50 transition-colors"
+                    >
+                      <span className="font-semibold pr-4">{question}</span>
+                      {openFaqIndex === index ? (
+                        <ChevronUp className="h-5 w-5 text-primary shrink-0" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />
+                      )}
+                    </button>
+                    
+                    {openFaqIndex === index && (
+                      <div className="px-6 pb-6 text-muted-foreground">
+                        {answer}
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

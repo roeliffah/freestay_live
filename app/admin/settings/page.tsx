@@ -128,6 +128,7 @@ function SettingsContent() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [settings, setSettings] = useState<SiteSettings>({});
+  const [pages, setPages] = useState<any[]>([]);
   const [logoFileList, setLogoFileList] = useState<any[]>([]);
   const [faviconFileList, setFaviconFileList] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -148,12 +149,16 @@ function SettingsContent() {
     setLoading(true);
     try {
       // Tüm ayar gruplarını paralel olarak çek
-      const [siteData, socialData, brandingData, contactData, emailData] = await Promise.all([
+      const [siteData, socialData, brandingData, contactData, emailData, pagesData] = await Promise.all([
         adminAPI.getSiteSettings().catch(() => ({} as any)),
         adminAPI.getSocialSettings().catch(() => ({} as any)),
         adminAPI.getBrandingSettings().catch(() => ({} as any)),
         adminAPI.getContactSettings().catch(() => ({} as any)),
         adminAPI.getEmailSettings().catch(() => ({} as any)),
+        adminAPI.getPages().catch((err) => {
+          console.error('Failed to load pages:', err);
+          return [];
+        }),
       ]);
 
       // Tüm verileri birleştir
@@ -166,7 +171,13 @@ function SettingsContent() {
       };
 
       console.log('📥 Received settings from API:', combinedSettings);
+      console.log('📄 Received pages:', pagesData);
+      console.log('📄 Pages is array?', Array.isArray(pagesData));
+      console.log('📄 Pages.items:', (pagesData as any)?.items);
       setSettings(combinedSettings as any);
+      const pagesList = Array.isArray(pagesData) ? pagesData : (pagesData as any)?.items || [];
+      console.log('📄 Final pages list:', pagesList);
+      setPages(pagesList);
     } catch (error: any) {
       console.error('Failed to load settings:', error);
       messageApi.error(error.message || 'Failed to load settings');
@@ -177,7 +188,7 @@ function SettingsContent() {
 
   // Update forms when settings change
   useEffect(() => {
-    if (settings && Object.keys(settings).length > 0) {
+    if (settings && Object.keys(settings).length > 0 && pages.length >= 0) {
       console.log('🔄 Updating forms with settings:', settings);
       
       // SiteName ve tagline çoklu dil desteği
@@ -255,6 +266,9 @@ function SettingsContent() {
           mapLatitude: (settings as any).mapLatitude,
           mapLongitude: (settings as any).mapLongitude,
           googleMapsIframe: (settings as any).googleMapsIframe,
+          privacyPolicyPageSlug: (settings as any).privacyPolicy,
+          termsOfServicePageSlug: (settings as any).termsOfService,
+          cancellationPolicyPageSlug: (settings as any).cancellationPolicy,
         });
         setFormsInitialized(prev => ({ ...prev, contact: true }));
       }
@@ -312,7 +326,7 @@ function SettingsContent() {
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, activeTab]);
+  }, [settings, activeTab, pages]);
 
   const handleLogoUpload = async (file: File) => {
     setUploading(true);
@@ -449,6 +463,9 @@ function SettingsContent() {
           mapLatitude: values.mapLatitude || '',
           mapLongitude: values.mapLongitude || '',
           googleMapsIframe: values.googleMapsIframe || '',
+          privacyPolicy: values.privacyPolicyPageSlug || '',
+          termsOfService: values.termsOfServicePageSlug || '',
+          cancellationPolicy: values.cancellationPolicyPageSlug || '',
         };
         
         console.log('📤 Sending to /admin/settings/contact:', updateData);
@@ -1166,6 +1183,97 @@ function SettingsContent() {
               placeholder='<iframe src="https://www.google.com/maps/embed?pb=..." width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"></iframe>' 
             />
           </Form.Item>
+
+          <Divider><Text strong>Policy & Pages Links</Text></Divider>
+
+          <Alert
+            title="Available Pages"
+            description={`Total pages available: ${pages.length}. Pages found: ${pages.map((p: any) => p.title || p.slug).join(', ') || 'None'}`}
+            type={pages.length > 0 ? 'success' : 'warning'}
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+
+          <Row gutter={24}>
+            <Col span={8}>
+              <Form.Item 
+                name="privacyPolicyPageSlug" 
+                label="Privacy Policy Page"
+                tooltip="Select the page to be used as Privacy Policy"
+              >
+                <Select 
+                  placeholder="Select privacy policy page"
+                  allowClear
+                  optionLabelProp="label"
+                >
+                  {pages && pages.length > 0 ? (
+                    pages.map((page: any) => {
+                      const label = page.translations?.[0]?.title || page.title || page.slug || `Page ${page.slug}`;
+                      return (
+                        <Option key={page.slug} value={page.slug}>
+                          {label}
+                        </Option>
+                      );
+                    })
+                  ) : (
+                    <Option disabled value="">No pages available</Option>
+                  )}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item 
+                name="termsOfServicePageSlug" 
+                label="Terms of Service Page"
+                tooltip="Select the page to be used as Terms of Service"
+              >
+                <Select 
+                  placeholder="Select terms of service page"
+                  allowClear
+                  optionLabelProp="label"
+                >
+                  {pages && pages.length > 0 ? (
+                    pages.map((page: any) => {
+                      const label = page.translations?.[0]?.title || page.title || page.slug || `Page ${page.slug}`;
+                      return (
+                        <Option key={page.slug} value={page.slug}>
+                          {label}
+                        </Option>
+                      );
+                    })
+                  ) : (
+                    <Option disabled value="">No pages available</Option>
+                  )}
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item 
+                name="cancellationPolicyPageSlug" 
+                label="Cancellation Policy Page"
+                tooltip="Select the page to be used as Cancellation Policy"
+              >
+                <Select 
+                  placeholder="Select cancellation policy page"
+                  allowClear
+                  optionLabelProp="label"
+                >
+                  {pages && pages.length > 0 ? (
+                    pages.map((page: any) => {
+                      const label = page.translations?.[0]?.title || page.title || page.slug || `Page ${page.slug}`;
+                      return (
+                        <Option key={page.slug} value={page.slug}>
+                          {label}
+                        </Option>
+                      );
+                    })
+                  ) : (
+                    <Option disabled value="">No pages available</Option>
+                  )}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item>
             <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saving}>

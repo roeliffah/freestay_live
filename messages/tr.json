@@ -7,7 +7,10 @@
     "travel": "Seyahat",
     "excursions": "Turlar & Aktiviteler",
     "rentACar": "Araç Kiralama",
-    "bookAFlight": "Uçak Bileti Al"
+    "bookAFlight": "Uçak Bileti Al",
+    "howItWorks": "Nasıl Çalışır?",
+    "lastminuteDeals": "Son Dakika Fırsatları",
+    "referralProgram": "Referral Programı"
   },
   "home": {
     "hero": {
@@ -22,6 +25,7 @@
       "guests": "Misafirler",
       "searchButton": "Otel Ara",
       "selectDate": "Tarih seçin",
+      "selectGuests": "Misafir Seç",
       "room": "Oda",
       "guest": "Misafir",
       "roomsAndGuests": "Oda ve Misafir Sayısı",
@@ -31,7 +35,15 @@
       "addRoom": "Oda Ekle",
       "done": "Tamam",
       "searching": "Aranıyor...",
-      "noDatesInfo": "Tarih seçmediniz. Yaklaşık fiyatlar gösterilecek. Güncel fiyat ve müsaitlik için tarih seçebilirsiniz."
+      "noDatesInfo": "Tarih seçmediniz. Yaklaşık fiyatlar gösterilecek. Güncel fiyat ve müsaitlik için tarih seçebilirsiniz.",
+      "badges": {
+        "freeRoom": "Oda Ücretsiz",
+        "freeRoomDesc": "Sadece yemek ödersiniz",
+        "discount": "%30 Tasarruf",
+        "discountDesc": "Booking.com'a göre",
+        "guarantee": "450K+ Otel",
+        "guaranteeDesc": "En iyi fiyat garantisi"
+      }
     },
     "popularHotels": {
       "title": "Popüler Oteller",
@@ -76,6 +88,60 @@
       "supportDesc": "Her zaman yanınızdayız",
       "hotels": "Binlerce Otel",
       "hotelsDesc": "Dünyanın her yerinden seçenekler"
+    },
+    "howItWorks": {
+      "title": "Nasıl Ücretsiz Olur?",
+      "subtitle": "4 basit adımda rüya tatilinizi rezerve edin",
+      "step1": {
+        "title": "Otel Ara",
+        "description": "Gitmeyi planladığınız destinasyonu seçin"
+      },
+      "step2": {
+        "title": "Tarih Seç",
+        "description": "Giriş ve çıkış tarihlerinizi belirleyin"
+      },
+      "step3": {
+        "title": "Rezervasyon Yap",
+        "description": "Sadece yemek ücretini ödeyin"
+      },
+      "step4": {
+        "title": "Tatilin Tadını Çıkar",
+        "description": "Oda ücretsiz, sadece tatil keyfi sizin!"
+      }
+    },
+    "lastMinute": {
+      "title": "Bugünün En İyi Fırsatları",
+      "subtitle": "Sınırlı sayıda oda kaldı. Hemen rezervasyon yapın!",
+      "badge": "Son Dakika Fırsatları",
+      "viewButton": "İncele",
+      "superDeal": "Süper Fırsat",
+      "from": "En düşük",
+      "perNight": "gecelik",
+      "viewAll": "Tüm Fırsatları Gör"
+    },
+    "priceComparison": {
+      "title": "FreeStays vs Booking.com",
+      "subtitle": "Neden FreeStays ile rezervasyon yapmalısınız?",
+      "feature": "Özellik",
+      "features": {
+        "roomCost": "Oda Ücreti",
+        "meals": "Yemek Dahil",
+        "commission": "Komisyon",
+        "bestPrice": "En İyi Fiyat",
+        "support": "7/24 Destek"
+      },
+      "savings": "Daha Fazla Tasarruf",
+      "savingsDesc": "Booking.com'a kıyasla ortalama tasarruf"
+    },
+    "cta": {
+      "title": "Ücretsiz Tatiliniz İçin Hazır mısınız?",
+      "subtitle": "450.000+ otel arasından size en uygununu bulun. Sadece yemek ödeyin, oda ücretsiz!",
+      "badge": "Özel Fırsat",
+      "button": "Hemen Rezervasyon Yap",
+      "learnMore": "Nasıl Çalışır?",
+      "feature1": "✓ Oda Ücretsiz",
+      "feature2": "✓ En İyi Fiyat Garantisi",
+      "feature3": "✓ 7/24 Destek"
     },
     "roomTypes": {
       "title": "Konaklama Türünü Seçin",
@@ -134,7 +200,7 @@
       "badge": "%40'a Varan",
       "button": "Kampanyaları İncele"
     },
-    "cta": {
+    "finalCta": {
       "title": "Hemen Rezervasyon Yapın",
       "subtitle": "En iyi fiyatlar ve özel fırsatlar sizi bekliyor",
       "search": "Otel Ara",
@@ -225,7 +291,9 @@
     "checkIn": "Giriş Tarihi",
     "checkOut": "Çıkış Tarihi",
     "selectDate": "Tarih seçin",
-    "reviews": "değerlendirme"
+    "reviews": "değerlendirme",
+    "roomTypes": "oda tipi",
+    "refundable": "İptal edilebilir"
   },
   "about": {
     "hero": {
@@ -436,7 +504,12 @@
     "support247": "24/7 müşteri desteği",
     "location": "Konum",
     "loading": "Yükleniyor...",
-    "hotelNotFound": "Otel bulunamadı"
+    "hotelNotFound": "Otel bulunamadı",
+    "checkIn": "Giriş",
+    "checkOut": "Çıkış",
+    "adults": "Yetişkin",
+    "children": "Çocuk",
+    "updateSearch": "Aramayı Güncelle"
   },
   "booking": {
     "title": "Rezervasyon",
@@ -551,5 +624,206 @@
     "termsAgree": "Kullanım koşullarını ve iptal politikasını kabul ediyorum",
     "securePayment": "Güvenli Ödeme",
     "securePaymentDesc": "Ödeme bilgileriniz SSL şifrelemesi ile korunmaktadır"
+  },
+  "faq": {
+    "title": "Sıkça Sorulan Sorular",
+    "subtitle": "FreeStays hakkında sık sorulan soruların cevaplarını bulun",
+    "categories": {
+      "general": "Genel",
+      "booking": "Rezervasyon",
+      "payment": "Ödeme",
+      "cancellation": "İptal",
+      "account": "Hesap"
+    },
+    "help": {
+      "title": "Hala sorularınız var mı?",
+      "description": "Destek ekibimiz her zaman yardımcı olmaya hazır",
+      "button": "İletişim"
+    }
+  },
+  "howItWorks": {
+    "badge": "FreeStays Konsepti",
+    "title": "Odanız Nasıl ÜCRETSİZ Oluyor",
+    "description1": "Diğer rezervasyon platformları otellerden %30'a varan komisyon alırken, Freestays oda rezervasyonlarından komisyon almaz.",
+    "description2": "Marjları kendimizde tutmak yerine, tüm değeri size direkt olarak döndürüyoruz — ve bu değer, yarım pansiyon, tam pansiyon veya her şey dahil ile rezervasyon yaptığınızda oda fiyatınızın %100'üne eşit oluyor.",
+    "description3": "Adil, şeffaf ve sizin yararınıza çalışan bir sistem.",
+    "step1": {
+      "title": "Oteller %0 Öder",
+      "desc1": "Oteller diğer rezervasyon platformlarına kıyasla %50'ye varan tasarruf sağlar.",
+      "desc2": "Freestays oda konaklamasından komisyon almaz, otellerin gelirlerini korumalarına ve daha iyi hizmet ve kaliteye yatırım yapmalarına olanak tanır."
+    },
+    "step2": {
+      "title": "Odalardan Komisyon Yok",
+      "desc1": "Freestays odanızdan para kazanmaz.",
+      "desc2": "Oteller sadece onlara misafir getirdiğimiz için şeffaf bir ücret öder — konaklama komisyonu değil."
+    },
+    "step3": {
+      "title": "SİZE Geri Veriyoruz",
+      "desc1": "Bu değeri kendimizde tutmak yerine, Freestays'in tamamını size indirim olarak veriyor.",
+      "desc2": "Bu indirim, yemek paketi ile rezervasyon yaptığınızda her zaman oda fiyatına eşittir."
+    },
+    "step4": {
+      "title": "Oda = ÜCRETSİZ!",
+      "desc1": "Sadece yemeklerinizi ödersiniz (Yarım Pansiyon, Tam Pansiyon veya Her Şey Dahil).",
+      "desc2": "Oda konaklaması bizden."
+    },
+    "whyTitle": "Neden FreeStays?",
+    "whyDescription": "Geleneksel rezervasyon platformlarından farklı olarak, sizin yararınıza çalışan bir model sunuyoruz.",
+    "feature1": {
+      "title": "Oteller Kazanır",
+      "description": "Komisyon oranları düşük olduğu için oteller size daha iyi hizmet sunabilir ve tesislerini geliştirebilir."
+    },
+    "feature2": {
+      "title": "Siz Kazanırsınız",
+      "description": "Oda ücreti tamamen size iade ediliyor. Sadece yemekler için ödeme yapıyorsunuz."
+    },
+    "feature3": {
+      "title": "Şeffaf Sistem",
+      "description": "Gizli ücret yok, sürpriz masraf yok. Her şey açık ve net."
+    },
+    "comparisonTitle": "FreeStays vs Diğer Platformlar",
+    "comparisonDescription": "Farkı görün ve en akıllı tercihi yapın.",
+    "traditional": {
+      "title": "Geleneksel Platformlar",
+      "point1": "Otellerden %15-30 komisyon alır",
+      "point2": "Yüksek komisyonlar yüksek fiyatlara yansır",
+      "point3": "Misafirlere hiçbir geri ödeme yok"
+    },
+    "freestays": {
+      "title": "FreeStays",
+      "point1": "Oda konaklamasından %0 komisyon",
+      "point2": "Komisyon tasarrufu size iade edilir",
+      "point3": "Oda ücreti = ÜCRETSİZ (yemek paketleriyle)"
+    },
+    "cta": {
+      "title": "Bugün Ücretsiz Odanızı Bulun",
+      "description": "Dünya çapında binlerce otelde konaklamanın yeni yolunu keşfedin.",
+      "searchButton": "Otel Ara",
+      "learnMoreButton": "Daha Fazla Bilgi"
+    },
+    "ctaSection": {
+      "title": "Bu Bir Fırsat Değildir.",
+      "subtitle": "Bu Seyahatın Yeni Bir Yöntemidir.",
+      "forWho": "FreeStays Kimi İçin:",
+      "persona1": "Hızlı Çevrimiçi Rezervasyon Yapan",
+      "persona2": "Bilinçli Gezgin",
+      "persona3": "Genç Keşifçi",
+      "persona4": "Deneyimli Yaşam Sanatçısı",
+      "statement": "Eski sistemin artık bu çağa uymuş olduğunu düşünen herkes için.",
+      "question": "Başka şekilde neden rezervasyon yapasınız ki?",
+      "action": "Bize katılın. Adil bir şekilde rezervasyon yapın. Daha akıllı seyahat edin.",
+      "welcome": "FreeStays'e Hoş Geldiniz.",
+      "createAccountButton": "Ücretsiz Hesap Oluştur"
+    }
+  },
+  "referral": {
+    "hero": {
+      "badge": "Arkadaşları Davet Edene €15 Kazan!",
+      "title": "Arkadaşlarını Davet Et, Ödül Kazan!",
+      "subtitle": "Ücretsiz otel konaklamalarının büyüsünü arkadaşlarınız ve ailenizle paylaşın. Onlar rezervasyon yaptığında siz de tasarruf edin!"
+    },
+    "codeBox": {
+      "title": "Senin Referral Kodun",
+      "subtitle": "Arkadaşlarınızla paylaşmak için bu kodu veya linki kopyala",
+      "copyLink": "Linki Kopyala"
+    },
+    "sharing": {
+      "whatsappText": "Selamlar! FreeStays ile ücretsiz otel odaları buluyorum. Benim referral kodumu kullan: ",
+      "email": "E-posta ile Gönder",
+      "emailSubject": "FreeStays ile Ücretsiz Otel Konaklamaları!",
+      "emailBodyPrefix": "Selam! Arkadaşlarımla ücretsiz otel odalarını bulmak için FreeStays'i kullanıyorum. Benim referral kodumu kullan: "
+    },
+    "how": {
+      "badge": "Basit İşlem",
+      "title": "Nasıl Çalışır",
+      "subtitle": "Ödül almaya başlamak için dört kolay adım"
+    },
+    "steps": {
+      "s1": {
+        "title": "Kodunu Paylaş",
+        "desc": "Eşsiz referral kodunu veya linkini kopyala ve arkadaşlarınla e-posta, sosyal medya veya mesajlaşma uygulamaları üzerinden paylaş."
+      },
+      "s2": {
+        "title": "Arkadaş Kaydolsun",
+        "desc": "Arkadaşın FreeStays hesabı oluştururken senin referral kodunu kullanarak kaydolsun."
+      },
+      "s3": {
+        "title": "Arkadaş Rezervasyon Yapsın",
+        "desc": "Arkadaşın ilk otel rezervasyonunu tamamladığında her ikiniz de ödül alacaksınız!"
+      },
+      "s4": {
+        "title": "€15 Tasarruf Edin",
+        "desc": "Senin sonraki rezervasyonun ödeme masrafı otomatik olarak kaldırılır. Çok basit!"
+      }
+    },
+    "benefits": {
+      "b1": {
+        "title": "Arkadaş Tasarruf Ediyor",
+        "desc": "Senin referral kodunu kullandığında arkadaşın rezervasyon masrafından €15 indirim alır."
+      },
+      "b2": {
+        "title": "Sen Ödül Kazanırsın",
+        "desc": "Arkadaşın ilk rezervasyonunu tamamladığında, senin sonraki rezervasyonun masrafı (€15) karşılanır!"
+      },
+      "b3": {
+        "title": "Sınırsız Referral",
+        "desc": "Limit yok! İstediğin kadar arkadaş davet et ve ödül kazanmaya devam et."
+      },
+      "b4": {
+        "title": "Sevinçi Paylaş",
+        "desc": "Arkadaşlarını FreeStays'in büyüsünü keşfetmelerine yardım et ve ücretsiz otel konaklama fırsatıyla tanıştır."
+      }
+    },
+    "why": {
+      "title": "Neden Arkadaş Davet Etmelisin?",
+      "subtitle": "Her yanda kazanmak var, referral programımız ile"
+    },
+    "comparison": {
+      "title": "Karşılaştırma: Arkadaş vs Senin Kazancın",
+      "subtitle": "Farkı gör ve kazanmaya başla",
+      "friendTitle": "👥 Arkadaşın Kazancı",
+      "friend1": "€15 İndirim",
+      "friend2": "Ücretsiz Otel Konaklaması",
+      "youTitle": "🎁 Senin Kazancın",
+      "you1": "€15 Masraf İndirimi",
+      "you2": "Her Davet İçin Ödül"
+    },
+    "cta": {
+      "title": "Bugün Başla!",
+      "subtitle": "Ne kadar çok arkadaş davet edersen, seyahatlerinde o kadar çok tasarruf edersin.",
+      "button": "Şimdi Başla"
+    }
+  },
+  "lastMinute": {
+    "title": "Son Dakika Fırsatları",
+    "subtitle": "Şimdi rezervasyon yapın ve seçili otellerde %30'a varan indirim kazanın",
+    "badge": "Sıcak Fırsatlar",
+    "noDeals": "Şu anda son dakika fırsatı bulunmuyor",
+    "checkBack": "Lütfen yeni teklifler için daha sonra tekrar kontrol edin",
+    "browseHotels": "Tüm Otellere Göz At",
+    "showingResults": "{count} son dakika fırsatı gösteriliyor",
+    "stars": "yıldız",
+    "roomTypes": "oda tipi",
+    "refundable": "Ücretsiz iptal",
+    "from": "En düşük",
+    "perNight": "gecelik",
+    "viewDetails": "Detayları Gör",
+    "cta": {
+      "title": "Kaçırmayın!",
+      "subtitle": "Son dakika fırsatları hızla tükeniyor. Yerinizi şimdi ayırtın.",
+      "button": "Tüm Otelleri Ara"
+    }
+  },
+  "recommendations": {
+    "title": "Sana da Hoşlanabileceğini Düşündüğümüz Oteller",
+    "subtitle": "Benzer otelleri keşfet ve mükemmel oteli bul",
+    "type": {
+      "similar": "Benzer Oteller",
+      "trending": "Şu An Popüler",
+      "suggested": "Sana Özel Önerililer"
+    },
+    "perNight": "gecelik",
+    "viewDetails": "Detayları Gör",
+    "viewMore": "Daha Fazla Otel Gör"
   }
 }

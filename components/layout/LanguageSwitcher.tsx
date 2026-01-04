@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
 import { locales, localeNames, localeFlags } from '@/i18n/request';
@@ -15,6 +16,11 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleChange = (newLocale: string) => {
     // Save user's preference in cookie
@@ -27,6 +33,18 @@ export function LanguageSwitcher() {
     
     router.push(newPathname);
   };
+
+  // Prevent hydration mismatch by only rendering after mount
+  if (!mounted) {
+    return (
+      <div className="w-[140px] h-10 border rounded-md flex items-center px-3">
+        <span className="flex items-center gap-2">
+          <span>{localeFlags[locale as keyof typeof localeFlags]}</span>
+          <span className="text-sm">{localeNames[locale as keyof typeof localeNames]}</span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <Select value={locale} onValueChange={handleChange}>

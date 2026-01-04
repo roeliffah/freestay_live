@@ -25,6 +25,15 @@ export function ThemedHotels({ locale, themeIds, title }: ThemedHotelsProps) {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Bir hafta sonrası tarihini hesapla
+  const getNextWeekDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
+  const checkInDate = getNextWeekDate();
+
   useEffect(() => {
     loadThemes();
   }, [themeIds]);
@@ -142,7 +151,7 @@ export function ThemedHotels({ locale, themeIds, title }: ThemedHotelsProps) {
             return (
               <Link
                 key={theme.id}
-                href={`/${locale}/search?themeId=${theme.themeId}&themeName=${theme.englishName}`}
+                href={`/${locale}/search?themeId=${theme.themeId}&themeName=${theme.englishName}&checkInDate=${checkInDate}`}
                 className="group"
               >
                 <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">

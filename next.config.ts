@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
         hostname: 'xml.sunhotels.net',
       },
       {
+        protocol: 'https',
+        hostname: 'hotelimages.sunhotels.net',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '5240',

@@ -10,6 +10,7 @@ import { useTranslations } from 'next-intl';
 
 interface Destination {
   id: string;
+  sunHotelsId?: number;
   name: string;
   country: string;
   hotelCount: number;
@@ -17,11 +18,11 @@ interface Destination {
 }
 
 const fallbackDestinations: Destination[] = [
-  { id: '1', name: 'Paris', country: 'France', hotelCount: 2850, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800' },
-  { id: '2', name: 'Barcelona', country: 'Spain', hotelCount: 1920, image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800' },
-  { id: '3', name: 'Rome', country: 'Italy', hotelCount: 2100, image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800' },
-  { id: '4', name: 'Santorini', country: 'Greece', hotelCount: 890, image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
-  { id: '5', name: 'Istanbul', country: 'Turkey', hotelCount: 3200, image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800' },
+  { id: '1', sunHotelsId: 43, name: 'Paris', country: 'France', hotelCount: 2850, image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800' },
+  { id: '2', sunHotelsId: 695, name: 'Barcelona', country: 'Spain', hotelCount: 1920, image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=800' },
+  { id: '3', sunHotelsId: 74, name: 'Rome', country: 'Italy', hotelCount: 2100, image: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800' },
+  { id: '4', sunHotelsId: 529, name: 'Santorini', country: 'Greece', hotelCount: 890, image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800' },
+  { id: '5', sunHotelsId: 92, name: 'Istanbul', country: 'Turkey', hotelCount: 3200, image: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800' },
 ];
 
 export function PopularDestinations({ 
@@ -37,6 +38,15 @@ export function PopularDestinations({
   const [destinations, setDestinations] = useState<Destination[]>(fallbackDestinations);
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+
+  // Bir hafta sonrası tarihini hesapla
+  const getNextWeekDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
+  const checkInDate = getNextWeekDate();
 
   useEffect(() => {
     setMounted(true);
@@ -69,7 +79,8 @@ export function PopularDestinations({
               }
 
               return {
-                id: dest.destinationId || dest.id,
+                id: dest.destinationId || dest.id || dest.sunHotelsId,
+                sunHotelsId: dest.sunHotelsId || dest.destinationId || parseInt(dest.id),
                 name: dest.destinationName || dest.name,
                 country: dest.country,
                 hotelCount: dest.hotelCount || 0,
@@ -139,7 +150,7 @@ export function PopularDestinations({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {/* Sol taraf - 1 büyük destinasyon */}
           <Link
-            href={`/${locale}/search?destination=${mainDestination.name}`}
+            href={`/${locale}/search?destinationId=${mainDestination.sunHotelsId || mainDestination.id}&checkInDate=${checkInDate}`}
             className="md:col-span-1 md:row-span-2"
           >
             <Card className="group overflow-hidden cursor-pointer hover:shadow-2xl transition-all h-full">
@@ -173,7 +184,7 @@ export function PopularDestinations({
             {smallDestinations.map((destination) => (
               <Link
                 key={destination.id}
-                href={`/${locale}/search?destination=${destination.name}`}
+                href={`/${locale}/search?destinationId=${destination.sunHotelsId || destination.id}&checkInDate=${checkInDate}`}
               >
                 <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
                   <div className="relative h-48">

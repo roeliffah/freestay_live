@@ -8,6 +8,10 @@ import { PopularCountries } from '@/components/home/PopularCountries';
 import { RomanticTours } from '@/components/home/RomanticTours';
 import { ThemedHotels } from '@/components/home/ThemedHotels';
 import { TravelCTACards } from '@/components/home/TravelCTACards';
+import { HowItWorks } from '@/components/home/HowItWorks';
+import { LastMinuteDeals } from '@/components/home/LastMinuteDeals';
+import { PriceComparison } from '@/components/home/PriceComparison';
+import { CTASection } from '@/components/home/CTASection';
 import { Star, Shield, Clock, Sparkles, Hotel, Umbrella, Plane } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,11 +47,11 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
         console.log('📦 Homepage sections raw response:', result);
         const data = result.data || result;
         console.log('📦 Homepage sections data:', data);
-        
+
         // API already returns only active sections, just sort by displayOrder
         const sortedSections = (Array.isArray(data) ? data : [])
           .sort((a: HomePageSection, b: HomePageSection) => a.displayOrder - b.displayOrder);
-        
+
         console.log('✅ Sections to display:', sortedSections.length, sortedSections.map((s: HomePageSection) => `${s.sectionType} (order: ${s.displayOrder})`));
         setSections(sortedSections);
       } else {
@@ -62,7 +66,7 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
 
   const renderSection = (section: HomePageSection) => {
     const config = section.configuration || {};
-    
+
     // Use section title/subtitle directly from API
     const sectionTitle = section.title;
     const sectionSubtitle = section.subtitle;
@@ -187,12 +191,24 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
         return <RomanticTours key={section.id} locale={locale} hotelIds={config.hotelIds} title={sectionTitle ?? undefined} />;
 
       case 'themed-hotels':
-        return <ThemedHotels 
-          key={section.id} 
-          locale={locale} 
+        return <ThemedHotels
+          key={section.id}
+          locale={locale}
           themeIds={config.themeIds}
-          title={sectionTitle ?? undefined} 
+          title={sectionTitle ?? undefined}
         />;
+
+      case 'how-it-works':
+        return <HowItWorks key={section.id} title={sectionTitle ?? undefined} subtitle={sectionSubtitle ?? undefined} />;
+
+      case 'last-minute-deals':
+        return <LastMinuteDeals key={section.id} title={sectionTitle ?? undefined} subtitle={sectionSubtitle ?? undefined} />;
+
+      case 'price-comparison':
+        return <PriceComparison key={section.id} title={sectionTitle ?? undefined} subtitle={sectionSubtitle ?? undefined} />;
+
+      case 'cta-section':
+        return <CTASection key={section.id} title={sectionTitle ?? undefined} subtitle={sectionSubtitle ?? undefined} buttonText={config.buttonText} />;
 
       case 'campaign-banner':
         return (
@@ -204,8 +220,15 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
                   <h2 className="text-3xl font-bold mb-2">{sectionTitle || t('campaign.title')}</h2>
                   <p className="text-lg opacity-90">{sectionSubtitle || t('campaign.subtitle')}</p>
                 </div>
-                <Button size="lg" variant="secondary" className="bg-white text-orange-600 hover:bg-gray-100">
-                  {t('campaign.button')}
+                <Button
+                  asChild
+                  size="lg"
+                  variant="secondary"
+                  className="bg-white text-orange-600 hover:bg-gray-100"
+                >
+                  <Link href={`/${locale}/lastminute-deals`}>
+                    {t('campaign.button')}
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -217,7 +240,7 @@ export default function DynamicHomePage({ locale }: { locale: string }) {
 
       case 'final-cta':
         return (
-          <section key={section.id} className="py-20 bg-gradient-to-r from-primary to-secondary text-white">
+          <section key={section.id} className="py-16 bg-gradient-to-r from-primary to-secondary text-white">
             <div className="container mx-auto px-4 text-center">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
                 {sectionTitle || t('cta.title')}

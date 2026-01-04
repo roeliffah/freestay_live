@@ -1,14 +1,12 @@
 // Export all hooks
 export { useAuth } from './useAuth';
 export { useSettings, useTranslation } from './useSettings';
+export { useSiteSettings } from './useSiteSettings';
 export { 
-  useHotelSearch, 
   useHotelDetail, 
   useFeaturedHotels, 
   usePopularDestinations 
 } from './useHotels';
 export { 
-  useBookings, 
-  useBookingDetail, 
-  useCreateBooking 
+  useBookings
 } from './useBookings';

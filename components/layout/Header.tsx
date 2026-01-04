@@ -8,12 +8,14 @@ import { Phone, User, Menu, X, ChevronDown, Plane, Car, Compass } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { adminAPI } from '@/lib/api/client';
+import { useSiteSettings } from '@/lib/hooks/useSiteSettings';
 
 export function Header() {
   const t = useTranslations('header');
   const locale = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [travelMenuOpen, setTravelMenuOpen] = useState(false);
+  const { settings } = useSiteSettings();
   const [affiliateData, setAffiliateData] = useState<{
     excursions: { active: boolean; affiliateCode: string };
     carRental: { active: boolean; affiliateCode: string };
@@ -136,6 +138,24 @@ export function Header() {
               {t('about')}
             </Link>
             <Link 
+              href={`/${locale}/how-it-works`}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              {t('howItWorks')}
+            </Link>
+            <Link 
+              href={`/${locale}/lastminute-deals`}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              {t('lastminuteDeals')}
+            </Link>
+            <Link 
+              href={`/${locale}/refer-a-friend`}
+              className="text-sm font-medium transition-colors hover:text-primary"
+            >
+              {t('referralProgram')}
+            </Link>
+            <Link 
               href={`/${locale}/contact`}
               className="text-sm font-medium transition-colors hover:text-primary"
             >
@@ -146,9 +166,13 @@ export function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center space-x-4">
             <LanguageSwitcher />
-            <Button variant="ghost" size="icon">
-              <Phone className="h-5 w-5" />
-            </Button>
+            {(settings?.contact?.phone || settings?.supportPhone) && (
+              <a href={`tel:${settings.contact?.phone || settings.supportPhone}`}>
+                <Button variant="ghost" size="icon">
+                  <Phone className="h-5 w-5" />
+                </Button>
+              </a>
+            )}
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
@@ -232,6 +256,27 @@ export function Header() {
                 {t('about')}
               </Link>
               <Link 
+                href={`/${locale}/how-it-works`}
+                className="text-sm font-medium transition-colors hover:text-primary px-2 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t('howItWorks')}
+              </Link>
+              <Link 
+                href={`/${locale}/lastminute-deals`}
+                className="text-sm font-medium transition-colors hover:text-primary px-2 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t('lastminuteDeals')}
+              </Link>
+              <Link 
+                href={`/${locale}/refer-a-friend`}
+                className="text-sm font-medium transition-colors hover:text-primary px-2 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                {t('referralProgram')}
+              </Link>
+              <Link 
                 href={`/${locale}/contact`}
                 className="text-sm font-medium transition-colors hover:text-primary px-2 py-2"
                 onClick={() => setMobileMenuOpen(false)}
@@ -239,10 +284,17 @@ export function Header() {
                 {t('contact')}
               </Link>
               <div className="flex items-center space-x-2 px-2 pt-2 border-t">
-                <Button variant="ghost" size="sm" className="flex-1">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {t('contact')}
-                </Button>
+                {(settings?.contact?.phone || settings?.supportPhone) && (
+                  <a 
+                    href={`tel:${settings.contact?.phone || settings.supportPhone}`}
+                    className="flex-1"
+                  >
+                    <Button variant="ghost" size="sm" className="w-full">
+                      <Phone className="h-4 w-4 mr-2" />
+                      {t('contact')}
+                    </Button>
+                  </a>
+                )}
                 <Button variant="ghost" size="sm" className="flex-1">
                   <User className="h-4 w-4 mr-2" />
                   Login

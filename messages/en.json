@@ -7,7 +7,10 @@
     "travel": "Travel",
     "excursions": "Tours & Activities",
     "rentACar": "Rent a Car",
-    "bookAFlight": "Book a Flight"
+    "bookAFlight": "Book a Flight",
+    "howItWorks": "How It Works",
+    "lastminuteDeals": "Last Minute Deals",
+    "referralProgram": "Referral Program"
   },
   "home": {
     "hero": {
@@ -22,6 +25,7 @@
       "guests": "Guests",
       "searchButton": "Search Hotels",
       "selectDate": "Select date",
+      "selectGuests": "Select Guests",
       "room": "Room",
       "guest": "Guests",
       "roomsAndGuests": "Rooms and Guests",
@@ -31,7 +35,15 @@
       "addRoom": "Add Room",
       "done": "Done",
       "searching": "Searching...",
-      "noDatesInfo": "No dates selected. Approximate prices will be shown. Select dates for current prices and availability."
+      "noDatesInfo": "No dates selected. Approximate prices will be shown. Select dates for current prices and availability.",
+      "badges": {
+        "freeRoom": "Free Room",
+        "freeRoomDesc": "Only pay for meals",
+        "discount": "30% Savings",
+        "discountDesc": "vs Booking.com",
+        "guarantee": "450K+ Hotels",
+        "guaranteeDesc": "Best price guarantee"
+      }
     },
     "popularHotels": {
       "title": "Popular Hotels",
@@ -63,6 +75,60 @@
       "supportDesc": "We're always here for you",
       "hotels": "Thousands of Hotels",
       "hotelsDesc": "Options from around the world"
+    },
+    "howItWorks": {
+      "title": "How It Works?",
+      "subtitle": "Book your dream vacation in 4 simple steps",
+      "step1": {
+        "title": "Search Hotels",
+        "description": "Choose your destination"
+      },
+      "step2": {
+        "title": "Select Dates",
+        "description": "Pick your check-in and check-out dates"
+      },
+      "step3": {
+        "title": "Make Reservation",
+        "description": "Pay only for meals"
+      },
+      "step4": {
+        "title": "Enjoy Your Vacation",
+        "description": "Room is free, just enjoy your holiday!"
+      }
+    },
+    "lastMinute": {
+      "title": "Today's Best Deals",
+      "subtitle": "Limited rooms available. Book now!",
+      "badge": "Last Minute Deals",
+      "viewButton": "View",
+      "superDeal": "Super Deal",
+      "from": "From",
+      "perNight": "per night",
+      "viewAll": "View All Deals"
+    },
+    "priceComparison": {
+      "title": "FreeStays vs Booking.com",
+      "subtitle": "Why should you book with FreeStays?",
+      "feature": "Feature",
+      "features": {
+        "roomCost": "Room Cost",
+        "meals": "Meals Included",
+        "commission": "Commission",
+        "bestPrice": "Best Price",
+        "support": "24/7 Support"
+      },
+      "savings": "More Savings",
+      "savingsDesc": "Average savings compared to Booking.com"
+    },
+    "cta": {
+      "title": "Ready for Your Free Stay?",
+      "subtitle": "Find the perfect hotel from 450,000+ options. Pay only for meals, room is free!",
+      "badge": "Special Offer",
+      "button": "Book Now",
+      "learnMore": "How It Works?",
+      "feature1": "✓ Free Room",
+      "feature2": "✓ Best Price Guarantee",
+      "feature3": "✓ 24/7 Support"
     },
     "destinations": {
       "title": "Popular Destinations",
@@ -200,11 +266,8 @@
       "mid": "1000-2000 ₺",
       "high": "2000-5000 ₺",
       "luxury": "5000+ ₺"
-    },
-    "staticMode": "Static Search",
-    "realtimeMode": "Live Pricing",
-    "staticModeInfo": "Showing approximate prices. Select dates in search form for current prices and availability."
-  },
+    }
+ },
   "hotel": {
     "deal": "Deal!",
     "startingPrice": "Starting price per night",
@@ -228,7 +291,9 @@
     "checkIn": "Check-in",
     "checkOut": "Check-out",
     "selectDate": "Select date",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "roomTypes": "room types",
+    "refundable": "Refundable"
   },
   "about": {
     "hero": {
@@ -439,7 +504,12 @@
     "support247": "24/7 customer support",
     "location": "Location",
     "loading": "Loading...",
-    "hotelNotFound": "Hotel not found"
+    "hotelNotFound": "Hotel not found",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "adults": "Adults",
+    "children": "Children",
+    "updateSearch": "Update Search"
   },
   "booking": {
     "title": "Booking",
@@ -554,5 +624,206 @@
     "termsAgree": "I agree to the terms and conditions and cancellation policy",
     "securePayment": "Secure Payment",
     "securePaymentDesc": "Your payment information is protected with SSL encryption"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Find answers to common questions about FreeStays",
+    "categories": {
+      "general": "General",
+      "booking": "Booking",
+      "payment": "Payment",
+      "cancellation": "Cancellation",
+      "account": "Account"
+    },
+    "help": {
+      "title": "Still have questions?",
+      "description": "Our support team is always ready to help you",
+      "button": "Contact Us"
+    }
+  },
+  "howItWorks": {
+    "badge": "The FreeStays Concept",
+    "title": "How Your Room Becomes FREE",
+    "description1": "Unlike other booking platforms that charge hotels up to 30% commission, Freestays does not charge commission on room bookings.",
+    "description2": "Instead of keeping margins, we return the full value directly to you — and that value equals 100% of your room price when you book with a meal package (Half Board, Full Board or All Inclusive).",
+    "description3": "Fair, transparent and built to benefit you.",
+    "step1": {
+      "title": "Hotels Pay 0%",
+      "desc1": "Hotels save up to 50% compared to other booking platforms.",
+      "desc2": "Freestays charges no commission on room accommodation, allowing hotels to keep their revenue and invest in better service and quality."
+    },
+    "step2": {
+      "title": "No Commission on Rooms",
+      "desc1": "Freestays does not earn money on your room.",
+      "desc2": "Hotels only contribute a small, transparent fee for bringing them guests — not a commission on accommodation."
+    },
+    "step3": {
+      "title": "We Give It Back to YOU",
+      "desc1": "Instead of keeping that value, Freestays gives it entirely to you as a discount.",
+      "desc2": "That discount always equals the room price when you book with a meal package."
+    },
+    "step4": {
+      "title": "Room = FREE!",
+      "desc1": "You only pay for your meals (Half Board, Full Board or All Inclusive).",
+      "desc2": "The room accommodation is on us."
+    },
+    "whyTitle": "Why FreeStays?",
+    "whyDescription": "Unlike traditional booking platforms, we offer a model that works in your favor.",
+    "feature1": {
+      "title": "Hotels Win",
+      "description": "With lower commission rates, hotels can provide better service and improve their facilities."
+    },
+    "feature2": {
+      "title": "You Win",
+      "description": "The room fee is fully returned to you. You only pay for meals."
+    },
+    "feature3": {
+      "title": "Transparent System",
+      "description": "No hidden fees, no surprise charges. Everything is clear and straightforward."
+    },
+    "comparisonTitle": "FreeStays vs Other Platforms",
+    "comparisonDescription": "See the difference and make the smartest choice.",
+    "traditional": {
+      "title": "Traditional Platforms",
+      "point1": "Charge 15-30% commission from hotels",
+      "point2": "High commissions reflect in higher prices",
+      "point3": "No refunds for guests"
+    },
+    "freestays": {
+      "title": "FreeStays",
+      "point1": "0% commission on room accommodation",
+      "point2": "Commission savings returned to you",
+      "point3": "Room fee = FREE (with meal packages)"
+    },
+    "cta": {
+      "title": "Find Your Free Room Today",
+      "description": "Discover a new way of staying at thousands of hotels worldwide.",
+      "searchButton": "Search Hotels",
+      "learnMoreButton": "Learn More"
+    },
+    "ctaSection": {
+      "title": "This Is Not A Deal.",
+      "subtitle": "This Is A New Way Of Traveling.",
+      "forWho": "Freestays is for:",
+      "persona1": "The fast online booker",
+      "persona2": "The conscious traveler",
+      "persona3": "The young explorer",
+      "persona4": "The experienced bon vivant",
+      "statement": "For everyone who feels the old system no longer fits this era.",
+      "question": "Why would you book any other way?",
+      "action": "Join us. Book fairly. Travel smarter.",
+      "welcome": "Welcome to Freestays.",
+      "createAccountButton": "Create Free Account"
+    }
+  },
+  "referral": {
+    "hero": {
+      "badge": "Earn €15 Per Referral!",
+      "title": "Refer Friends, Earn Rewards!",
+      "subtitle": "Share the gift of free hotel stays with your friends and family. When they book, you both save!"
+    },
+    "codeBox": {
+      "title": "Your Referral Code",
+      "subtitle": "Share this code with friends to start earning",
+      "copyLink": "Copy Link"
+    },
+    "sharing": {
+      "whatsappText": "Hey! I've been using FreeStays to get free hotel rooms. Use my referral code: ",
+      "email": "Send via Email",
+      "emailSubject": "Free Hotel Stays with FreeStays!",
+      "emailBodyPrefix": "Hey! I've been using FreeStays to get free hotel rooms. Use my referral code: "
+    },
+    "how": {
+      "badge": "Simple Process",
+      "title": "How It Works",
+      "subtitle": "Four easy steps to start earning rewards"
+    },
+    "steps": {
+      "s1": {
+        "title": "Share Your Code",
+        "desc": "Copy your unique referral code or link and share it with friends via email, social media, or messaging apps."
+      },
+      "s2": {
+        "title": "Friend Signs Up",
+        "desc": "Your friend creates a FreeStays account using your referral code during registration."
+      },
+      "s3": {
+        "title": "Friend Books",
+        "desc": "When your friend completes their first hotel booking, you both get rewarded!"
+      },
+      "s4": {
+        "title": "You Save €15",
+        "desc": "Your next booking fee is automatically waived. It's that simple!"
+      }
+    },
+    "benefits": {
+      "b1": {
+        "title": "Your Friend Saves",
+        "desc": "Your friend gets €15 off their booking fee when they use your referral code."
+      },
+      "b2": {
+        "title": "You Earn Rewards",
+        "desc": "When your friend completes their first booking, your next booking fee (€15) is covered!"
+      },
+      "b3": {
+        "title": "Unlimited Referrals",
+        "desc": "There's no limit! Refer as many friends as you want and keep earning rewards."
+      },
+      "b4": {
+        "title": "Share the Joy",
+        "desc": "Help your friends discover the magic of free hotel stays with FreeStays."
+      }
+    },
+    "why": {
+      "title": "Why Refer Friends?",
+      "subtitle": "Everyone wins with our referral program"
+    },
+    "comparison": {
+      "title": "Comparison: Friend's Benefits vs Your Rewards",
+      "subtitle": "See the difference and start earning",
+      "friendTitle": "👥 Your Friend Saves",
+      "friend1": "€15 Off Booking Fee",
+      "friend2": "Free Room Stay",
+      "youTitle": "🎁 You Earn",
+      "you1": "€15 Fee Waived",
+      "you2": "Reward Per Referral"
+    },
+    "cta": {
+      "title": "Start Sharing Today!",
+      "subtitle": "The more friends you refer, the more you save on your travels.",
+      "button": "Get Started Now"
+    }
+  },
+  "lastMinute": {
+    "title": "Last Minute Deals",
+    "subtitle": "Book now and save up to 30% on selected hotels",
+    "badge": "Hot Deals",
+    "noDeals": "No last minute deals available",
+    "checkBack": "Please check back later for new offers",
+    "browseHotels": "Browse All Hotels",
+    "showingResults": "Showing {count} last minute offers",
+    "stars": "stars",
+    "roomTypes": "room types",
+    "refundable": "Free cancellation",
+    "from": "From",
+    "perNight": "per night",
+    "viewDetails": "View Details",
+    "cta": {
+      "title": "Don't Miss Out!",
+      "subtitle": "Last minute deals sell out fast. Book now to secure your spot.",
+      "button": "Search All Hotels"
+    }
+  },
+  "recommendations": {
+    "title": "You Might Also Like",
+    "subtitle": "Explore similar hotels and find your perfect match",
+    "type": {
+      "similar": "Similar Hotels",
+      "trending": "Trending Now",
+      "suggested": "Suggested For You"
+    },
+    "perNight": "per night",
+    "viewDetails": "View Details",
+    "viewMore": "View More Hotels"
   }
 }

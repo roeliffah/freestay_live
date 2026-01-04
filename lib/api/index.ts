@@ -392,7 +392,7 @@ export const api = {
   // Settings
   settings: {
     getSite: () =>
-      fetchApi<ApiResponse<SiteSettings>>('/settings/site'),
+      fetchApi<ApiResponse<SiteSettings>>('/public/settings/site'),
 
     getSeo: (pageType: string, locale: string) =>
       fetchApi<ApiResponse<SeoSettings>>(

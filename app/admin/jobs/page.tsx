@@ -136,7 +136,10 @@ function JobsContent() {
           }
           return [];
         }),
-        adminAPI.getProcessingJobs().catch(err => {
+        adminAPI.getProcessingJobs().then(result => {
+          console.log('🔍 Processing Jobs Response:', result);
+          return result;
+        }).catch(err => {
           console.error('Processing jobs error:', err);
           if (err.response?.status === 403) {
             setHangfireAccessDenied(true);
@@ -622,7 +625,7 @@ function JobsContent() {
               <Alert
                 type="warning"
                 showIcon
-                message="Access Denied"
+                title="Access Denied"
                 description={
                   <div>
                     <Paragraph>
@@ -795,9 +798,9 @@ function JobsContent() {
                     columns={[
                       {
                         title: 'Job ID',
-                        dataIndex: 'id',
-                        key: 'id',
-                        render: (id: string) => <Text code>{id}</Text>,
+                        dataIndex: 'jobId',
+                        key: 'jobId',
+                        render: (id: string) => <Text code>{id || 'N/A'}</Text>,
                       },
                       {
                         title: 'Job Name',
@@ -813,19 +816,23 @@ function JobsContent() {
                       {
                         title: 'Actions',
                         key: 'actions',
-                        render: (_: any, record: any) => (
-                          <Popconfirm
-                            title="Cancel this job?"
-                            description="This will attempt to cancel the running job."
-                            onConfirm={() => handleCancelProcessingJob(record.id)}
-                            okText="Yes"
-                            cancelText="No"
-                          >
-                            <Button size="small" danger icon={<StopOutlined />}>
-                              Cancel
-                            </Button>
-                          </Popconfirm>
-                        ),
+                        render: (_: any, record: any) => {
+                          console.log('📋 Table record:', record);
+                          const jobId = record.jobId || record.id;
+                          return jobId ? (
+                            <Popconfirm
+                              title="Cancel this job?"
+                              description="This will attempt to cancel the running job."
+                              onConfirm={() => handleCancelProcessingJob(jobId)}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button size="small" danger icon={<StopOutlined />}>
+                                Cancel
+                              </Button>
+                            </Popconfirm>
+                          ) : <Text type="secondary">No ID</Text>;
+                        },
                       },
                     ]}
                   />

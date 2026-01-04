@@ -1,3 +1,11 @@
+import { Inter } from 'next/font/google';
+import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
+
 export const metadata = {
   metadataBase: new URL('https://www.freestays.eu'),
   title: {
@@ -90,7 +98,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body suppressHydrationWarning>{children}</body>
+      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>{children}</body>
     </html>
   );
 }

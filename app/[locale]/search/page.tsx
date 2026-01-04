@@ -15,36 +15,48 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SlidersHorizontal, Star, MapPin, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { getCountryName } from '@/lib/functions/functions';
+import { StickySearchBar } from '@/components/search/StickySearchBar';
+import { validateAndMapLocale } from '@/lib/utils/language-mapping';
+
+interface Room {
+  roomId: string;
+  name: string;
+  roomTypeName: string;
+  mealName: string;
+  price: number;
+  availableRooms: number;
+  isRefundable: boolean;
+  isSuperDeal: boolean;
+}
 
 interface Hotel {
   hotelId: number;
   name: string;
   description: string;
-  address: string;
+  category: number;
+  stars?: number;
   city: string;
   country: string;
   countryCode: string;
-  category: number;
+  address: string;
   latitude: number;
   longitude: number;
-  resortId: number;
-  resortName: string;
-  minPrice: number;
   imageUrls: string[];
-  phone?: string;
-  email?: string;
-  website?: string;
-  featureIds: number[];
-  themeIds: number[];
+  images?: string[];  // Backward compatibility
+  minPrice: number;
+  currency: string;
+  reviewScore: number | null;
+  reviewCount: number | null;
+  checkInDate?: string;
+  checkOutDate?: string;
+  rooms?: Room[];
 }
 
 interface SearchResponse {
   hotels: Hotel[];
   totalCount: number;
-  totalPages: number;
-  currentPage: number;
-  pageSize: number;
   searchType: string;
+  hasPricing: boolean;
 }
 
 interface Filters {
@@ -101,12 +113,8 @@ function SearchPage() {
   const locale = params.locale as string;
   const t = useTranslations('search');
 
-  // SunHotels destekli diller
-  const sunhotelsLanguages = [
-    'ja', 'cs', 'pt', 'sv', 'zh-Hant', 'en', 'da', 'nl', 'ko', 'ru', 'hu', 'fr', 'no', 'es', 'de', 'it', 'zh-Hans', 'fi', 'pl'
-  ];
-  // Kullanılacak dil: locale destekleniyorsa onu, yoksa 'en'
-  const selectedLang = sunhotelsLanguages.includes(locale) ? locale : 'en';
+  // Map locale to SunHotels language code
+  const selectedLang = validateAndMapLocale(locale, 'en');
 
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,7 +159,7 @@ function SearchPage() {
     const loadSettings = async () => {
       try {
         const API_URL = process.env.NEXT_PUBLIC_API_URL;
-        const response = await fetch(`${API_URL}/settings/site`, {
+        const response = await fetch(`${API_URL}/public/settings/site`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -481,7 +489,7 @@ function SearchPage() {
       }
 
       console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-      console.log('🔐 Using language:', selectedLang, '(original locale:', locale, ', supported languages:', sunhotelsLanguages.includes(locale) ? 'YES' : 'NO', ')');
+      console.log('🔐 Using language:', selectedLang, '(original locale:', locale, ')');
       
       // Measure API call time
       const apiStartTime = performance.now();
@@ -520,26 +528,26 @@ function SearchPage() {
           console.log('🏨 FULL Hotels data:', result.hotels);
           if (result.hotels.length > 0) {
             console.log('📍 First hotel detailed:', JSON.stringify(result.hotels[0], null, 2));
+            console.log('🔍 First hotel field check:', {
+              hotelId: result.hotels[0].hotelId,
+              name: result.hotels[0].name,
+              category: result.hotels[0].category,
+              city: result.hotels[0].city,
+              country: result.hotels[0].country,
+              imageUrls: result.hotels[0].imageUrls,
+              rooms: result.hotels[0].rooms,
+              firstRoom: result.hotels[0].rooms?.[0]
+            });
           }
           
-          // Enrich hotels with feature and theme names, and calculate final prices
+          // Calculate final prices with profit margin and VAT
           const enrichedHotels = result.hotels.map(hotel => {
-            const hotelFeatures = hotel.featureIds
-              ?.map(id => features.find(f => f.sunHotelsId === id)?.name)
-              .filter(Boolean) as string[] || [];
-            
-            const hotelThemes = hotel.themeIds
-              ?.map(id => themes.find(t => t.sunHotelsId === id)?.name)
-              .filter(Boolean) as string[] || [];
-            
             // Kar marjı ve KDV eklenmiş fiyatını hesapla
             const finalPrice = calculateFinalPrice(hotel.minPrice);
             
             return {
               ...hotel,
               minPrice: finalPrice, // Original API fiyatını override et
-              features: hotelFeatures,
-              themes: hotelThemes,
               originalPrice: hotel.minPrice, // Orijinal fiyatı saklayalım (isteğe bağlı)
             };
           });
@@ -547,7 +555,7 @@ function SearchPage() {
           setSearchResponse({ ...result, hotels: enrichedHotels });
           
           // Extract unique countries and cities from results
-          const countries = Array.from(new Set(result.hotels.map(h => h.countryCode).filter(Boolean)));
+          const countries = Array.from(new Set(result.hotels.map(h => h.country).filter(Boolean)));
           const cities = Array.from(new Set(result.hotels.map(h => h.city).filter(Boolean)));
           setAvailableCountries(countries);
           setAvailableCities(cities);
@@ -557,7 +565,7 @@ function SearchPage() {
           console.error('❌ Unified search failed:', response.status);
           console.error('❌ Error details:', errorText);
           console.error('❌ Request was:', JSON.stringify(requestBody, null, 2));
-          setSearchResponse({ hotels: [], totalCount: 0, totalPages: 0, currentPage: 0, pageSize: 20, searchType: 'error' });
+          setSearchResponse({ hotels: [], totalCount: 0, searchType: 'error', hasPricing: false });
         }
       } catch (fetchError: any) {
         clearTimeout(timeoutId);
@@ -567,11 +575,11 @@ function SearchPage() {
         } else {
           console.error('❌ Fetch error:', fetchError);
         }
-        setSearchResponse({ hotels: [], totalCount: 0, totalPages: 0, currentPage: 0, pageSize: 20, searchType: 'error' });
+        setSearchResponse({ hotels: [], totalCount: 0, searchType: 'error', hasPricing: false });
       }
     } catch (error) {
       console.error('❌ Hotel search error:', error);
-      setSearchResponse({ hotels: [], totalCount: 0, totalPages: 0, currentPage: 0, pageSize: 20, searchType: 'error' });
+      setSearchResponse({ hotels: [], totalCount: 0, searchType: 'error', hasPricing: false });
     } finally {
       setLoading(false);
     }
@@ -600,9 +608,11 @@ function SearchPage() {
           : priceB - priceA;
       }
       if (filters.sortBy === 'rating') {
+        const ratingA = a.stars || a.category || 0;
+        const ratingB = b.stars || b.category || 0;
         return filters.sortOrder === 'asc'
-          ? a.category - b.category
-          : b.category - a.category;
+          ? ratingA - ratingB
+          : ratingB - ratingA;
       }
       if (filters.sortBy === 'name') {
         return filters.sortOrder === 'asc'
@@ -712,12 +722,29 @@ function SearchPage() {
   const filteredCities = filters.countries && filters.countries.length > 0
     ? availableCities.filter(city => {
         const hotelsInCity = hotels.filter(h => h.city === city);
-        return hotelsInCity.some(h => filters.countries?.includes(h.countryCode));
+        return hotelsInCity.some(h => filters.countries?.includes(h.country));
       })
     : availableCities;
 
   return (
     <div className="min-h-screen bg-muted/30 py-8">
+      {/* Sticky Search Bar */}
+      <StickySearchBar
+        initialCheckIn={filters.checkIn}
+        initialCheckOut={filters.checkOut}
+        initialAdults={parseInt(searchParams.get('adults') || '1')}
+        initialChildren={parseInt(searchParams.get('children') || '0')}
+        onUpdate={({ checkIn, checkOut, adults, children }) => {
+          setFilters({ 
+            ...filters, 
+            checkIn, 
+            checkOut 
+          });
+          setCurrentPage(1);
+        }}
+        locale={locale}
+      />
+      
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-6">
@@ -743,10 +770,10 @@ function SearchPage() {
           <p className="text-muted-foreground">
             {searchResponse?.totalCount || 0} {t('hotelsFound')}
             {searchParams.get('destination') && ` - ${searchParams.get('destination')}`}
-            {searchResponse && searchResponse.totalPages > 1 && (
-              <span className="ml-2">
-                (Sayfa {searchResponse.currentPage + 1} / {searchResponse.totalPages})
-              </span>
+            {searchResponse && searchResponse.hasPricing && (
+              <Badge variant="default" className="ml-2 text-xs bg-green-600">
+                ✓ Fiyatlı
+              </Badge>
             )}
           </p>
           {isStaticSearch && (
@@ -825,35 +852,10 @@ function SearchPage() {
                           ))}
                         </div>
                         <span className="text-sm">
-                          {hotels.filter((h) => h.category === star).length}
+                          {hotels.filter((h) => h.stars === star).length}
                         </span>
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                {/* Tarih Filtresi */}
-                <div className="mb-6">
-                  <label className="text-sm font-medium mb-3 block">{t('dates')}</label>
-                  <div className="space-y-3">
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">{t('checkIn')}</Label>
-                      <Input
-                        type="date"
-                        value={filters.checkIn || ''}
-                        onChange={(e) => setFilters({ ...filters, checkIn: e.target.value || undefined })}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted-foreground mb-1 block">{t('checkOut')}</Label>
-                      <Input
-                        type="date"
-                        value={filters.checkOut || ''}
-                        onChange={(e) => setFilters({ ...filters, checkOut: e.target.value || undefined })}
-                        className="w-full"
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -1151,60 +1153,7 @@ function SearchPage() {
               )}
             </div>
 
-            {/* Pagination */}
-            {searchResponse && searchResponse.totalPages > 1 && (
-              <div className="mt-8 flex justify-center items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1 || loading}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  {t('previous')}
-                </Button>
-
-                <div className="flex gap-1">
-                  {Array.from({ length: Math.min(5, searchResponse.totalPages) }, (_, i) => {
-                    // Show pages around current page
-                    const totalPages = searchResponse.totalPages;
-                    let pageNum: number;
-                    
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-
-                    return (
-                      <Button
-                        key={pageNum}
-                        variant={currentPage === pageNum ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(pageNum)}
-                        disabled={loading}
-                      >
-                        {pageNum}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage(prev => Math.min(searchResponse.totalPages, prev + 1))}
-                  disabled={currentPage === searchResponse.totalPages || loading}
-                >
-                  {t('next')}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </div>
-            )}
+            {/* Pagination - Removed: Backend doesn't support pagination yet */}
           </div>
         </div>
       </div>

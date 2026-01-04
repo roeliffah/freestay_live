@@ -41,6 +41,15 @@ export function RomanticTours({
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
+  // Bir hafta sonrası tarihini hesapla
+  const getNextWeekDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
+  const checkInDate = getNextWeekDate();
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -145,10 +154,15 @@ export function RomanticTours({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {hotels.slice(0, 6).map((hotel) => (
+          {hotels.slice(0, 6).map((hotel) => {
+            const checkOutDate = new Date();
+            checkOutDate.setDate(checkOutDate.getDate() + 14);
+            const checkOutDateStr = checkOutDate.toISOString().split('T')[0];
+            
+            return (
             <Link
               key={hotel.id}
-              href={`/${locale}/hotel/${hotel.id}`}
+              href={`/${locale}/hotel/${hotel.id}?checkIn=${checkInDate}&checkOut=${checkOutDateStr}&adults=1&children=0`}
             >
               <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
                 <div className="relative h-64 overflow-hidden">
@@ -188,12 +202,13 @@ export function RomanticTours({
                 </div>
               </Card>
             </Link>
-          ))}
+            );
+          })}
         </div>
 
         <div className="text-center mt-10">
           <Link
-            href={`/${locale}/search?category=romantic`}
+            href={`/${locale}/search?category=romantic&checkInDate=${checkInDate}`}
             className="inline-block bg-gradient-to-r from-pink-500 to-red-500 text-white px-8 py-3 rounded-md font-semibold hover:opacity-90 transition-opacity"
           >
             {t('romanticTours.viewAll')}

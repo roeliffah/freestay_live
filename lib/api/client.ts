@@ -4,6 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://freestays-api-b
 // Rate limiting için
 import { rateLimiter, apiRateLimiter } from '@/lib/security/rate-limiter';
 import { getCsrfToken, initCsrfProtection } from '@/lib/security/csrf-protection';
+import type { HotelDetailApiResponse } from '@/types/sunhotels';
 
 // SEO Settings Types
 interface SeoSettings {
@@ -371,11 +372,12 @@ class ApiClient {
   }
 
   async delete<T>(endpoint: string): Promise<T> {
-    // Debug log for FAQ and Featured Content endpoints
-    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content')) {
+    // Debug log for FAQ, Featured Content, and Hangfire endpoints
+    if (endpoint.includes('/admin/faqs') || endpoint.includes('/admin/featured-content') || endpoint.includes('/admin/hangfire')) {
       const token = getToken();
-      console.log('🔐 FAQ/Featured Content DELETE:', {
+      console.log('🔐 DELETE Request:', {
         endpoint,
+        fullUrl: `${this.baseURL}${endpoint}`,
         hasToken: !!token,
         tokenPreview: token ? `${token.substring(0, 20)}...` : 'NO TOKEN'
       });
@@ -770,6 +772,8 @@ export const adminAPI = {
   // Settings
   getSiteSettings: () => apiClient.get('/admin/settings/site'),
   
+  getPublicSiteSettings: () => apiClient.get('/public/settings/site'),
+  
   updateSiteSettings: (data: any) => apiClient.put('/admin/settings/site', data),
   
   getSocialSettings: () => apiClient.get('/admin/settings/social'),
@@ -942,7 +946,7 @@ export const sunhotelsAPI = {
     adults?: number;
     children?: number;
     currency?: string;
-  }) => apiClient.get(`/sunhotels/hotels/${hotelId}/details`, params),
+  }): Promise<HotelDetailApiResponse> => apiClient.get(`/sunhotels/hotels/${hotelId}/details`, params),
 
   // Destinasyonları getir
   getDestinations: () => apiClient.get('/sunhotels/destinations'),
@@ -1038,6 +1042,24 @@ export const pagesAPI = {
   },
 };
 
+// FAQs API - Public
+export const facsAPI = {
+  getFaqsByCategory: (locale: string, category: string): Promise<Array<{
+    id: string;
+    order: number;
+    isActive: boolean;
+    category: string;
+    createdAt: string;
+    updatedAt: string | null;
+    translations: Array<{
+      id: string;
+      locale: string;
+      question: string;
+      answer: string;
+    }>;
+  }>> => apiClient.get('/Faqs', { locale, category }, true),
+};
+
 // Payments API
 export const paymentsAPI = {
   initiate: (data: { bookingId: string; amount: number; currency: string; paymentMethod: string }) =>
@@ -1072,6 +1094,31 @@ export const carsAPI = {
   searchLocations: (query: string) => apiClient.get('/Cars/locations', { query }),
   
   getCategories: () => apiClient.get('/Cars/categories'),
+};
+
+// Last Minute Hotels API
+export const lastMinuteAPI = {
+  getHotels: async (language?: string): Promise<import('@/types/last-minute').LastMinuteResponse> => {
+    const endpoint = '/public/hotels/last-minute';
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (language) {
+      headers['Accept-Language'] = language;
+    }
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: 'GET',
+      headers
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    return response.json();
+  },
 };
 
 export default apiClient;

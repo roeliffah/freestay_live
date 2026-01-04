@@ -109,3 +109,129 @@ export interface SearchFilters {
   sortBy?: 'price' | 'rating' | 'name';
   sortOrder?: 'asc' | 'desc';
 }
+
+// Hotel Detail API Response Types (New Format)
+export interface HotelContact {
+  address: string;
+  city: string;
+  country: string;
+  countryCode: string;
+  phone: string;
+  email: string;
+  website: string;
+}
+
+export interface HotelResort {
+  id: number;
+  name: string;
+}
+
+export interface HotelLocation {
+  latitude: number;
+  longitude: number;
+  resort: HotelResort;
+  giataCode: string;
+}
+
+export interface HotelPricing {
+  minPrice: number;
+  currency: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  adults: number;
+  children: number;
+}
+
+export interface HotelReviews {
+  score: number;
+  count: number;
+  rating: string;
+}
+
+export interface HotelFeature {
+  id: number;
+  name: string;
+  icon: string;
+}
+
+export interface HotelTheme {
+  id: number;
+  name: string;
+  englishName: string;
+}
+
+export interface HotelDetail {
+  id: number;
+  name: string;
+  description: string;
+  category: number;
+  stars: number;
+  contact: HotelContact;
+  location: HotelLocation;
+  images: string[];
+  pricing: HotelPricing;
+  reviews: HotelReviews;
+  features: HotelFeature[];
+  themes: HotelTheme[];
+  totalRooms: number;
+}
+
+export interface RoomPrice {
+  total: number;
+  perNight: number;
+  currency: string;
+  nights: number;
+}
+
+export interface RoomPricing {
+  originalPrice: number;
+  currentPrice: number;
+  discount: number;
+  discountPercentage: number;
+}
+
+export interface RoomAvailability {
+  availableRooms: number;
+  isAvailable: boolean;
+}
+
+export interface RoomCancellationPolicy {
+  fromDate: string;
+  percentage: number;
+  fixedAmount: number | null;
+  nightsCharged: number;
+}
+
+export interface RoomPolicies {
+  isRefundable: boolean;
+  isSuperDeal: boolean;
+  cancellationPolicies: RoomCancellationPolicy[];
+  earliestFreeCancellation: string;
+}
+
+export interface HotelRoom {
+  roomId: number;
+  roomTypeId: number;
+  roomTypeName: string;
+  name: string;
+  description: string;
+  mealId: number;
+  mealName: string;
+  price: RoomPrice;
+  pricing: RoomPricing;
+  availability: RoomAvailability;
+  policies: RoomPolicies;
+  paymentMethods: number[];
+}
+
+export interface RoomsAvailability {
+  hasAvailableRooms: boolean;
+  totalAvailableRooms: number;
+}
+
+export interface HotelDetailApiResponse {
+  hotel: HotelDetail;
+  rooms: HotelRoom[];
+  availability: RoomsAvailability;
+}

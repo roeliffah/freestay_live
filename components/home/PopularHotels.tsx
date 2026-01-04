@@ -47,6 +47,22 @@ export function PopularHotels({
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
+  // Bir hafta ve iki hafta sonrası tarihlerini hesapla
+  const getNextWeekDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
+  const getTwoWeeksDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 14);
+    return date.toISOString().split('T')[0];
+  };
+
+  const checkInDate = getNextWeekDate();
+  const checkOutDate = getTwoWeeksDate();
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -164,7 +180,7 @@ export function PopularHotels({
           {hotels.map((hotel) => (
             <Link
               key={hotel.hotelId}
-              href={`/${locale}/hotel/${hotel.hotelId}`}
+              href={`/${locale}/hotel/${hotel.hotelId}?checkIn=${checkInDate}&checkOut=${checkOutDate}&adults=1&children=0`}
             >
               <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
                 <div className="relative h-48 overflow-hidden">

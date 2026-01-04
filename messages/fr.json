@@ -7,7 +7,10 @@
     "travel": "Voyage",
     "excursions": "Tours & Activités",
     "rentACar": "Louer une voiture",
-    "bookAFlight": "Réserver un vol"
+    "bookAFlight": "Réserver un vol",
+    "howItWorks": "Comment ça marche",
+    "lastminuteDeals": "Offres de dernière minute",
+    "referralProgram": "Programme de parrainage"
   },
   "home": {
     "hero": {
@@ -22,6 +25,7 @@
       "guests": "Invités",
       "searchButton": "Rechercher des hôtels",
       "selectDate": "Sélectionner une date",
+      "selectGuests": "Sélectionner les invités",
       "room": "Chambre",
       "guest": "Invités",
       "roomsAndGuests": "Chambres et invités",
@@ -31,7 +35,15 @@
       "addRoom": "Ajouter une chambre",
       "done": "Terminé",
       "searching": "Recherche...",
-      "noDatesInfo": "Aucune date sélectionnée. Les prix approximatifs seront affichés. Sélectionnez des dates pour les prix actuels et la disponibilité."
+      "noDatesInfo": "Aucune date sélectionnée. Les prix approximatifs seront affichés. Sélectionnez des dates pour les prix actuels et la disponibilité.",
+      "badges": {
+        "freeRoom": "Chambre Gratuite",
+        "freeRoomDesc": "Payez seulement les repas",
+        "discount": "30% d'Économie",
+        "discountDesc": "vs Booking.com",
+        "guarantee": "450K+ Hôtels",
+        "guaranteeDesc": "Garantie du meilleur prix"
+      }
     },
     "popularHotels": {
       "title": "Hôtels populaires",
@@ -140,6 +152,12 @@
       "budget": "Budget",
       "ecoCertified": "Éco-responsable",
       "skiing": "Ski"
+    },
+    "lastMinute": {
+      "superDeal": "Super Offre",
+      "from": "À partir de",
+      "perNight": "par nuit",
+      "viewAll": "Voir Toutes les Offres"
     }
   },
   "search": {
@@ -175,7 +193,6 @@
     "noResultsFromApi": "Aucun hôtel trouvé selon vos critères.",
     "checkFeaturedHotels": "Consultez nos hôtels recommandés",
     "featuredHotelsInfo": "Vous pouvez voir ci-dessous nos hôtels recommandés.",
-    "allStars": "Toutes les Étoiles",
     "tryAgain": "Réessayer",
     "loading": "Chargement des hôtels...",
     "previous": "Précédent",
@@ -216,7 +233,9 @@
     "checkIn": "Arrivée",
     "checkOut": "Départ",
     "selectDate": "Sélectionner la date",
-    "reviews": "avis"
+    "reviews": "avis",
+    "roomTypes": "types de chambres",
+    "refundable": "Remboursable"
   },
   "about": {
     "hero": {
@@ -427,7 +446,12 @@
     "support247": "Support client 24/7",
     "location": "Emplacement",
     "loading": "Chargement...",
-    "hotelNotFound": "Hôtel non trouvé"
+    "hotelNotFound": "Hôtel non trouvé",
+    "checkIn": "Arrivée",
+    "checkOut": "Départ",
+    "adults": "Adultes",
+    "children": "Enfants",
+    "updateSearch": "Mettre à jour la recherche"
   },
   "oldBooking": {
     "title": "Finaliser la réservation",
@@ -460,6 +484,22 @@
     "termsAgree": "J'accepte les conditions générales et la politique d'annulation",
     "securePayment": "Paiement sécurisé",
     "securePaymentDesc": "Vos informations de paiement sont protégées par cryptage SSL"
+  },
+  "faq": {
+    "title": "Questions fréquemment posées",
+    "subtitle": "Trouvez les réponses aux questions courantes sur FreeStays",
+    "categories": {
+      "general": "Général",
+      "booking": "Réservation",
+      "payment": "Paiement",
+      "cancellation": "Annulation",
+      "account": "Compte"
+    },
+    "help": {
+      "title": "Vous avez d'autres questions?",
+      "description": "Notre équipe d'assistance est toujours prête à vous aider",
+      "button": "Nous contacter"
+    }
   },
   "booking": {
     "title": "Réservation",
@@ -528,5 +568,190 @@
       "flexiblePayment": "Paiement flexible",
       "installmentOptions": "Options de paiement échelonné"
     }
+  },
+  "howItWorks": {
+    "badge": "Le Concept FreeStays",
+    "title": "Comment votre chambre devient GRATUITE",
+    "description1": "Contrairement à d'autres plateformes de réservation qui facturent aux hôtels jusqu'à 30% de commission, Freestays ne facture aucune commission sur les réservations de chambres.",
+    "description2": "Au lieu de conserver les marges, nous vous retournons la valeur totale directement — et cette valeur équivaut à 100% du prix de votre chambre lorsque vous réservez avec un forfait repas (Demi-Pension, Pension Complète ou Tout Compris).",
+    "description3": "Équitable, transparent et conçu pour vous avantager.",
+    "step1": {
+      "title": "Les hôtels paient 0%",
+      "desc1": "Les hôtels économisent jusqu'à 50% par rapport aux autres plateformes de réservation.",
+      "desc2": "Freestays ne facture aucune commission sur l'hébergement, permettant aux hôtels de conserver leurs revenus et d'investir dans un meilleur service et une meilleure qualité."
+    },
+    "step2": {
+      "title": "Aucune commission sur les chambres",
+      "desc1": "Freestays ne gagne pas d'argent sur votre chambre.",
+      "desc2": "Les hôtels ne paient qu'une petite contribution transparente pour leur apporter des clients — pas de commission sur l'hébergement."
+    },
+    "step3": {
+      "title": "Nous vous le rendons",
+      "desc1": "Au lieu de conserver cette valeur, Freestays vous la restitue entièrement sous forme de réduction.",
+      "desc2": "Cette réduction équivaut toujours au prix de la chambre lorsque vous réservez avec un forfait repas."
+    },
+    "step4": {
+      "title": "Chambre = GRATUITE!",
+      "desc1": "Vous ne payez que vos repas (Demi-Pension, Pension Complète ou Tout Compris).",
+      "desc2": "L'hébergement est offert par nous."
+    },
+    "whyTitle": "Pourquoi FreeStays?",
+    "whyDescription": "Contrairement aux plateformes de réservation traditionnelles, nous offrons un modèle qui fonctionne en votre faveur.",
+    "feature1": {
+      "title": "Les hôtels gagnent",
+      "description": "Avec des taux de commission plus bas, les hôtels peuvent offrir un meilleur service et améliorer leurs installations."
+    },
+    "feature2": {
+      "title": "Vous gagnez",
+      "description": "Les frais de chambre vous sont entièrement remboursés. Vous ne payez que les repas."
+    },
+    "feature3": {
+      "title": "Système transparent",
+      "description": "Pas de frais cachés, pas de charges surprises. Tout est clair et simple."
+    },
+    "comparisonTitle": "FreeStays vs Autres plateformes",
+    "comparisonDescription": "Voyez la différence et faites le choix le plus intelligent.",
+    "traditional": {
+      "title": "Plateformes traditionnelles",
+      "point1": "Facturent 15-30% de commission aux hôtels",
+      "point2": "Les commissions élevées se reflètent dans les prix plus élevés",
+      "point3": "Aucun remboursement pour les clients"
+    },
+    "freestays": {
+      "title": "FreeStays",
+      "point1": "0% de commission sur l'hébergement",
+      "point2": "Les économies de commission vous sont retournées",
+      "point3": "Frais de chambre = GRATUITS (avec forfaits repas)"
+    },
+    "cta": {
+      "title": "Trouvez votre chambre gratuite aujourd'hui",
+      "description": "Découvrez une nouvelle façon de séjourner dans des milliers d'hôtels dans le monde.",
+      "searchButton": "Rechercher des hôtels",
+      "learnMoreButton": "En savoir plus"
+    },
+    "ctaSection": {
+      "title": "Ce n'est pas une affaire.",
+      "subtitle": "C'est une nouvelle façon de voyager.",
+      "forWho": "FreeStays est pour:",
+      "persona1": "Le réserveur en ligne rapide",
+      "persona2": "Le voyageur conscient",
+      "persona3": "Le jeune explorateur",
+      "persona4": "Le connaisseur expérimenté",
+      "statement": "Pour tous ceux qui sentent que l'ancien système ne correspond plus à cette époque.",
+      "question": "Pourquoi réserveriez-vous autrement?",
+      "action": "Rejoignez-nous. Réservez équitablement. Voyagez plus intelligemment.",
+      "welcome": "Bienvenue chez Freestays.",
+      "createAccountButton": "Créer un compte gratuit"
+    }
+  },
+  "referral": {
+    "hero": {
+      "badge": "Gagnez €15 par parrainage!",
+      "title": "Parrainez des amis, gagnez des récompenses!",
+      "subtitle": "Partagez la magie des séjours hoteliers gratuits avec vos amis et votre famille. Quand ils réservent, vous économisez tous les deux!"
+    },
+    "codeBox": {
+      "title": "Votre code de parrainage",
+      "subtitle": "Partagez ce code avec des amis pour commencer à gagner",
+      "copyLink": "Copier le lien"
+    },
+    "sharing": {
+      "whatsappText": "Salut! J'utilise FreeStays pour obtenir des chambres d'hôtel gratuites. Utilisez mon code de parrainage: ",
+      "email": "Envoyer par e-mail",
+      "emailSubject": "Séjours hoteliers gratuits avec FreeStays!",
+      "emailBodyPrefix": "Salut! J'utilise FreeStays pour obtenir des chambres d'hôtel gratuites. Utilisez mon code de parrainage: "
+    },
+    "how": {
+      "badge": "Processus simple",
+      "title": "Comment ça marche",
+      "subtitle": "Quatre étapes faciles pour commencer à gagner des récompenses"
+    },
+    "steps": {
+      "s1": {
+        "title": "Partagez votre code",
+        "desc": "Copiez votre code ou lien de parrainage unique et partagez-le avec des amis par e-mail, réseaux sociaux ou applications de messagerie."
+      },
+      "s2": {
+        "title": "L'ami s'inscrit",
+        "desc": "Votre ami crée un compte FreeStays en utilisant votre code de parrainage lors de l'inscription."
+      },
+      "s3": {
+        "title": "L'ami réserve",
+        "desc": "Quand votre ami effectue sa première réservation d'hôtel, vous recevez tous les deux une récompense!"
+      },
+      "s4": {
+        "title": "Vous économisez €15",
+        "desc": "Vos frais de réservation suivants sont automatiquement supprimés. C'est aussi simple que ça!"
+      }
+    },
+    "benefits": {
+      "b1": {
+        "title": "Votre ami économise",
+        "desc": "Votre ami obtient €15 de réduction sur les frais de réservation lorsqu'il utilise votre code de parrainage."
+      },
+      "b2": {
+        "title": "Vous gagnez des récompenses",
+        "desc": "Quand votre ami effectue sa première réservation, vos frais de réservation suivants (€15) sont couverts!"
+      },
+      "b3": {
+        "title": "Parrainages illimités",
+        "desc": "Il n'y a pas de limite! Parrainez autant d'amis que vous le souhaitez et continuez à gagner des récompenses."
+      },
+      "b4": {
+        "title": "Partagez la joie",
+        "desc": "Aidez vos amis à découvrir la magie des séjours hoteliers gratuits avec FreeStays."
+      }
+    },
+    "why": {
+      "title": "Pourquoi parrainer des amis?",
+      "subtitle": "Tout le monde gagne avec notre programme de parrainage"
+    },
+    "comparison": {
+      "title": "Comparaison: Avantages de votre ami vs vos récompenses",
+      "subtitle": "Voyez la différence et commencez à gagner",
+      "friendTitle": "👥 Votre ami économise",
+      "friend1": "€15 de réduction sur les frais",
+      "friend2": "Séjour hoteliers gratuit",
+      "youTitle": "🎁 Vous gagnez",
+      "you1": "€15 de frais supprimés",
+      "you2": "Récompense par parrainage"
+    },
+    "cta": {
+      "title": "Commencez aujourd'hui!",
+      "subtitle": "Plus vous parrainez d'amis, plus vous économisez sur vos voyages.",
+      "button": "Commencer maintenant"
+    }
+  },
+  "lastMinute": {
+    "title": "Offres de Dernière Minute",
+    "subtitle": "Réservez maintenant et économisez jusqu'à 30% sur certains hôtels",
+    "badge": "Offres Chaudes",
+    "noDeals": "Aucune offre de dernière minute disponible",
+    "checkBack": "Veuillez revenir plus tard pour de nouvelles offres",
+    "browseHotels": "Parcourir Tous les Hôtels",
+    "showingResults": "Affichage de {count} offres de dernière minute",
+    "stars": "étoiles",
+    "roomTypes": "types de chambres",
+    "refundable": "Annulation gratuite",
+    "from": "À partir de",
+    "perNight": "par nuit",
+    "viewDetails": "Voir les Détails",
+    "cta": {
+      "title": "Ne Manquez Pas!",
+      "subtitle": "Les offres de dernière minute se vendent rapidement. Réservez maintenant pour garantir votre place.",
+      "button": "Rechercher Tous les Hôtels"
+    }
+  },
+  "recommendations": {
+    "title": "Hôtels que vous aimerez aussi",
+    "subtitle": "Explorez des hôtels similaires et trouvez votre correspondance parfaite",
+    "type": {
+      "similar": "Hôtels similaires",
+      "trending": "Tendances maintenant",
+      "suggested": "Suggéré pour vous"
+    },
+    "perNight": "par nuit",
+    "viewDetails": "Voir les détails",
+    "viewMore": "Voir plus d'hôtels"
   }
 }

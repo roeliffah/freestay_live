@@ -16,12 +16,12 @@ interface PageTranslation {
 }
 
 interface StaticPage {
-  id: string;
   slug: string;
-  isActive: boolean;
-  translations: PageTranslation[];
-  createdAt: string;
-  updatedAt: string;
+  locale: string;
+  title: string;
+  content: string;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export default function StaticPageDetail() {
@@ -48,8 +48,11 @@ export default function StaticPageDetail() {
           return;
         }
         
-        // Sayfanın aktif olup olmadığını kontrol et
-        if (!data.isActive) {
+        console.log('📄 Response keys:', Object.keys(data));
+        console.log('📄 isActive:', data.isActive);
+        
+        // Sayfanın aktif olup olmadığını kontrol et (eğer field varsa)
+        if (data.hasOwnProperty('isActive') && !data.isActive) {
           setError('Bu sayfa yayında değil');
           return;
         }
@@ -92,10 +95,8 @@ export default function StaticPageDetail() {
     );
   }
 
-  // Mevcut dilin çevirisini bul
-  const translation = page.translations.find(
-    (t) => t.language.toLowerCase() === locale.toLowerCase()
-  ) || page.translations[0]; // Fallback to first translation
+  // Sayfa verileri
+  const translation = page;
 
   if (!translation) {
     return (

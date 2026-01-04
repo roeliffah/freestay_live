@@ -26,6 +26,17 @@ const FACILITY_ICONS: Record<string, any> = {
   'Golf': Dumbbell,
 };
 
+interface Room {
+  roomId: string;
+  name: string;
+  roomTypeName: string;
+  mealName: string;
+  price: number;
+  availableRooms: number;
+  isRefundable: boolean;
+  isSuperDeal: boolean;
+}
+
 interface Hotel {
   hotelId: number;
   name: string;
@@ -35,14 +46,18 @@ interface Hotel {
   country: string;
   countryCode?: string;
   category: number;
-  resortName: string;
+  stars?: number;
+  resortName?: string;
   destinationId?: number;
   minPrice: number;
   currency?: string;
-  images?: Array<{ url: string; order: number }>;
-  imageUrls?: string[];
-  reviewScore?: number;
-  reviewCount?: number;
+  imageUrls: string[];
+  images?: string[];  // Backward compatibility
+  reviewScore?: number | null;
+  reviewCount?: number | null;
+  checkInDate?: string;
+  checkOutDate?: string;
+  rooms?: Room[];
   featureIds?: number[];
   themeIds?: number[];
   features?: string[];
@@ -68,6 +83,9 @@ const getDefaultCheckOut = () => {
   return date.toISOString().split('T')[0];
 };
 
+const getDefaultAdults = () => 1;
+const getDefaultChildren = () => 0;
+
 export function HotelCard({ hotel }: HotelCardProps) {
   const t = useTranslations('hotel');
   const params = useParams();
@@ -78,8 +96,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [checkInDate, setCheckInDate] = useState<Date>();
   const [checkOutDate, setCheckOutDate] = useState<Date>();
-  const [adults, setAdults] = useState<number>(parseInt(searchParams.get('adults') || '2'));
-  const [children, setChildren] = useState<number>(parseInt(searchParams.get('children') || '0'));
+  const [adults, setAdults] = useState<number>(parseInt(searchParams.get('adults') || getDefaultAdults().toString()));
+  const [children, setChildren] = useState<number>(parseInt(searchParams.get('children') || getDefaultChildren().toString()));
   
   const localeMap: Record<string, Locale> = {
     tr, en: enUS, de, fr, es, it, el, ru, nl
@@ -98,8 +116,8 @@ export function HotelCard({ hotel }: HotelCardProps) {
 
 
 
-  // imageUrls (unified endpoint) veya images (legacy) kullan
-  const imageUrl = hotel.imageUrls?.[0] || hotel.images?.[0]?.url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
+  // imageUrls veya images array'inden ilk resmi al
+  const imageUrl = hotel.imageUrls?.[0] || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800';
   const currency = hotel.currency || 'EUR';
   
   const hasPrice = hotel.minPrice && hotel.minPrice > 0;
@@ -157,21 +175,30 @@ export function HotelCard({ hotel }: HotelCardProps) {
               <div className="flex-1">
                 <Link href={hotelUrl}>
                   <h3 className="text-2xl font-bold hover:text-primary transition-colors">
-                    {hotel.name}
+                    {hotel.name || hotel.resortName || `Hotel #${hotel.hotelId}`}
                   </h3>
                 </Link>
-                <div className="flex items-center mt-1 text-muted-foreground">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  <span className="text-sm">{hotel.city}, {hotel.country}</span>
-                </div>
+                {(hotel.city || hotel.country || hotel.resortName) && (
+                  <div className="flex items-center mt-1 text-muted-foreground">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    <span className="text-sm">
+                      {hotel.city && hotel.country ? `${hotel.city}, ${hotel.country}` : 
+                       hotel.resortName || hotel.city || hotel.country || 'Location not available'}
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col items-end ml-4">
-                <div className="flex items-center">
-                  {Array.from({ length: hotel.category }).map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <span className="text-xs text-muted-foreground mt-1">{hotel.category} Star</span>
+                {(hotel.stars || hotel.category) > 0 && (
+                  <>
+                    <div className="flex items-center">
+                      {Array.from({ length: hotel.stars || hotel.category }).map((_, i) => (
+                        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground mt-1">{hotel.stars || hotel.category} Star</span>
+                  </>
+                )}
                 {hotel.reviewScore && (
                   <div className="flex items-center mt-1">
                     <span className="text-xs font-semibold text-primary mr-1">{hotel.reviewScore.toFixed(1)}</span>
@@ -184,6 +211,30 @@ export function HotelCard({ hotel }: HotelCardProps) {
             <p className="text-sm text-muted-foreground line-clamp-2 my-4">
               {hotel.description}
             </p>
+
+            {/* Oda Bilgileri */}
+            {hotel.rooms && hotel.rooms.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Badge variant="secondary" className="text-xs">
+                  {hotel.rooms.length} {t('roomTypes')}
+                </Badge>
+                {hotel.rooms[0]?.mealName && (
+                  <Badge variant="outline" className="text-xs">
+                    {hotel.rooms[0].mealName}
+                  </Badge>
+                )}
+                {hotel.rooms.some(room => room.isRefundable) && (
+                  <Badge variant="outline" className="text-xs text-green-600 border-green-600">
+                    ✓ {t('refundable')}
+                  </Badge>
+                )}
+                {hotel.rooms.some(room => room.isSuperDeal) && (
+                  <Badge variant="destructive" className="text-xs">
+                    ⚡ Super Deal
+                  </Badge>
+                )}
+              </div>
+            )}
 
             {/* Tesisler */}
             {displayFeatures.length > 0 && (

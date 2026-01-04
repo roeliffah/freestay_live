@@ -25,6 +25,15 @@ export function PopularCountries({ locale, countryIds, title }: PopularCountries
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Bir hafta sonrası tarihini hesapla
+  const getNextWeekDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 7);
+    return date.toISOString().split('T')[0];
+  };
+
+  const checkInDate = getNextWeekDate();
+
   useEffect(() => {
     loadCountries();
   }, [countryIds]);
@@ -111,13 +120,13 @@ export function PopularCountries({ locale, countryIds, title }: PopularCountries
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-          {countries.map((country) => {
-            const countryUrl = `/${locale}/search?country=${country.code}`;
+          {countries.map((country, index) => {
+            const countryUrl = `/${locale}/search?country=${country.code}&checkInDate=${checkInDate}`;
             console.log('🔗 Country link:', country.name, '→', countryUrl, 'code:', country.code);
             
             return (
               <Link
-                key={country.countryId}
+                key={country.countryId || country.code || `country-${index}`}
                 href={countryUrl}
                 className="group"
               >

@@ -7,7 +7,10 @@
     "travel": "Reizen",
     "excursions": "Tours & Activiteiten",
     "rentACar": "Auto huren",
-    "bookAFlight": "Vlucht boeken"
+    "bookAFlight": "Vlucht boeken",
+    "howItWorks": "Hoe het werkt",
+    "lastminuteDeals": "Last-minute aanbiedingen",
+    "referralProgram": "Referral programma"
   },
   "home": {
     "hero": {
@@ -22,6 +25,7 @@
       "guests": "Gasten",
       "searchButton": "Hotels zoeken",
       "selectDate": "Selecteer datum",
+      "selectGuests": "Gasten selecteren",
       "room": "Kamer",
       "guest": "Gasten",
       "roomsAndGuests": "Kamers en gasten",
@@ -31,7 +35,15 @@
       "addRoom": "Kamer toevoegen",
       "done": "Klaar",
       "searching": "Zoeken...",
-      "noDatesInfo": "Geen datums geselecteerd. Geschatte prijzen worden getoond. Selecteer datums voor actuele prijzen en beschikbaarheid."
+      "noDatesInfo": "Geen datums geselecteerd. Geschatte prijzen worden weergegeven. Selecteer datums voor actuele prijzen en beschikbaarheid.",
+      "badges": {
+        "freeRoom": "Gratis Kamer",
+        "freeRoomDesc": "Betaal alleen voor maaltijden",
+        "discount": "30% Besparing",
+        "discountDesc": "vs Booking.com",
+        "guarantee": "450K+ Hotels",
+        "guaranteeDesc": "Beste prijsgarantie"
+      }
     },
     "popularHotels": {
       "title": "Populaire hotels",
@@ -140,6 +152,12 @@
       "budget": "Budget",
       "ecoCertified": "Milieuvriendelijk",
       "skiing": "Skiën"
+    },
+    "lastMinute": {
+      "superDeal": "Super Deal",
+      "from": "Vanaf",
+      "perNight": "per nacht",
+      "viewAll": "Bekijk Alle Deals"
     }
   },
   "search": {
@@ -175,7 +193,6 @@
     "noResultsFromApi": "Geen hotels gevonden die aan uw criteria voldoen.",
     "checkFeaturedHotels": "Bekijk onze aanbevolen hotels",
     "featuredHotelsInfo": "Hieronder ziet u onze aanbevolen hotels.",
-    "allStars": "Alle Sterren",
     "tryAgain": "Probeer opnieuw",
     "loading": "Hotels laden...",
     "previous": "Vorige",
@@ -216,7 +233,9 @@
     "checkIn": "Inchecken",
     "checkOut": "Uitchecken",
     "selectDate": "Datum selecteren",
-    "reviews": "beoordelingen"
+    "reviews": "beoordelingen",
+    "roomTypes": "kamertypes",
+    "refundable": "Terugbetaalbaar"
   },
   "about": {
     "hero": {
@@ -427,7 +446,12 @@
     "support247": "24/7 klantenondersteuning",
     "location": "Locatie",
     "loading": "Laden...",
-    "hotelNotFound": "Hotel niet gevonden"
+    "hotelNotFound": "Hotel niet gevonden",
+    "checkIn": "Inchecken",
+    "checkOut": "Uitchecken",
+    "adults": "Volwassenen",
+    "children": "Kinderen",
+    "updateSearch": "Zoeken bijwerken"
   },
   "booking": {
     "title": "Boeking",
@@ -528,5 +552,206 @@
     "termsAgree": "Ik ga akkoord met de algemene voorwaarden en het annuleringsbeleid",
     "securePayment": "Veilige betaling",
     "securePaymentDesc": "Uw betalingsinformatie is beschermd met SSL-versleuteling"
+  },
+  "faq": {
+    "title": "Veelgestelde vragen",
+    "subtitle": "Vind antwoorden op veelgestelde vragen over FreeStays",
+    "categories": {
+      "general": "Algemeen",
+      "booking": "Boeking",
+      "payment": "Betaling",
+      "cancellation": "Annulering",
+      "account": "Account"
+    },
+    "help": {
+      "title": "Heeft u nog vragen?",
+      "description": "Ons ondersteuningsteam staat altijd klaar om u te helpen",
+      "button": "Contacteer ons"
+    }
+  },
+  "howItWorks": {
+    "badge": "Het FreeStays Concept",
+    "title": "Hoe uw kamer GRATIS wordt",
+    "description1": "In tegenstelling tot andere boekingsplatforms die hotels tot 30% commissie in rekening brengen, brengt Freestays geen commissie in rekening voor kamerboekingen.",
+    "description2": "In plaats van marges te behouden, geven we de volledige waarde rechtstreeks aan u terug — en die waarde is gelijk aan 100% van uw kamerprijs wanneer u boekt met een maaltijdpakket (Halfpension, Volpension of All Inclusive).",
+    "description3": "Eerlijk, transparant en gebouwd om u te bevoordelen.",
+    "step1": {
+      "title": "Hotels betalen 0%",
+      "desc1": "Hotels besparen tot 50% vergeleken met andere boekingsplatforms.",
+      "desc2": "Freestays brengt geen commissie in rekening voor kameraccommodatie, waardoor hotels hun inkomsten kunnen behouden en kunnen investeren in betere service en kwaliteit."
+    },
+    "step2": {
+      "title": "Geen commissie op kamers",
+      "desc1": "Freestays verdient geen geld aan uw kamer.",
+      "desc2": "Hotels betalen alleen een kleine, transparante vergoeding voor het aanbrengen van gasten — geen commissie op accommodatie."
+    },
+    "step3": {
+      "title": "We geven het terug aan U",
+      "desc1": "In plaats van die waarde te behouden, geeft Freestays het volledig aan u terug als korting.",
+      "desc2": "Die korting is altijd gelijk aan de kamerprijs wanneer u boekt met een maaltijdpakket."
+    },
+    "step4": {
+      "title": "Kamer = GRATIS!",
+      "desc1": "U betaalt alleen voor uw maaltijden (Halfpension, Volpension of All Inclusive).",
+      "desc2": "De kameraccommodatie is van ons."
+    },
+    "whyTitle": "Waarom FreeStays?",
+    "whyDescription": "In tegenstelling tot traditionele boekingsplatforms bieden wij een model dat in uw voordeel werkt.",
+    "feature1": {
+      "title": "Hotels winnen",
+      "description": "Met lagere commissietarieven kunnen hotels betere service bieden en hun faciliteiten verbeteren."
+    },
+    "feature2": {
+      "title": "U wint",
+      "description": "De kamerkosten worden volledig aan u terugbetaald. U betaalt alleen voor maaltijden."
+    },
+    "feature3": {
+      "title": "Transparant systeem",
+      "description": "Geen verborgen kosten, geen verrassingskosten. Alles is duidelijk en eenvoudig."
+    },
+    "comparisonTitle": "FreeStays vs Andere platforms",
+    "comparisonDescription": "Zie het verschil en maak de slimste keuze.",
+    "traditional": {
+      "title": "Traditionele platforms",
+      "point1": "Brengen 15-30% commissie in rekening bij hotels",
+      "point2": "Hoge commissies resulteren in hogere prijzen",
+      "point3": "Geen terugbetalingen voor gasten"
+    },
+    "freestays": {
+      "title": "FreeStays",
+      "point1": "0% commissie op kameraccommodatie",
+      "point2": "Commissiebesparingen worden aan u teruggegeven",
+      "point3": "Kamerkosten = GRATIS (met maaltijdpakketten)"
+    },
+    "cta": {
+      "title": "Vind vandaag uw gratis kamer",
+      "description": "Ontdek een nieuwe manier om te verblijven in duizenden hotels wereldwijd.",
+      "searchButton": "Zoek hotels",
+      "learnMoreButton": "Meer informatie"
+    },
+    "ctaSection": {
+      "title": "This Is Not A Deal.",
+      "subtitle": "This Is A New Way Of Traveling.",
+      "forWho": "Freestays is for:",
+      "persona1": "The fast online booker",
+      "persona2": "The conscious traveler",
+      "persona3": "The young explorer",
+      "persona4": "The experienced bon vivant",
+      "statement": "For everyone who feels the old system no longer fits this era.",
+      "question": "Why would you book any other way?",
+      "action": "Join us. Book fairly. Travel smarter.",
+      "welcome": "Welcome to Freestays.",
+      "createAccountButton": "Create Free Account"
+    }
+  },
+  "referral": {
+    "hero": {
+      "badge": "Earn €15 Per Referral!",
+      "title": "Refer Friends, Earn Rewards!",
+      "subtitle": "Share the gift of free hotel stays with your friends and family. When they book, you both save!"
+    },
+    "codeBox": {
+      "title": "Your Referral Code",
+      "subtitle": "Share this code with friends to start earning",
+      "copyLink": "Copy Link"
+    },
+    "sharing": {
+      "whatsappText": "Hey! I've been using FreeStays to get free hotel rooms. Use my referral code: ",
+      "email": "Send via Email",
+      "emailSubject": "Free Hotel Stays with FreeStays!",
+      "emailBodyPrefix": "Hey! I've been using FreeStays to get free hotel rooms. Use my referral code: "
+    },
+    "how": {
+      "badge": "Simple Process",
+      "title": "How It Works",
+      "subtitle": "Four easy steps to start earning rewards"
+    },
+    "steps": {
+      "s1": {
+        "title": "Share Your Code",
+        "desc": "Copy your unique referral code or link and share it with friends via email, social media, or messaging apps."
+      },
+      "s2": {
+        "title": "Friend Signs Up",
+        "desc": "Your friend creates a FreeStays account using your referral code during registration."
+      },
+      "s3": {
+        "title": "Friend Books",
+        "desc": "When your friend completes their first hotel booking, you both get rewarded!"
+      },
+      "s4": {
+        "title": "You Save €15",
+        "desc": "Your next booking fee is automatically waived. It's that simple!"
+      }
+    },
+    "benefits": {
+      "b1": {
+        "title": "Your Friend Saves",
+        "desc": "Your friend gets €15 off their booking fee when they use your referral code."
+      },
+      "b2": {
+        "title": "You Earn Rewards",
+        "desc": "When your friend completes their first booking, your next booking fee (€15) is covered!"
+      },
+      "b3": {
+        "title": "Unlimited Referrals",
+        "desc": "There's no limit! Refer as many friends as you want and keep earning rewards."
+      },
+      "b4": {
+        "title": "Share the Joy",
+        "desc": "Help your friends discover the magic of free hotel stays with FreeStays."
+      }
+    },
+    "why": {
+      "title": "Why Refer Friends?",
+      "subtitle": "Everyone wins with our referral program"
+    },
+    "comparison": {
+      "title": "Comparison: Friend's Benefits vs Your Rewards",
+      "subtitle": "See the difference and start earning",
+      "friendTitle": "👥 Your Friend Saves",
+      "friend1": "€15 Off Booking Fee",
+      "friend2": "Free Room Stay",
+      "youTitle": "🎁 You Earn",
+      "you1": "€15 Fee Waived",
+      "you2": "Reward Per Referral"
+    },
+    "cta": {
+      "title": "Start Sharing Today!",
+      "subtitle": "The more friends you refer, the more you save on your travels.",
+      "button": "Get Started Now"
+    }
+  },
+  "lastMinute": {
+    "title": "Last Minute Aanbiedingen",
+    "subtitle": "Boek nu en bespaar tot 30% op geselecteerde hotels",
+    "badge": "Hot Deals",
+    "noDeals": "Geen last minute aanbiedingen beschikbaar",
+    "checkBack": "Kom later terug voor nieuwe aanbiedingen",
+    "browseHotels": "Bekijk Alle Hotels",
+    "showingResults": "{count} last minute aanbiedingen worden weergegeven",
+    "stars": "sterren",
+    "roomTypes": "kamertypes",
+    "refundable": "Gratis annulering",
+    "from": "Vanaf",
+    "perNight": "per nacht",
+    "viewDetails": "Bekijk Details",
+    "cta": {
+      "title": "Mis Het Niet!",
+      "subtitle": "Last minute deals zijn snel uitverkocht. Boek nu om je plek te garanderen.",
+      "button": "Zoek Alle Hotels"
+    }
+  },
+  "recommendations": {
+    "title": "You Might Also Like",
+    "subtitle": "Explore similar hotels and find your perfect match",
+    "type": {
+      "similar": "Similar Hotels",
+      "trending": "Trending Now",
+      "suggested": "Suggested For You"
+    },
+    "perNight": "per night",
+    "viewDetails": "View Details",
+    "viewMore": "View More Hotels"
   }
 }

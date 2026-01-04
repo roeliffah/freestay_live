@@ -7,7 +7,10 @@
     "travel": "Reisen",
     "excursions": "Touren & Aktivitäten",
     "rentACar": "Mietwagen",
-    "bookAFlight": "Flug buchen"
+    "bookAFlight": "Flug buchen",
+    "howItWorks": "Wie es funktioniert",
+    "lastminuteDeals": "Last-Minute-Angebote",
+    "referralProgram": "Empfehlungsprogramm"
   },
   "home": {
     "hero": {
@@ -21,8 +24,7 @@
       "checkOut": "Check-out",
       "guests": "Gäste",
       "searchButton": "Hotels suchen",
-      "selectDate": "Datum wählen",
-      "room": "Zimmer",
+      "selectDate": "Datum wählen",      "selectGuests": "Gäste wählen",      "room": "Zimmer",
       "guest": "Gäste",
       "roomsAndGuests": "Zimmer und Gäste",
       "remove": "Entfernen",
@@ -31,7 +33,15 @@
       "addRoom": "Zimmer hinzufügen",
       "done": "Fertig",
       "searching": "Suchen...",
-      "noDatesInfo": "Keine Daten ausgewählt. Ungefähre Preise werden angezeigt. Wählen Sie Daten für aktuelle Preise und Verfügbarkeit."
+      "noDatesInfo": "Keine Daten ausgewählt. Ungefähre Preise werden angezeigt. Wählen Sie Daten für aktuelle Preise und Verfügbarkeit.",
+      "badges": {
+        "freeRoom": "Kostenfreies Zimmer",
+        "freeRoomDesc": "Nur Verpflegung zahlen",
+        "discount": "30% Ersparnis",
+        "discountDesc": "vs Booking.com",
+        "guarantee": "450K+ Hotels",
+        "guaranteeDesc": "Bestpreisgarantie"
+      }
     },
     "popularHotels": {
       "title": "Beliebte Hotels",
@@ -107,6 +117,16 @@
         "description": "Private Unterkunft"
       }
     },
+    "lastMinute": {
+      "title": "Today's Best Deals",
+      "subtitle": "Limited rooms available. Book now!",
+      "badge": "Last Minute Deals",
+      "viewButton": "View",
+      "superDeal": "Super Deal",
+      "from": "From",
+      "perNight": "per night",
+      "viewAll": "View All Deals"
+    },
     "campaign": {
       "title": "Frühbucherangebote",
       "subtitle": "Buchen Sie jetzt für den Sommerurlaub und sparen Sie bis zu 40%",
@@ -175,7 +195,6 @@
     "noResultsFromApi": "Keine Hotels gefunden, die Ihren Kriterien entsprechen.",
     "checkFeaturedHotels": "Schauen Sie sich unsere empfohlenen Hotels an",
     "featuredHotelsInfo": "Unten sehen Sie unsere empfohlenen Hotels.",
-    "allStars": "Alle Sterne",
     "tryAgain": "Erneut versuchen",
     "loading": "Hotels werden geladen...",
     "previous": "Zurück",
@@ -216,7 +235,9 @@
     "checkIn": "Check-in",
     "checkOut": "Check-out",
     "selectDate": "Datum auswählen",
-    "reviews": "Bewertungen"
+    "reviews": "Bewertungen",
+    "roomTypes": "Zimmertypen",
+    "refundable": "Erstattungsfähig"
   },
   "about": {
     "hero": {
@@ -427,7 +448,12 @@
     "support247": "24/7 Kundensupport",
     "location": "Lage",
     "loading": "Lädt...",
-    "hotelNotFound": "Hotel nicht gefunden"
+    "hotelNotFound": "Hotel nicht gefunden",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "adults": "Erwachsene",
+    "children": "Kinder",
+    "updateSearch": "Suche aktualisieren"
   },
   "booking": {
     "title": "Buchung",
@@ -527,6 +553,206 @@
     "completeBooking": "Buchung abschließen",
     "termsAgree": "Ich stimme den Geschäftsbedingungen und der Stornierungsrichtlinie zu",
     "securePayment": "Sichere Zahlung",
-    "securePaymentDesc": "Ihre Zahlungsinformationen sind durch SSL-Verschlüsselung geschützt"
+    "securePaymentDesc": "Ihre Zahlungsinformationen sind durch SSL-Verschlüsselung geschützt"  },
+  "faq": {
+    "title": "Häufig gestellte Fragen",
+    "subtitle": "Finden Sie Antworten auf häufig gestellte Fragen zu FreeStays",
+    "categories": {
+      "general": "Allgemein",
+      "booking": "Buchung",
+      "payment": "Zahlung",
+      "cancellation": "Stornierung",
+      "account": "Konto"
+    },
+    "help": {
+      "title": "Haben Sie noch Fragen?",
+      "description": "Unser Support-Team steht Ihnen immer zur Verfügung",
+      "button": "Kontaktieren Sie uns"
+    }
+  },
+  "howItWorks": {
+    "badge": "Das FreeStays Konzept",
+    "title": "Wie Ihr Zimmer KOSTENLOS wird",
+    "description1": "Im Gegensatz zu anderen Buchungsplattformen, die Hotels bis zu 30% Provision berechnen, erhebt Freestays keine Provision auf Zimmerbuchungen.",
+    "description2": "Anstatt Margen zu behalten, geben wir den vollen Wert direkt an Sie zurück — und dieser Wert entspricht 100% Ihres Zimmerpreises, wenn Sie mit einem Verpflegungspaket buchen (Halbpension, Vollpension oder All Inclusive).",
+    "description3": "Fair, transparent und zu Ihrem Vorteil.",
+    "step1": {
+      "title": "Hotels zahlen 0%",
+      "desc1": "Hotels sparen bis zu 50% im Vergleich zu anderen Buchungsplattformen.",
+      "desc2": "Freestays erhebt keine Provision auf Zimmerunterkünfte, sodass Hotels ihre Einnahmen behalten und in besseren Service und Qualität investieren können."
+    },
+    "step2": {
+      "title": "Keine Provision auf Zimmer",
+      "desc1": "Freestays verdient kein Geld an Ihrem Zimmer.",
+      "desc2": "Hotels zahlen nur eine kleine, transparente Gebühr dafür, dass wir ihnen Gäste bringen — keine Provision auf die Unterkunft."
+    },
+    "step3": {
+      "title": "Wir geben es an SIE zurück",
+      "desc1": "Anstatt diesen Wert zu behalten, gibt Freestays ihn vollständig als Rabatt an Sie weiter.",
+      "desc2": "Dieser Rabatt entspricht immer dem Zimmerpreis, wenn Sie mit einem Verpflegungspaket buchen."
+    },
+    "step4": {
+      "title": "Zimmer = KOSTENLOS!",
+      "desc1": "Sie zahlen nur für Ihre Mahlzeiten (Halbpension, Vollpension oder All Inclusive).",
+      "desc2": "Die Zimmerunterbringung geht auf uns."
+    },
+    "whyTitle": "Warum FreeStays?",
+    "whyDescription": "Im Gegensatz zu traditionellen Buchungsplattformen bieten wir ein Modell, das zu Ihrem Vorteil funktioniert.",
+    "feature1": {
+      "title": "Hotels gewinnen",
+      "description": "Mit niedrigeren Provisionsraten können Hotels besseren Service bieten und ihre Einrichtungen verbessern."
+    },
+    "feature2": {
+      "title": "Sie gewinnen",
+      "description": "Die Zimmergebühr wird Ihnen vollständig zurückerstattet. Sie zahlen nur für Mahlzeiten."
+    },
+    "feature3": {
+      "title": "Transparentes System",
+      "description": "Keine versteckten Gebühren, keine Überraschungskosten. Alles ist klar und unkompliziert."
+    },
+    "comparisonTitle": "FreeStays vs Andere Plattformen",
+    "comparisonDescription": "Sehen Sie den Unterschied und treffen Sie die klügste Wahl.",
+    "traditional": {
+      "title": "Traditionelle Plattformen",
+      "point1": "Berechnen 15-30% Provision von Hotels",
+      "point2": "Hohe Provisionen spiegeln sich in höheren Preisen wider",
+      "point3": "Keine Rückerstattungen für Gäste"
+    },
+    "freestays": {
+      "title": "FreeStays",
+      "point1": "0% Provision auf Zimmerunterkünfte",
+      "point2": "Provisionsersparnisse werden an Sie zurückgegeben",
+      "point3": "Zimmergebühr = KOSTENLOS (mit Verpflegungspaketen)"
+    },
+    "cta": {
+      "title": "Finden Sie heute Ihr kostenloses Zimmer",
+      "description": "Entdecken Sie eine neue Art, in Tausenden von Hotels weltweit zu übernachten.",
+      "searchButton": "Hotels suchen",
+      "learnMoreButton": "Mehr erfahren"
+    },
+    "ctaSection": {
+      "title": "Dies ist kein Angebot.",
+      "subtitle": "Dies ist eine neue Art zu reisen.",
+      "forWho": "FreeStays ist für:",
+      "persona1": "Den schnellen Online-Bucher",
+      "persona2": "Den bewussten Reisenden",
+      "persona3": "Den jungen Entdecker",
+      "persona4": "Den erfahrenen Genießer",
+      "statement": "Für alle, die spüren, dass das alte System nicht mehr in diese Zeit passt.",
+      "question": "Warum würde man anders buchen?",
+      "action": "Machen Sie mit. Buchen Sie fair. Reisen Sie intelligenter.",
+      "welcome": "Willkommen bei Freestays.",
+      "createAccountButton": "Kostenloses Konto erstellen"
+    }
+  },
+  "referral": {
+    "hero": {
+      "badge": "Verdienen Sie €15 pro Empfehlung!",
+      "title": "Empfehlen Sie Freunde, verdienen Sie Belohnungen!",
+      "subtitle": "Teilen Sie die Wunder der kostenlosen Hotelübernachtungen mit Ihren Freunden und Ihrer Familie. Wenn sie buchen, sparen Sie beide!"
+    },
+    "codeBox": {
+      "title": "Ihr Empfehlungscode",
+      "subtitle": "Teilen Sie diesen Code mit Freunden, um Belohnungen zu verdienen",
+      "copyLink": "Link kopieren"
+    },
+    "sharing": {
+      "whatsappText": "Hey! Ich nutze FreeStays, um kostenlose Hotelzimmer zu bekommen. Verwenden Sie meinen Empfehlungscode: ",
+      "email": "Per E-Mail senden",
+      "emailSubject": "Kostenlose Hotelübernachtungen mit FreeStays!",
+      "emailBodyPrefix": "Hey! Ich nutze FreeStays, um kostenlose Hotelzimmer zu bekommen. Verwenden Sie meinen Empfehlungscode: "
+    },
+    "how": {
+      "badge": "Einfacher Prozess",
+      "title": "Wie es funktioniert",
+      "subtitle": "Vier einfache Schritte zum Verdienen von Belohnungen"
+    },
+    "steps": {
+      "s1": {
+        "title": "Teilen Sie Ihren Code",
+        "desc": "Kopieren Sie Ihren eindeutigen Empfehlungscode oder Link und teilen Sie ihn mit Freunden per E-Mail, sozialen Medien oder Messaging-Apps."
+      },
+      "s2": {
+        "title": "Freund registriert sich",
+        "desc": "Ihr Freund erstellt ein FreeStays-Konto und nutzt bei der Registrierung Ihren Empfehlungscode."
+      },
+      "s3": {
+        "title": "Freund bucht",
+        "desc": "Wenn Ihr Freund seine erste Hotelreservierung abschließt, erhalten Sie beide eine Belohnung!"
+      },
+      "s4": {
+        "title": "Sie sparen €15",
+        "desc": "Ihre nächste Buchungsgebühr wird automatisch erlassen. So einfach ist das!"
+      }
+    },
+    "benefits": {
+      "b1": {
+        "title": "Ihr Freund spart",
+        "desc": "Ihr Freund erhält €15 Rabatt auf die Buchungsgebühr, wenn er Ihren Empfehlungscode nutzt."
+      },
+      "b2": {
+        "title": "Sie verdienen Belohnungen",
+        "desc": "Wenn Ihr Freund seine erste Buchung abschließt, wird Ihre nächste Buchungsgebühr (€15) übernommen!"
+      },
+      "b3": {
+        "title": "Unbegrenzte Empfehlungen",
+        "desc": "Es gibt kein Limit! Empfehlen Sie so viele Freunde wie Sie möchten und verdienen Sie weiter Belohnungen."
+      },
+      "b4": {
+        "title": "Teilen Sie die Freude",
+        "desc": "Helfen Sie Ihren Freunden, die Magie der kostenlosen Hotelübernachtungen mit FreeStays zu entdecken."
+      }
+    },
+    "why": {
+      "title": "Warum Freunde empfehlen?",
+      "subtitle": "Alle gewinnen mit unserem Empfehlungsprogramm"
+    },
+    "comparison": {
+      "title": "Vergleich: Vorteile für Ihren Freund vs. Ihre Belohnungen",
+      "subtitle": "Sehen Sie den Unterschied und verdienen Sie",
+      "friendTitle": "👥 Ihr Freund spart",
+      "friend1": "€15 Rabatt auf Buchungsgebühr",
+      "friend2": "Kostenlose Hotelübernachtung",
+      "youTitle": "🎁 Sie verdienen",
+      "you1": "€15 Gebührenbefreiung",
+      "you2": "Belohnung pro Empfehlung"
+    },
+    "cta": {
+      "title": "Beginnen Sie heute!",
+      "subtitle": "Je mehr Freunde Sie empfehlen, desto mehr sparen Sie auf Ihren Reisen.",
+      "button": "Jetzt starten"
+    }
+  },
+  "lastMinute": {
+    "title": "Last Minute Deals",
+    "subtitle": "Book now and save up to 30% on selected hotels",
+    "badge": "Hot Deals",
+    "noDeals": "No last minute deals available",
+    "checkBack": "Please check back later for new offers",
+    "browseHotels": "Browse All Hotels",
+    "showingResults": "Showing {count} last minute offers",
+    "stars": "stars",
+    "roomTypes": "room types",
+    "refundable": "Free cancellation",
+    "from": "From",
+    "perNight": "per night",
+    "viewDetails": "View Details",
+    "cta": {
+      "title": "Don't Miss Out!",
+      "subtitle": "Last minute deals sell out fast. Book now to secure your spot.",
+      "button": "Search All Hotels"
+    }
+  },
+  "recommendations": {
+    "title": "Hotels, die Ihnen auch gefallen könnten",
+    "subtitle": "Erkunden Sie ähnliche Hotels und finden Sie Ihre perfekte Übereinstimmung",
+    "type": {
+      "similar": "Ähnliche Hotels",
+      "trending": "Im Trend",
+      "suggested": "Für Sie vorgeschlagen"
+    },
+    "perNight": "pro Nacht",
+    "viewDetails": "Details ansehen",
+    "viewMore": "Weitere Hotels ansehen"
   }
 }
