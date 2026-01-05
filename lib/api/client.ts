@@ -1,10 +1,12 @@
 // API Client for FreeStays Backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://freestays-api-bi5laf-517ca3-3-72-175-63.traefik.me/api/v1';
+import { API_URL } from '@/lib/config/env';
 
 // Rate limiting için
 import { rateLimiter, apiRateLimiter } from '@/lib/security/rate-limiter';
 import { getCsrfToken, initCsrfProtection } from '@/lib/security/csrf-protection';
 import type { HotelDetailApiResponse } from '@/types/sunhotels';
+
+const API_BASE_URL = API_URL;
 
 // SEO Settings Types
 interface SeoSettings {
