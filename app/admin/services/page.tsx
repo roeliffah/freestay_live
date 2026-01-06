@@ -312,7 +312,7 @@ function ServicesContent() {
             columns={columns}
             dataSource={services || []}
             rowKey={(record) => record.id || `service-${Math.random()}`}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 800 }}
             pagination={false}
           />
         </Spin>

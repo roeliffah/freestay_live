@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,9 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { bookingsAPI } from '@/lib/api/client';
+import { bookingsAPI, paymentsAPI } from '@/lib/api/client';
+import { CouponSelector } from '@/components/booking/CouponSelector';
+import { CouponType } from '@/types/coupon';
 
 interface BookingFormProps {
   hotelId?: string;
@@ -31,6 +33,7 @@ interface BookingFormProps {
   totalPrice: number;
   currency: string;
   locale?: string;
+  showSummary?: boolean;
 }
 
 export function BookingForm({
@@ -44,8 +47,15 @@ export function BookingForm({
   totalPrice,
   currency,
   locale = 'tr',
+  showSummary = true,
 }: BookingFormProps) {
   const t = useTranslations('booking');
+  const currentLocale = useLocale();
+  
+  // Format price safely without locale-dependent formatting on SSR
+  const formatPrice = (price: number) => {
+    return Math.round(price * 100) / 100;
+  };
   
   const [formData, setFormData] = useState({
     // Misafir Bilgileri
@@ -73,6 +83,7 @@ export function BookingForm({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCoupon, setSelectedCoupon] = useState<CouponType | null>(null);
   const router = useRouter();
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -131,10 +142,32 @@ export function BookingForm({
       };
 
       const response = await bookingsAPI.createHotelBooking(bookingData) as any;
-      
-      // Başarılı rezervasyon sonrası ödeme sayfasına yönlendir
-      if (response.data?.id) {
-        router.push(`/${locale}/booking/success?bookingId=${response.data.id}`);
+      const bookingId = response.data?.id || response.id || response.bookingId;
+
+      // Stripe ödeme oturumu başlat
+      if (bookingId) {
+        try {
+          const payment = await paymentsAPI.initiate({
+            bookingId,
+            amount: totalPrice,
+            currency,
+            paymentMethod: 'stripe',
+          }) as any; // API response shape varies by provider
+
+          const redirectUrl = payment?.checkoutUrl || payment?.paymentUrl || payment?.url;
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+            return;
+          }
+        } catch (paymentError: any) {
+          console.error('Stripe ödeme başlatılamadı:', paymentError);
+          alert(paymentError?.response?.data?.message || 'Ödeme başlatılırken bir hata oluştu.');
+        }
+      }
+
+      // Fallback: ödeme bilgisi yoksa başarı ekranına yönlendir
+      if (bookingId) {
+        router.push(`/${locale}/booking/success?bookingId=${bookingId}`);
       }
     } catch (error: any) {
       console.error('Rezervasyon hatası:', error);
@@ -158,51 +191,52 @@ export function BookingForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Rezervasyon Özeti */}
-      <Card className="p-6 bg-primary/5 border-primary/20">
-        <h3 className="font-bold text-lg mb-4">{t('reservationSummary')}</h3>
-        <div className="space-y-3 text-sm">
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('hotel')}</span>
-            <span className="font-semibold">{hotelName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('roomType')}</span>
-            <span className="font-semibold">{roomName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('boardType')}</span>
-            <span className="font-semibold">{boardType}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-2" />
-              {t('checkIn')}
+      {showSummary && (
+        <Card className="p-6 bg-primary/5 border-primary/20">
+          <h3 className="font-bold text-lg mb-4">{t('reservationSummary')}</h3>
+          <div className="space-y-3 text-sm">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('hotel')}</span>
+              <span className="font-semibold">{hotelName}</span>
             </div>
-            <span className="font-semibold">{formatDate(checkIn)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-muted-foreground">
-              <Calendar className="h-4 w-4 mr-2" />
-              {t('checkOut')}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('roomType')}</span>
+              <span className="font-semibold">{roomName}</span>
             </div>
-            <span className="font-semibold">{formatDate(checkOut)}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center text-muted-foreground">
-              <Users className="h-4 w-4 mr-2" />
-              {t('guests')}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">{t('boardType')}</span>
+              <span className="font-semibold">{boardType}</span>
             </div>
-            <span className="font-semibold">{guests} {t('person')}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-muted-foreground">
+                <Calendar className="h-4 w-4 mr-2" />
+                {t('checkIn')}
+              </div>
+              <span className="font-semibold">{formatDate(checkIn)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-muted-foreground">
+                <Calendar className="h-4 w-4 mr-2" />
+                {t('checkOut')}
+              </div>
+              <span className="font-semibold">{formatDate(checkOut)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-muted-foreground">
+                <Users className="h-4 w-4 mr-2" />
+                {t('guests')}
+              </div>
+              <span className="font-semibold">{guests} {t('person')}</span>
+            </div>
+            <div className="flex justify-between pt-3 border-t">
+              <span className="text-muted-foreground">{nights} {t('nights')}</span>
+              <span className="text-2xl font-bold text-primary">
+                {formatPrice(totalPrice).toFixed(2)} {currency}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between pt-3 border-t">
-            <span className="text-muted-foreground">{nights} {t('nights')}</span>
-            <span className="text-2xl font-bold text-primary">
-              {totalPrice.toLocaleString()} {currency}
-            </span>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
       {/* Misafir Bilgileri */}
       <Card className="p-6">
@@ -300,6 +334,26 @@ export function BookingForm({
           </div>
         </div>
       </Card>
+
+      {/* Coupon Selector Section */}
+      <CouponSelector
+        roomPrice={totalPrice}
+        settings={{
+          oneTimeCouponPrice: 15,
+          annualCouponPrice: 125,
+          profitMargin: 15,
+          defaultVatRate: 0.18,
+          extraFee: 0,
+        }}
+        selectedCoupon={selectedCoupon}
+        onCouponSelect={setSelectedCoupon}
+        onPurchase={(couponType) => {
+          // TODO: Implement coupon purchase flow
+          console.log('Purchase coupon:', couponType);
+          setSelectedCoupon(couponType);
+        }}
+        requiresLogin={false}
+      />
 
       {/* Ödeme Bilgileri */}
       <Card className="p-6">

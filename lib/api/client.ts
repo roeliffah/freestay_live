@@ -426,8 +426,8 @@ export const authAPI = {
     }
   },
 
-  register: async (data: { email: string; password: string; name: string; phone?: string; locale?: string }) => {
-    return apiClient.post('/Auth/register', data);
+  register: async (data: { email: string; password: string; name: string; phone?: string; locale?: string; referralCode?: string }) => {
+    return apiClient.post('/auth/register', data);
   },
 
   refreshToken: async (refreshToken: string) => {
@@ -614,7 +614,20 @@ export const adminAPI = {
   
   getCoupon: (id: string) => apiClient.get(`/admin/coupons/${id}`),
   
-  createCoupon: (data: any) => apiClient.post('/admin/coupons', data),
+  createCoupon: async (data: any) => {
+    try {
+      return await apiClient.post('/admin/coupons', data);
+    } catch (error: any) {
+      console.error('🔴 CREATE COUPON API ERROR DETAILS:', {
+        status: error?.response?.status,
+        statusText: error?.response?.statusText,
+        responseData: error?.response?.data,
+        requestData: data,
+        message: error?.message
+      });
+      throw error;
+    }
+  },
   
   updateCoupon: (id: string, data: any) => apiClient.put(`/admin/coupons/${id}`, data),
   
@@ -1030,8 +1043,8 @@ export const bookingsAPI = {
 export const couponsAPI = {
   validate: (code: string) => apiClient.post('/Coupons/validate', { code }),
   
-  apply: (data: { code: string; amount: number; bookingType: string }) =>
-    apiClient.post('/Coupons/apply', data),
+  apply: (data: { code: string; amount: number; userId?: string; email?: string }) =>
+    apiClient.post('/Coupons/apply', { ...data, bookingType: 0 }),
   
   getMyCoupons: () => apiClient.get('/Coupons/my-coupons'),
 };

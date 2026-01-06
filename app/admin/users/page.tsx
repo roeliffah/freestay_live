@@ -434,12 +434,12 @@ export default function UsersPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <div>
           <Title level={2} style={{ margin: 0 }}>Users Management</Title>
           <Text type="secondary">Manage admin and staff users</Text>
         </div>
-        <Space>
+        <Space wrap>
           <Button 
             icon={<ReloadOutlined />} 
             onClick={loadUsers}
@@ -458,14 +458,14 @@ export default function UsersPage() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, width: '100%' }}>
           <Input.Search
             placeholder="Search by name or email..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
             onSearch={handleSearch}
-            style={{ width: 400 }}
+            style={{ width: '100%', maxWidth: 400 }}
             allowClear
             enterButton
           />
@@ -482,10 +482,11 @@ export default function UsersPage() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} users`,
             pageSizeOptions: ['10', '20', '50', '100'],
+            responsive: true,
           }}
           onChange={handleTableChange}
           loading={loading}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 800 }}
         />
       </Card>
 

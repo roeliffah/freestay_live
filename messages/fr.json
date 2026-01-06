@@ -10,7 +10,166 @@
     "bookAFlight": "Réserver un vol",
     "howItWorks": "Comment ça marche",
     "lastminuteDeals": "Offres de dernière minute",
-    "referralProgram": "Programme de parrainage"
+    "referralProgram": "Programme de parrainage",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "logout": "Déconnexion",
+    "profile": "Mon Profil"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenue",
+      "subtitle": "Connectez-vous à votre compte FreeStays",
+      "fields": {
+        "email": "Adresse e-mail",
+        "password": "Mot de passe",
+        "remember": "Se souvenir de moi",
+        "forgot": "Mot de passe oublié?"
+      },
+      "validation": {
+        "emailRequired": "L'e-mail est requis",
+        "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+        "passwordRequired": "Le mot de passe est requis"
+      },
+      "submit": "Se connecter",
+      "signingIn": "Connexion en cours...",
+      "success": "Connexion réussie! Redirection...",
+      "error": "Échec de la connexion",
+      "noAccount": "Vous n'avez pas de compte?",
+      "registerLink": "S'inscrire",
+      "features": {
+        "title": "Ce que nous offrons",
+        "subtitle": "Découvrez des offres hotelières imbattables",
+        "description": "Obtenez le meilleur prix sur les hôtels de luxe et économiques dans le monde",
+        "hotels": "Hôtels partenaires",
+        "savings": "Économies moyennes",
+        "support": "Support",
+        "items": [
+          {
+            "title": "Nuits d'hôtel gratuites",
+            "description": "Obtenez des nuits gratuites avec demi-pension ou formule tout compris"
+          },
+          {
+            "title": "Jusqu'à 50% de réduction",
+            "description": "Économisez sur les tarifs réguliers des chambres par rapport aux sites de réservation"
+          },
+          {
+            "title": "450K+ hôtels partenaires",
+            "description": "Accédez à des hôtels dans le monde entier à des prix imbattables"
+          },
+          {
+            "title": "Livraison numérique instantanée",
+            "description": "Recevez vos vouchers d'hôtel immédiatement par e-mail"
+          },
+          {
+            "title": "Valable 12 mois",
+            "description": "Réservation flexible sans obligations ou problèmes d'expiration"
+          },
+          {
+            "title": "Surclassements exclusifs",
+            "description": "Profitez de surclassements de chambre et d'offres spéciales en tant que membre"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez FreeStays pour des offres de voyage exclusives",
+      "fields": {
+        "name": "Nom complet",
+        "namePlaceholder": "Jean Dupont",
+        "email": "Adresse e-mail",
+        "phone": "Numéro de téléphone",
+        "optional": "(Optionnel)",
+        "password": "Mot de passe",
+        "confirmPassword": "Confirmer le mot de passe",
+        "referralCode": "Code de parrainage",
+        "termsPrefix": "J'accepte les",
+        "termsLink": "Conditions d'utilisation",
+        "termsAndPrivacy": "et",
+        "privacyLink": "Politique de confidentialité",
+        "or": "ou"
+      },
+      "validation": {
+        "nameRequired": "Le nom est requis",
+        "nameMinLength": "Le nom doit faire au moins 2 caractères",
+        "emailRequired": "L'e-mail est requis",
+        "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+        "passwordRequired": "Le mot de passe est requis",
+        "passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères",
+        "passwordMismatch": "Les mots de passe ne correspondent pas",
+        "confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+        "termsRequired": "Vous devez accepter les Conditions d'utilisation et la Politique de confidentialité"
+      },
+      "submit": "Créer un compte",
+      "registering": "Création du compte...",
+      "success": "Inscription réussie! Redirection...",
+      "error": "Échec de l'inscription",
+      "haveAccount": "Vous avez déjà un compte?",
+      "loginLink": "Se connecter",
+      "benefits": {
+        "title": "Ce que vous obtenez",
+        "subtitle": "Rejoignez des milliers de voyageurs heureux",
+        "description": "Débloquez des avantages exclusifs et économisez sur vos prochaines vacances",
+        "hotels": "Hôtels partenaires",
+        "savings": "Économies moyennes",
+        "support": "Support",
+        "items": [
+          {
+            "title": "Nuits d'hôtel gratuites",
+            "description": "Obtenez des nuits gratuites avec demi-pension ou formule tout compris"
+          },
+          {
+            "title": "Jusqu'à 50% de réduction",
+            "description": "Économisez sur les tarifs réguliers des chambres par rapport aux sites de réservation"
+          },
+          {
+            "title": "450K+ hôtels partenaires",
+            "description": "Accédez aux meilleurs hôtels du monde entier"
+          },
+          {
+            "title": "Livraison numérique instantanée",
+            "description": "Recevez vos vouchers d'hôtel immédiatement par e-mail"
+          },
+          {
+            "title": "Valable 12 mois",
+            "description": "Réservation flexible sans obligations ou problèmes d'expiration"
+          },
+          {
+            "title": "Surclassements de chambre exclusifs",
+            "description": "Profitez de surclassements de chambre et d'offres spéciales en tant que membre"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié?",
+      "subtitle": "Entrez votre e-mail et nous vous enverrons un lien de réinitialisation du mot de passe",
+      "emailSent": "Lien de réinitialisation du mot de passe envoyé à votre e-mail!",
+      "error": "Échec de l'envoi du lien de réinitialisation",
+      "checkEmail": "Vérifiez votre e-mail",
+      "checkEmailDesc": "Nous vous avons envoyé un lien de réinitialisation du mot de passe. Veuillez vérifier votre e-mail.",
+      "backToLogin": "Retour à la connexion",
+      "fields": {
+        "email": "Adresse e-mail"
+      },
+      "validation": {
+        "emailRequired": "L'e-mail est requis",
+        "invalidEmail": "Veuillez entrer une adresse e-mail valide"
+      },
+      "sending": "Envoi en cours...",
+      "submit": "Envoyer le lien de réinitialisation",
+      "rememberPassword": "Vous souvenez-vous de votre mot de passe?",
+      "loginLink": "Se connecter",
+      "infoTitle": "Processus de réinitialisation du mot de passe",
+      "step1Title": "Entrez votre e-mail",
+      "step1Desc": "Fournissez l'adresse e-mail associée à votre compte",
+      "step2Title": "Recevoir l'e-mail",
+      "step2Desc": "Vérifiez votre boîte de réception pour un lien de réinitialisation du mot de passe (valable 24 heures)",
+      "step3Title": "Créer un nouveau mot de passe",
+      "step3Desc": "Cliquez sur le lien et définissez votre nouveau mot de passe en toute sécurité",
+      "tip": "Vous n'avez pas reçu l'e-mail? Vérifiez votre dossier spam ou réessayez avec l'adresse e-mail correcte."
+    }
   },
   "home": {
     "hero": {
@@ -273,7 +432,8 @@
       "countries": "Pays",
       "hotels": "Hôtels",
       "guests": "Clients satisfaits",
-      "satisfaction": "Satisfaction"
+      "satisfaction": "Satisfaction",
+      "total": "Total"
     },
     "hotels": {
       "title": "Les meilleurs hôtels de Turquie",
@@ -507,7 +667,13 @@
     "completeYourReservation": "Entrez vos informations pour finaliser votre réservation",
     "secureReservationBadge": "Réservation sécurisée",
     "sslEncrypted": "Cryptage SSL",
-    "reservationSummary": "Résumé de la réservation",
+    "steps": {
+      "selectRoom": "Sélectionner la chambre",
+      "guestDetails": "Informations du client",
+      "payNow": "Payer maintenant"
+    },
+    "total": "Total",
+    "totalLabel": "Total",
     "hotel": "Hôtel",
     "roomType": "Type de chambre",
     "boardType": "Type de pension",
@@ -556,6 +722,7 @@
     "termsRequired": "Vous devez accepter les conditions",
     "marketingAccept": "Je souhaite être informé des campagnes et des opportunités.",
     "completeReservation": "Finaliser la réservation",
+    "totalLabel": "Total",
     "reservationInfoMissing": "Informations de réservation manquantes",
     "backToSearch": "Retour à la recherche",
     "trustBadges": {
@@ -567,6 +734,26 @@
       "customerService": "Service client",
       "flexiblePayment": "Paiement flexible",
       "installmentOptions": "Options de paiement échelonné"
+    }
+  },
+  "bookings": {
+    "title": "Mes Réservations",
+    "subtitle": "Gérez vos réservations",
+    "noBookings": "Aucune réservation pour l'instant",
+    "searchHotels": "Parcourir les hôtels",
+    "coupon": {
+      "title": "Économiser avec un Coupon",
+      "oneTime": "Réduction Unique",
+      "oneTimeDesc": "15% de réduction sur votre réservation actuelle",
+      "annual": "Passe Annuel",
+      "annualDesc": "15% de réduction sur toutes les réservations pendant 1 an",
+      "skip": "Ignorer pour l'instant",
+      "skipDesc": "Continuer sans coupon",
+      "save": "Enregistrer",
+      "purchase": "Acheter un Coupon",
+      "loginRequired": "Connexion requise pour acheter",
+      "processing": "Traitement en cours...",
+      "info": "💡 Achetez un coupon pour obtenir 15% de réduction sur vos frais de réservation. Vous recevrez un code unique à utiliser à tout moment."
     }
   },
   "howItWorks": {
@@ -753,5 +940,29 @@
     "perNight": "par nuit",
     "viewDetails": "Voir les détails",
     "viewMore": "Voir plus d'hôtels"
+  },
+  "excursions": {
+    "title": "Tours & Activités",
+    "subtitle": "Découvrez des tours et activités incroyables à votre destination",
+    "notActive": "Tours & Activités bientôt disponibles",
+    "notActiveDesc": "Nous travaillons à l'intégration de tours et activités dans notre plateforme. Revenez bientôt!",
+    "noWidget": "Aucun widget disponible",
+    "feature1": "Tours de plage",
+    "feature1Desc": "Explorez de belles plages et activités côtières",
+    "feature2": "Aventures en montagne",
+    "feature2Desc": "Vivez des activités de montagne passionnantes et de la randonnée",
+    "feature3": "Tours culturels",
+    "feature3Desc": "Découvrez la culture locale et les sites historiques",
+    "feature4": "Tours gastronomiques",
+    "feature4Desc": "Dégustez la cuisine locale et les expériences culinaires",
+    "infoTitle": "Pourquoi réserver avec nous?",
+    "benefit1": "Meilleurs prix garantis",
+    "benefit2": "Guides locaux experts",
+    "benefit3": "Confirmation instantanée",
+    "benefit4": "Support client 24/7",
+    "ctaTitle": "Commencez à explorer",
+    "ctaDesc": "Parcourez notre collection de tours incroyables et réservez votre prochaine aventure dès aujourd'hui.",
+    "browseTours": "Parcourir les tours",
+    "backHome": "Retour à l'accueil"
   }
 }

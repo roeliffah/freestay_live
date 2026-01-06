@@ -94,6 +94,13 @@ interface SiteSettings {
   smtpFromEmail?: string;
   smtpFromName?: string;
   emailProvider?: string;
+  // Pricing
+  profitMargin?: number;
+  extraFee?: number;
+  defaultVatRate?: number;
+  // Coupon Pricing
+  oneTimeCouponPrice?: number;
+  annualCouponPrice?: number;
   // Affiliate Programs
   excursionsActive?: boolean;
   excursionsAffiliateCode?: string;
@@ -222,6 +229,8 @@ function SettingsContent() {
           profitMargin: (settings as any).profitMargin,
           extraFee: (settings as any).extraFee,
           defaultVatRate: (settings as any).defaultVatRate,
+          oneTimeCouponPrice: (settings as any).oneTimeCouponPrice,
+          annualCouponPrice: (settings as any).annualCouponPrice,
           maintenanceMode: settings.maintenanceMode,
           maintenanceMessage: settings.maintenanceMessage,
         });
@@ -415,6 +424,8 @@ function SettingsContent() {
           profitMargin: values.profitMargin !== undefined && values.profitMargin !== '' ? parseFloat(values.profitMargin) : undefined,
           extraFee: values.extraFee !== undefined && values.extraFee !== '' ? parseFloat(values.extraFee) : undefined,
           defaultVatRate: values.defaultVatRate !== undefined && values.defaultVatRate !== '' ? parseFloat(values.defaultVatRate) : undefined,
+          oneTimeCouponPrice: values.oneTimeCouponPrice !== undefined && values.oneTimeCouponPrice !== '' ? parseFloat(values.oneTimeCouponPrice) : undefined,
+          annualCouponPrice: values.annualCouponPrice !== undefined && values.annualCouponPrice !== '' ? parseFloat(values.annualCouponPrice) : undefined,
           maintenanceMode: values.maintenanceMode || false,
           maintenanceMessage: values.maintenanceMessage || undefined,
         };
@@ -549,8 +560,8 @@ function SettingsContent() {
                 </Space>
               ),
               children: (
-                <Row gutter={24}>
-                  <Col span={12}>
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} sm={12}>
                     <Form.Item
                       name={['siteName', locale.code]}
                       label={`Site Name (${locale.name})`}
@@ -562,7 +573,7 @@ function SettingsContent() {
                       <Input prefix={<CrownOutlined />} placeholder={`Enter site name in ${locale.name}`} maxLength={100} />
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col xs={24} sm={12}>
                     <Form.Item 
                       name={['tagline', locale.code]} 
                       label={`Tagline (${locale.name})`}
@@ -578,18 +589,18 @@ function SettingsContent() {
 
           <Divider><Text strong>General Settings</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="timezone" label="Timezone">
                 <Select options={SUPPORTED_TIMEZONES} showSearch placeholder="Select timezone" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="currency" label="Default Currency">
                 <Select options={SUPPORTED_CURRENCIES} placeholder="Select currency" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="defaultLocale" label="Default Language">
                 <Select options={locales} placeholder="Select language" />
               </Form.Item>
@@ -598,8 +609,8 @@ function SettingsContent() {
 
           <Divider><Text strong>Pricing & Tax Settings</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="profitMargin" 
                 label="Profit Margin (%)"
@@ -618,7 +629,7 @@ function SettingsContent() {
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="extraFee" 
                 label="Standard Service Fee (€)"
@@ -636,7 +647,7 @@ function SettingsContent() {
                 />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="defaultVatRate" 
                 label="Default VAT Rate (%)"
@@ -657,9 +668,50 @@ function SettingsContent() {
             </Col>
           </Row>
 
+          <Divider><Text strong>Coupon Pricing</Text></Divider>
+
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item 
+                name="oneTimeCouponPrice" 
+                label="One-Time Coupon Price (€)"
+                tooltip="Price for purchasing a one-time use coupon"
+                rules={[
+                  { type: 'number', min: 0, message: 'Price must be 0 or greater' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  prefix="€"
+                  placeholder="e.g., 9.99" 
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item 
+                name="annualCouponPrice" 
+                label="Annual Gold Coupon Price (€)"
+                tooltip="Price for purchasing an annual gold membership coupon"
+                rules={[
+                  { type: 'number', min: 0, message: 'Price must be 0 or greater' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  prefix="€"
+                  placeholder="e.g., 99.99" 
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
           <Alert
             title="Pricing Information"
-            description="Profit margin is added to hotel base prices. Service fee is a fixed amount added to each booking. VAT/Tax is calculated on the final price including profit margin and service fee."
+            description="Profit margin is added to hotel base prices. Service fee is a fixed amount added to each booking. VAT/Tax is calculated on the final price including profit margin and service fee. Coupon prices are standalone pricing for one-time and annual coupon purchases."
             type="info"
             showIcon
             style={{ marginBottom: 24 }}
@@ -692,39 +744,39 @@ function SettingsContent() {
           layout="vertical"
           onFinish={(values) => handleSave('social', values)}
         >
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="facebook" label="Facebook">
                 <Input prefix={<FacebookOutlined style={{ color: '#1877F2' }} />} placeholder="https://facebook.com/..." />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="twitter" label="Twitter / X">
                 <Input prefix={<TwitterOutlined style={{ color: '#1DA1F2' }} />} placeholder="https://twitter.com/..." />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="instagram" label="Instagram">
                 <Input prefix={<InstagramOutlined style={{ color: '#E4405F' }} />} placeholder="https://instagram.com/..." />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="youtube" label="YouTube">
                 <Input prefix={<YoutubeOutlined style={{ color: '#FF0000' }} />} placeholder="https://youtube.com/..." />
               </Form.Item>
             </Col>
           </Row>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="linkedin" label="LinkedIn">
                 <Input prefix={<LinkedinOutlined style={{ color: '#0A66C2' }} />} placeholder="https://linkedin.com/..." />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="tiktok" label="TikTok">
                 <Input prefix={<span style={{ marginRight: 8 }}>🎵</span>} placeholder="https://tiktok.com/..." />
               </Form.Item>
@@ -752,8 +804,8 @@ function SettingsContent() {
           layout="vertical"
           onFinish={(values) => handleSave('branding', values)}
         >
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="logo" label="Logo" hidden>
                 <Input />
               </Form.Item>
@@ -803,18 +855,18 @@ function SettingsContent() {
 
           <Divider><Text strong>Colors</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="primaryColor" label="Primary Color">
                 <Input type="color" style={{ width: 100, height: 40 }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="secondaryColor" label="Secondary Color">
                 <Input type="color" style={{ width: 100, height: 40 }} />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="accentColor" label="Accent Color">
                 <Input type="color" style={{ width: 100, height: 40 }} />
               </Form.Item>
@@ -866,8 +918,8 @@ function SettingsContent() {
 
           <Divider><Text strong>SMTP Server Settings</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={16}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={16}>
               <Form.Item
                 name="smtpHost"
                 label="SMTP Host"
@@ -876,7 +928,7 @@ function SettingsContent() {
                 <Input placeholder="smtp.gmail.com" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={8}>
               <Form.Item
                 name="smtpPort"
                 label="SMTP Port"
@@ -887,8 +939,8 @@ function SettingsContent() {
             </Col>
           </Row>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="smtpUsername"
                 label="SMTP Username"
@@ -897,7 +949,7 @@ function SettingsContent() {
                 <Input placeholder="noreply@freestays.com" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="smtpPassword"
                 label="SMTP Password"
@@ -915,8 +967,8 @@ function SettingsContent() {
 
           <Divider><Text strong>Email Sender Information</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="smtpFromEmail"
                 label="From Email"
@@ -928,7 +980,7 @@ function SettingsContent() {
                 <Input prefix={<MailOutlined />} placeholder="noreply@freestays.com" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="smtpFromName"
                 label="From Name"
@@ -987,8 +1039,8 @@ function SettingsContent() {
 
           <Divider><Text strong>Tours & Activities (Excursions)</Text></Divider>
           
-          <Row gutter={24}>
-            <Col span={6}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={6}>
               <Form.Item 
                 name="excursionsActive" 
                 label="Active" 
@@ -997,7 +1049,7 @@ function SettingsContent() {
                 <Switch />
               </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col xs={24} sm={18}>
               <Form.Item 
                 name="excursionsAffiliateCode" 
                 label="Affiliate Link"
@@ -1022,8 +1074,8 @@ function SettingsContent() {
 
           <Divider><Text strong>Car Rental</Text></Divider>
           
-          <Row gutter={24}>
-            <Col span={6}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={6}>
               <Form.Item 
                 name="carRentalActive" 
                 label="Active" 
@@ -1032,7 +1084,7 @@ function SettingsContent() {
                 <Switch />
               </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col xs={24} sm={18}>
               <Form.Item 
                 name="carRentalAffiliateCode" 
                 label="Affiliate Link"
@@ -1057,8 +1109,8 @@ function SettingsContent() {
 
           <Divider><Text strong>Flight Booking</Text></Divider>
           
-          <Row gutter={24}>
-            <Col span={6}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={6}>
               <Form.Item 
                 name="flightBookingActive" 
                 label="Active" 
@@ -1067,7 +1119,7 @@ function SettingsContent() {
                 <Switch />
               </Form.Item>
             </Col>
-            <Col span={18}>
+            <Col xs={24} sm={18}>
               <Form.Item 
                 name="flightBookingAffiliateCode" 
                 label="Affiliate Link"
@@ -1111,13 +1163,13 @@ function SettingsContent() {
         >
           <Divider><Text strong>Contact Information</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="email" label="Email">
                 <Input prefix={<MailOutlined />} placeholder="info@freestays.com" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="phone" label="Phone">
                 <Input prefix={<PhoneOutlined />} placeholder="+90 555 123 4567" />
               </Form.Item>
@@ -1134,18 +1186,18 @@ function SettingsContent() {
             <TextArea rows={2} placeholder="Atatürk Caddesi No:123" />
           </Form.Item>
 
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="city" label="City">
                 <Input placeholder="İstanbul" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="country" label="Country">
                 <Input placeholder="Turkey" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item name="postalCode" label="Postal Code">
                 <Input placeholder="34000" />
               </Form.Item>
@@ -1164,13 +1216,13 @@ function SettingsContent() {
 
           <Divider><Text strong>Google Maps Integration</Text></Divider>
 
-          <Row gutter={24}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item name="mapLatitude" label="Map Latitude">
                 <Input placeholder="41.0082" />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item name="mapLongitude" label="Map Longitude">
                 <Input placeholder="28.9784" />
               </Form.Item>
@@ -1194,8 +1246,8 @@ function SettingsContent() {
             style={{ marginBottom: 16 }}
           />
 
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="privacyPolicyPageSlug" 
                 label="Privacy Policy Page"
@@ -1221,7 +1273,7 @@ function SettingsContent() {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="termsOfServicePageSlug" 
                 label="Terms of Service Page"
@@ -1247,7 +1299,7 @@ function SettingsContent() {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} sm={12} lg={8}>
               <Form.Item 
                 name="cancellationPolicyPageSlug" 
                 label="Cancellation Policy Page"

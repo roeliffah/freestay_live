@@ -13,7 +13,7 @@ interface AuthState {
   
   // Actions
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, phone?: string) => Promise<void>;
+  register: (name: string, email: string, password: string, phone?: string, referralCode?: string, locale?: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   updateProfile: (data: Partial<User>) => Promise<void>;
@@ -26,26 +26,27 @@ export const useAuth = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      isLoading: true,
+      isLoading: false,
       isAuthenticated: false,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
         try {
           const response = await api.auth.login({ email, password });
-          const { user, tokens } = response.data;
           
           set({
-            user,
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
+            user: response.user,
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
             isAuthenticated: true,
             isLoading: false,
           });
 
           // Store token for API calls
           if (typeof window !== 'undefined') {
-            localStorage.setItem('accessToken', tokens.accessToken);
+            localStorage.setItem('accessToken', response.accessToken);
+            localStorage.setItem('refreshToken', response.refreshToken);
+            localStorage.setItem('user', JSON.stringify(response.user));
           }
         } catch (error) {
           set({ isLoading: false });
@@ -53,22 +54,30 @@ export const useAuth = create<AuthState>()(
         }
       },
 
-      register: async (name: string, email: string, password: string, phone?: string) => {
+      register: async (name: string, email: string, password: string, phone?: string, referralCode?: string, locale?: string) => {
         set({ isLoading: true });
         try {
-          const response = await api.auth.register({ name, email, password, phone });
-          const { user, tokens } = response.data;
+          const response = await api.auth.register({ 
+            name, 
+            email, 
+            password, 
+            phone,
+            referralCode,
+            locale
+          });
           
           set({
-            user,
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
+            user: response.user,
+            accessToken: response.accessToken,
+            refreshToken: response.refreshToken,
             isAuthenticated: true,
             isLoading: false,
           });
 
           if (typeof window !== 'undefined') {
-            localStorage.setItem('accessToken', tokens.accessToken);
+            localStorage.setItem('accessToken', response.accessToken);
+            localStorage.setItem('refreshToken', response.refreshToken);
+            localStorage.setItem('user', JSON.stringify(response.user));
           }
         } catch (error) {
           set({ isLoading: false });
@@ -92,6 +101,8 @@ export const useAuth = create<AuthState>()(
 
           if (typeof window !== 'undefined') {
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('user');
           }
         }
       },

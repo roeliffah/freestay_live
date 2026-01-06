@@ -535,8 +535,8 @@ function BookingsContent() {
   }
 
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+    <div className="bookings-page">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <Title level={2} style={{ margin: 0 }}>Bookings</Title>
         <Button icon={<ReloadOutlined />} onClick={fetchBookings}>
           Refresh
@@ -544,49 +544,52 @@ function BookingsContent() {
       </div>
 
       <Card>
-        <Space style={{ marginBottom: 16 }} wrap>
+        <Space style={{ marginBottom: 16, width: '100%' }} wrap direction="vertical" size="middle">
           <Input
             placeholder="Search booking or customer..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 250 }}
+            style={{ maxWidth: '100%' }}
             allowClear
           />
           
-          <Segmented
-            value={typeFilter}
-            onChange={(value) => setTypeFilter(value as string)}
-            options={[
-              { label: 'All', value: 'all' },
-              { label: '🏨 Hotel', value: 'hotel' },
-              { label: '✈️ Flight', value: 'flight' },
-              { label: '🚗 Car', value: 'car' },
-            ]}
-          />
+          <Space wrap style={{ width: '100%' }}>
+            <Segmented
+              value={typeFilter}
+              onChange={(value) => setTypeFilter(value as string)}
+              options={[
+                { label: 'All', value: 'all' },
+                { label: '🏨 Hotel', value: 'hotel' },
+                { label: '✈️ Flight', value: 'flight' },
+                { label: '🚗 Car', value: 'car' },
+              ]}
+              style={{ maxWidth: '100%' }}
+            />
 
-          <Select
-            placeholder="Status"
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ width: 150 }}
-            allowClear
-            options={[
-              { label: 'Confirmed', value: 'confirmed' },
-              { label: 'Pending', value: 'pending' },
-              { label: 'Cancelled', value: 'cancelled' },
-              { label: 'Completed', value: 'completed' },
-            ]}
-          />
+            <Select
+              placeholder="Status"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 150, minWidth: 120 }}
+              allowClear
+              options={[
+                { label: 'Confirmed', value: 'confirmed' },
+                { label: 'Pending', value: 'pending' },
+                { label: 'Cancelled', value: 'cancelled' },
+                { label: 'Completed', value: 'completed' },
+              ]}
+            />
 
-          <RangePicker placeholder={['Start', 'End']} />
+            <RangePicker placeholder={['Start', 'End']} style={{ maxWidth: '100%' }} />
+          </Space>
         </Space>
 
         <Table
           columns={columns}
           dataSource={filteredBookings || []}
           rowKey={(record) => record.id || `booking-${Math.random()}`}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 800 }}
           pagination={{
             current: currentPage,
             pageSize: pageSize,
@@ -600,9 +603,25 @@ function BookingsContent() {
                 setCurrentPage(1);
               }
             },
+            responsive: true,
           }}
         />
       </Card>
+      
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .bookings-page .ant-card {
+            padding: 12px;
+          }
+          .bookings-page .ant-table {
+            font-size: 12px;
+          }
+          .bookings-page .ant-segmented {
+            display: flex;
+            flex-wrap: wrap;
+          }
+        }
+      `}</style>
 
       <Drawer
         title={

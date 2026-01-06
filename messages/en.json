@@ -10,7 +10,166 @@
     "bookAFlight": "Book a Flight",
     "howItWorks": "How It Works",
     "lastminuteDeals": "Last Minute Deals",
-    "referralProgram": "Referral Program"
+    "referralProgram": "Referral Program",
+    "login": "Login",
+    "register": "Sign Up",
+    "logout": "Logout",
+    "profile": "My Profile"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your FreeStays account",
+      "fields": {
+        "email": "Email Address",
+        "password": "Password",
+        "remember": "Remember me",
+        "forgot": "Forgot Password?"
+      },
+      "validation": {
+        "emailRequired": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "passwordRequired": "Password is required"
+      },
+      "submit": "Sign In",
+      "signingIn": "Signing in...",
+      "success": "Login successful! Redirecting...",
+      "error": "Login failed",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign Up",
+      "features": {
+        "title": "What We Offer",
+        "subtitle": "Experience Unbeatable Hotel Deals",
+        "description": "Get the best value on luxury and budget hotels worldwide",
+        "hotels": "Partner Hotels",
+        "savings": "Average Savings",
+        "support": "Support",
+        "items": [
+          {
+            "title": "Free Hotel Nights",
+            "description": "Get complimentary nights with half-board or all-inclusive options"
+          },
+          {
+            "title": "Up to 50% Discount",
+            "description": "Save on regular room-only stays compared to booking sites"
+          },
+          {
+            "title": "450K+ Partner Hotels",
+            "description": "Access hotels worldwide at unbeatable prices"
+          },
+          {
+            "title": "Instant Digital Delivery",
+            "description": "Receive your hotel vouchers immediately by email"
+          },
+          {
+            "title": "Valid for 12 Months",
+            "description": "Flexible booking with no obligations or expiration issues"
+          },
+          {
+            "title": "Exclusive Upgrades",
+            "description": "Enjoy room upgrades and special deals as a member"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Join FreeStays for exclusive travel deals",
+      "fields": {
+        "name": "Full Name",
+        "namePlaceholder": "John Doe",
+        "email": "Email Address",
+        "phone": "Phone Number",
+        "optional": "(Optional)",
+        "password": "Password",
+        "confirmPassword": "Confirm Password",
+        "referralCode": "Referral Code",
+        "termsPrefix": "I agree to the",
+        "termsLink": "Terms and Conditions",
+        "termsAndPrivacy": "and",
+        "privacyLink": "Privacy Policy",
+        "or": "or"
+      },
+      "validation": {
+        "nameRequired": "Name is required",
+        "nameMinLength": "Name must be at least 2 characters",
+        "emailRequired": "Email is required",
+        "invalidEmail": "Please enter a valid email address",
+        "passwordRequired": "Password is required",
+        "passwordTooShort": "Password must be at least 6 characters",
+        "passwordMismatch": "Passwords do not match",
+        "confirmPasswordRequired": "Please confirm your password",
+        "termsRequired": "You must accept the Terms and Conditions and Privacy Policy"
+      },
+      "submit": "Create Account",
+      "registering": "Creating account...",
+      "success": "Registration successful! Redirecting...",
+      "error": "Registration failed",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign In",
+      "benefits": {
+        "title": "What You Get",
+        "subtitle": "Join Thousands of Happy Travelers",
+        "description": "Unlock exclusive benefits and save on your next vacation",
+        "hotels": "Partner Hotels",
+        "savings": "Average Savings",
+        "support": "Support",
+        "items": [
+          {
+            "title": "Free Hotel Nights",
+            "description": "Get complimentary nights with half-board or all-inclusive options"
+          },
+          {
+            "title": "Up to 50% Discount",
+            "description": "Save on regular room-only stays compared to booking sites"
+          },
+          {
+            "title": "450K+ Partner Hotels",
+            "description": "Access hotels worldwide at unbeatable prices"
+          },
+          {
+            "title": "Instant Digital Delivery",
+            "description": "Receive your hotel vouchers immediately by email"
+          },
+          {
+            "title": "Valid for 12 Months",
+            "description": "Flexible booking with no obligations or expiration issues"
+          },
+          {
+            "title": "Exclusive Upgrades",
+            "description": "Enjoy room upgrades and special deals as a member"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email and we'll send you a password reset link",
+      "emailSent": "Password reset link sent to your email!",
+      "error": "Failed to send reset link",
+      "checkEmail": "Check Your Email",
+      "checkEmailDesc": "We have sent you a password reset link. Please check your email.",
+      "backToLogin": "Back to Login",
+      "fields": {
+        "email": "Email Address"
+      },
+      "validation": {
+        "emailRequired": "Email is required",
+        "invalidEmail": "Please enter a valid email address"
+      },
+      "sending": "Sending...",
+      "submit": "Send Reset Link",
+      "rememberPassword": "Remember your password?",
+      "loginLink": "Sign In",
+      "infoTitle": "Password Reset Process",
+      "step1Title": "Enter Your Email",
+      "step1Desc": "Provide the email address associated with your account",
+      "step2Title": "Receive Email",
+      "step2Desc": "Check your inbox for a password reset link (valid for 24 hours)",
+      "step3Title": "Create New Password",
+      "step3Desc": "Click the link and set your new password securely",
+      "tip": "Did not receive the email? Check your spam folder or try again with the correct email address."
+    }
   },
   "home": {
     "hero": {
@@ -331,7 +490,8 @@
       "countries": "Countries",
       "hotels": "Hotels",
       "guests": "Happy Guests",
-      "satisfaction": "Satisfaction"
+      "satisfaction": "Satisfaction",
+      "total": "Total"
     },
     "hotels": {
       "title": "Turkey's Best Hotels",
@@ -449,6 +609,49 @@
       "button": "Go to Help Center"
     }
   },
+  "bookings": {
+    "title": "My Bookings",
+    "subtitle": "Manage your reservations",
+    "noBookings": "No bookings yet",
+    "searchHotels": "Start Searching Hotels",
+    "coupon": {
+      "title": "Save with Coupon",
+      "oneTime": "One-Time Discount",
+      "oneTimeDesc": "15% off on your current booking",
+      "annual": "Annual Pass",
+      "annualDesc": "15% off on all bookings for 1 year",
+      "skip": "Skip for now",
+      "skipDesc": "Continue without a coupon",
+      "save": "Save",
+      "purchase": "Purchase Coupon",
+      "loginRequired": "Login to Purchase",
+      "processing": "Processing...",
+      "info": "💡 Purchase a coupon to get 15% discount on your booking fees. You'll receive a unique code to use anytime."
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your account information",
+    "fields": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "referralCode": "Your Referral Code"
+    },
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Invalid email"
+    },
+    "memberSince": "Member Since",
+    "referralCodeInfo": "Share this code with friends and earn rewards",
+    "referralProgram": "Referral Program",
+    "referralInfo": "Invite friends and earn rewards",
+    "viewProgram": "View Program",
+    "saveChanges": "Save Changes",
+    "updateSuccess": "Profile updated successfully",
+    "updateError": "Failed to update profile"
+  },
   "footer": {
     "description": "Discover the world's best hotels. Unforgettable holiday experiences with accommodation options for every budget.",
     "quickLinks": "Quick Links",
@@ -517,7 +720,14 @@
     "completeYourReservation": "Enter your information to complete your reservation",
     "secureReservationBadge": "Secure Reservation",
     "sslEncrypted": "SSL Encrypted",
+    "steps": {
+      "selectRoom": "Select Room",
+      "guestDetails": "Guest Details",
+      "payNow": "Pay Now"
+    },
     "reservationSummary": "Reservation Summary",
+    "total": "Total",
+    "totalLabel": "Total",
     "hotel": "Hotel",
     "roomType": "Room Type",
     "boardType": "Board Type",
@@ -825,5 +1035,29 @@
     "perNight": "per night",
     "viewDetails": "View Details",
     "viewMore": "View More Hotels"
+  },
+  "excursions": {
+    "title": "Tours & Activities",
+    "subtitle": "Discover amazing tours and activities at your destination",
+    "notActive": "Tours & Activities Coming Soon",
+    "notActiveDesc": "We are working on integrating tours and activities into our platform. Please check back soon!",
+    "noWidget": "No widget available",
+    "feature1": "Beach Tours",
+    "feature1Desc": "Explore beautiful beaches and coastal activities",
+    "feature2": "Mountain Adventures",
+    "feature2Desc": "Experience thrilling mountain activities and hiking",
+    "feature3": "Cultural Tours",
+    "feature3Desc": "Discover local culture and historical sites",
+    "feature4": "Food Tours",
+    "feature4Desc": "Taste local cuisine and food experiences",
+    "infoTitle": "Why Book With Us?",
+    "benefit1": "Best prices guaranteed",
+    "benefit2": "Expert local guides",
+    "benefit3": "Instant confirmation",
+    "benefit4": "24/7 customer support",
+    "ctaTitle": "Start Exploring",
+    "ctaDesc": "Browse our collection of amazing tours and book your next adventure today.",
+    "browseTours": "Browse Tours",
+    "backHome": "Back to Home"
   }
 }

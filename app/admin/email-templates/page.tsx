@@ -315,10 +315,11 @@ function EmailTemplatesContent() {
             columns={columns}
             dataSource={templates || []}
             rowKey={(record) => record.id || `template-${Math.random()}`}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 800 }}
             pagination={{
               pageSize: 10,
               showTotal: (total) => `Total ${total} templates`,
+              responsive: true,
             }}
           />
         </Spin>

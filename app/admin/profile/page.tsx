@@ -136,8 +136,8 @@ export default function ProfilePage() {
           initialValues={user}
           onFinish={handleProfileSave}
         >
-          <Row gutter={24}>
-            <Col span={8}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={24} lg={8}>
               <div style={{ textAlign: 'center', marginBottom: 24 }}>
                 <Avatar size={120} icon={<UserOutlined />} src={user.avatar} />
                 <div style={{ marginTop: 16 }}>
@@ -160,7 +160,7 @@ export default function ProfilePage() {
               </Descriptions>
             </Col>
             
-            <Col span={16}>
+            <Col xs={24} sm={24} lg={16}>
               <Form.Item
                 name="name"
                 label="Full Name"
@@ -169,8 +169,8 @@ export default function ProfilePage() {
                 <Input prefix={<UserOutlined />} />
               </Form.Item>
 
-              <Row gutter={16}>
-                <Col span={12}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={12}>
                   <Form.Item
                     name="email"
                     label="Email"
@@ -182,7 +182,7 @@ export default function ProfilePage() {
                     <Input prefix={<MailOutlined />} />
                   </Form.Item>
                 </Col>
-                <Col span={12}>
+                <Col xs={24} sm={12}>
                   <Form.Item name="phone" label="Phone">
                     <Input prefix={<PhoneOutlined />} />
                   </Form.Item>

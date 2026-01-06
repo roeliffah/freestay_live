@@ -4,18 +4,21 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import { Phone, User, Menu, X, ChevronDown, Plane, Car, Compass } from 'lucide-react';
+import { Phone, User, Menu, X, ChevronDown, Plane, Car, Compass, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { adminAPI } from '@/lib/api/client';
 import { useSiteSettings } from '@/lib/hooks/useSiteSettings';
+import { useAuth } from '@/lib/hooks/useAuth';
 
 export function Header() {
   const t = useTranslations('header');
   const locale = useLocale();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [travelMenuOpen, setTravelMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { settings } = useSiteSettings();
+  const { user, isAuthenticated, logout } = useAuth();
   const [affiliateData, setAffiliateData] = useState<{
     excursions: { active: boolean; affiliateCode: string };
     carRental: { active: boolean; affiliateCode: string };
@@ -173,12 +176,67 @@ export function Header() {
                 </Button>
               </a>
             )}
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
-            <Button>
-              {t('myBookings')}
-            </Button>
+            
+            {/* User Menu */}
+            {isAuthenticated && user ? (
+              <div 
+                className="relative"
+                onMouseEnter={() => setUserMenuOpen(true)}
+                onMouseLeave={() => setUserMenuOpen(false)}
+              >
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="relative"
+                  title={user.name}
+                >
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <span className="text-xs font-medium text-primary">
+                      {user.name?.charAt(0).toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                </Button>
+                
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border rounded-lg shadow-lg py-2 z-[100]">
+                    <div className="px-4 py-3 border-b">
+                      <div className="text-sm font-semibold text-gray-900">{user.name}</div>
+                      <div className="text-xs text-gray-500">{user.email}</div>
+                    </div>
+                    <Link 
+                      href={`/${locale}/bookings`}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      {t('myBookings')}
+                    </Link>
+                    <Link 
+                      href={`/${locale}/profile`}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      {t('profile') || 'Profile'}
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors flex items-center gap-2"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      {t('logout') || 'Logout'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link href={`/${locale}/auth/login`}>
+                <Button variant="outline" size="sm">
+                  {t('login') || 'Login'}
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -283,26 +341,77 @@ export function Header() {
               >
                 {t('contact')}
               </Link>
-              <div className="flex items-center space-x-2 px-2 pt-2 border-t">
+              <div className="flex items-center space-x-2 px-2 pt-2 border-t flex-col gap-2">
                 {(settings?.contact?.phone || settings?.supportPhone) && (
                   <a 
                     href={`tel:${settings.contact?.phone || settings.supportPhone}`}
-                    className="flex-1"
+                    className="w-full"
                   >
-                    <Button variant="ghost" size="sm" className="w-full">
+                    <Button variant="ghost" size="sm" className="w-full justify-start">
                       <Phone className="h-4 w-4 mr-2" />
                       {t('contact')}
                     </Button>
                   </a>
                 )}
-                <Button variant="ghost" size="sm" className="flex-1">
-                  <User className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
+                
+                {isAuthenticated && user ? (
+                  <>
+                    <Link 
+                      href={`/${locale}/bookings`}
+                      className="w-full"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        {t('myBookings')}
+                      </Button>
+                    </Link>
+                    <Link 
+                      href={`/${locale}/profile`}
+                      className="w-full"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button variant="ghost" size="sm" className="w-full justify-start">
+                        <User className="h-4 w-4 mr-2" />
+                        {t('profile') || 'Profile'}
+                      </Button>
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full"
+                    >
+                      <Button variant="ghost" size="sm" className="w-full justify-start text-red-600">
+                        <LogOut className="h-4 w-4 mr-2" />
+                        {t('logout') || 'Logout'}
+                      </Button>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link 
+                      href={`/${locale}/auth/login`}
+                      className="w-full"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button variant="outline" size="sm" className="w-full">
+                        {t('login') || 'Login'}
+                      </Button>
+                    </Link>
+                    <Link 
+                      href={`/${locale}/auth/register`}
+                      className="w-full"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <Button size="sm" className="w-full">
+                        {t('register') || 'Register'}
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
-              <Button className="mx-2" onClick={() => setMobileMenuOpen(false)}>
-                {t('myBookings')}
-              </Button>
             </nav>
           </div>
         )}

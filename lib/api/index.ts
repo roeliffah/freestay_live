@@ -28,6 +28,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phone?: string;
+  referralCode?: string;
+  locale?: string;
 }
 
 export interface User {
@@ -37,13 +39,22 @@ export interface User {
   phone?: string;
   role: 'admin' | 'staff' | 'customer';
   avatar?: string;
+  referralCode?: string;
   createdAt: string;
 }
 
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
-  expiresIn: number;
+  expiresIn?: number;
+  expiresAt?: string;
+}
+
+export interface LoginResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: string;
+  user: User;
 }
 
 // Hotel Types
@@ -260,13 +271,13 @@ export const api = {
   // Authentication
   auth: {
     login: (data: LoginRequest) =>
-      fetchApi<ApiResponse<{ user: User; tokens: AuthTokens }>>('/auth/login', {
+      fetchApi<LoginResponse>('/auth/login', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
 
     register: (data: RegisterRequest) =>
-      fetchApi<ApiResponse<{ user: User; tokens: AuthTokens }>>('/auth/register', {
+      fetchApi<LoginResponse>('/auth/register', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
@@ -382,10 +393,10 @@ export const api = {
 
   // Coupons
   coupons: {
-    validate: (code: string, amount: number, type: 'hotel' | 'flight' | 'car') =>
+    validate: (code: string, amount: number) =>
       fetchApi<ApiResponse<CouponValidation>>('/coupons/validate', {
         method: 'POST',
-        body: JSON.stringify({ code, amount, type }),
+        body: JSON.stringify({ code, amount }),
       }),
   },
 
@@ -430,6 +441,21 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ paymentIntentId }),
       }),
+
+    createCouponCheckoutSession: (couponType: 'one-time' | 'annual', amount: number, bookingId?: string) =>
+      fetchApi<ApiResponse<{ clientSecret: string; sessionId: string }>>('/payments/coupon/checkout', {
+        method: 'POST',
+        body: JSON.stringify({ couponType, amount, bookingId }),
+      }),
+
+    createBookingCheckoutSession: (bookingData: BookingRequest & { couponPrice?: number }) =>
+      fetchApi<ApiResponse<{ clientSecret: string; sessionId: string }>>('/payments/booking/checkout', {
+        method: 'POST',
+        body: JSON.stringify(bookingData),
+      }),
+
+    getPaymentConfig: () =>
+      fetchApi<ApiResponse<{ publishableKey: string }>>('/payments/config'),
   },
 };
 

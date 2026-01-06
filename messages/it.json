@@ -10,7 +10,166 @@
     "bookAFlight": "Prenota un volo",
     "howItWorks": "Come funziona",
     "lastminuteDeals": "Offerte dell'ultimo minuto",
-    "referralProgram": "Programma di referenza"
+    "referralProgram": "Programma di referenza",
+    "login": "Accedi",
+    "register": "Iscriviti",
+    "logout": "Esci",
+    "profile": "Il Mio Profilo"
+  },
+  "auth": {
+    "login": {
+      "title": "Bentornato",
+      "subtitle": "Accedi al tuo account FreeStays",
+      "fields": {
+        "email": "Indirizzo e-mail",
+        "password": "Password",
+        "remember": "Ricordami",
+        "forgot": "Password dimenticata?"
+      },
+      "validation": {
+        "emailRequired": "L'e-mail è obbligatorio",
+        "invalidEmail": "Per favore inserisci un indirizzo e-mail valido",
+        "passwordRequired": "La password è obbligatorio"
+      },
+      "submit": "Accedi",
+      "signingIn": "Accesso in corso...",
+      "success": "Accesso riuscito! Reindirizzamento...",
+      "error": "Accesso non riuscito",
+      "noAccount": "Non hai un account?",
+      "registerLink": "Iscriviti",
+      "features": {
+        "title": "Cosa offriamo",
+        "subtitle": "Scopri offerte alberghiere imbattibili",
+        "description": "Ottieni il miglior valore su hotel di lusso e budget in tutto il mondo",
+        "hotels": "Hotel partner",
+        "savings": "Risparmio medio",
+        "support": "Supporto",
+        "items": [
+          {
+            "title": "Notti d'albergo gratuite",
+            "description": "Ricevi notti gratuite con mezza pensione o opzioni all-inclusive"
+          },
+          {
+            "title": "Fino al 50% di sconto",
+            "description": "Risparmia sulle tariffe standard della camera rispetto ai siti di prenotazione"
+          },
+          {
+            "title": "450K+ hotel partner",
+            "description": "Accedi a hotel in tutto il mondo a prezzi imbattibili"
+          },
+          {
+            "title": "Consegna digitale istantanea",
+            "description": "Ricevi i tuoi voucher hotel immediatamente via email"
+          },
+          {
+            "title": "Valido per 12 mesi",
+            "description": "Prenotazione flessibile senza obblighi o problemi di scadenza"
+          },
+          {
+            "title": "Upgrade esclusivi",
+            "description": "Goditi upgrade di camera e offerte speciali come membro"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Crea Account",
+      "subtitle": "Unisciti a FreeStays per offerte di viaggio esclusive",
+      "fields": {
+        "name": "Nome completo",
+        "namePlaceholder": "Mario Rossi",
+        "email": "Indirizzo e-mail",
+        "phone": "Numero di telefono",
+        "optional": "(Opzionale)",
+        "password": "Password",
+        "confirmPassword": "Conferma Password",
+        "referralCode": "Codice Referenza",
+        "termsPrefix": "Accetto i",
+        "termsLink": "Termini e Condizioni",
+        "termsAndPrivacy": "e",
+        "privacyLink": "Informativa sulla Privacy",
+        "or": "o"
+      },
+      "validation": {
+        "nameRequired": "Il nome è obbligatorio",
+        "nameMinLength": "Il nome deve contenere almeno 2 caratteri",
+        "emailRequired": "L'e-mail è obbligatorio",
+        "invalidEmail": "Per favore inserisci un indirizzo e-mail valido",
+        "passwordRequired": "La password è obbligatorio",
+        "passwordTooShort": "La password deve contenere almeno 6 caratteri",
+        "passwordMismatch": "Le password non coincidono",
+        "confirmPasswordRequired": "Per favore conferma la tua password",
+        "termsRequired": "Devi accettare i Termini e Condizioni e l'Informativa sulla Privacy"
+      },
+      "submit": "Crea Account",
+      "registering": "Creazione account...",
+      "success": "Registrazione riuscita! Reindirizzamento...",
+      "error": "Registrazione non riuscita",
+      "haveAccount": "Hai già un account?",
+      "loginLink": "Accedi",
+      "benefits": {
+        "title": "Quello che ottieni",
+        "subtitle": "Unisciti a migliaia di viaggiatori felici",
+        "description": "Sblocca vantaggi esclusivi e risparmia sulla tua prossima vacanza",
+        "hotels": "Hotel partner",
+        "savings": "Risparmio medio",
+        "support": "Supporto",
+        "items": [
+          {
+            "title": "Notti d'albergo gratuite",
+            "description": "Ricevi notti gratuite con mezza pensione o opzioni all-inclusive"
+          },
+          {
+            "title": "Fino al 50% di sconto",
+            "description": "Risparmia sulle tariffe standard della camera rispetto ai siti di prenotazione"
+          },
+          {
+            "title": "450K+ hotel partner",
+            "description": "Accedi ai migliori hotel del mondo"
+          },
+          {
+            "title": "Consegna digitale istantanea",
+            "description": "Ricevi i tuoi voucher hotel immediatamente via email"
+          },
+          {
+            "title": "Valido per 12 mesi",
+            "description": "Prenotazione flessibile senza obblighi o problemi di scadenza"
+          },
+          {
+            "title": "Upgrade di camera esclusivi",
+            "description": "Goditi upgrade di camera e offerte speciali come membro"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Password dimenticata?",
+      "subtitle": "Inserisci la tua email e ti invieremo un link per reimpostare la password",
+      "emailSent": "Link di reimpostazione password inviato alla tua email!",
+      "error": "Invio del link di reimpostazione non riuscito",
+      "checkEmail": "Controlla la tua email",
+      "checkEmailDesc": "Ti abbiamo inviato un link per reimpostare la password. Controlla la tua email.",
+      "backToLogin": "Torna al login",
+      "fields": {
+        "email": "Indirizzo e-mail"
+      },
+      "validation": {
+        "emailRequired": "L'e-mail è obbligatorio",
+        "invalidEmail": "Per favore inserisci un indirizzo e-mail valido"
+      },
+      "sending": "Invio in corso...",
+      "submit": "Invia link di reimpostazione",
+      "rememberPassword": "Ricordi la tua password?",
+      "loginLink": "Accedi",
+      "infoTitle": "Processo di reimpostazione password",
+      "step1Title": "Inserisci la tua email",
+      "step1Desc": "Fornisci l'indirizzo email associato al tuo account",
+      "step2Title": "Ricevi l'email",
+      "step2Desc": "Controlla la tua casella di posta per un link di reimpostazione password (valido per 24 ore)",
+      "step3Title": "Crea una nuova password",
+      "step3Desc": "Clicca sul link e imposta la tua nuova password in sicurezza",
+      "tip": "Non hai ricevuto l'email? Controlla la cartella spam o riprova con l'indirizzo email corretto."
+    }
   },
   "home": {
     "hero": {
@@ -273,7 +432,8 @@
       "countries": "Paesi",
       "hotels": "Hotel",
       "guests": "Ospiti Felici",
-      "satisfaction": "Soddisfazione"
+      "satisfaction": "Soddisfazione",
+      "total": "Totale"
     },
     "hotels": {
       "title": "I Migliori Hotel della Turchia",
@@ -459,7 +619,13 @@
     "completeYourReservation": "Inserisci le tue informazioni per completare la prenotazione",
     "secureReservationBadge": "Prenotazione sicura",
     "sslEncrypted": "Crittografato SSL",
-    "reservationSummary": "Riepilogo prenotazione",
+    "steps": {
+      "selectRoom": "Seleziona camera",
+      "guestDetails": "Dettagli ospite",
+      "payNow": "Paga ora"
+    },
+    "total": "Totale",
+    "totalLabel": "Totale",
     "hotel": "Hotel",
     "roomType": "Tipo di camera",
     "boardType": "Trattamento",
@@ -508,6 +674,7 @@
     "termsRequired": "Devi accettare i termini",
     "marketingAccept": "Voglio essere informato su campagne e opportunità.",
     "completeReservation": "Completa prenotazione",
+    "totalLabel": "Totale",
     "reservationInfoMissing": "Informazioni di prenotazione mancanti",
     "backToSearch": "Torna alla ricerca",
     "trustBadges": {
@@ -519,6 +686,26 @@
       "customerService": "Servizio clienti",
       "flexiblePayment": "Pagamento flessibile",
       "installmentOptions": "Opzioni di rateizzazione"
+    }
+  },
+  "bookings": {
+    "title": "Le Mie Prenotazioni",
+    "subtitle": "Gestisci le tue prenotazioni",
+    "noBookings": "Nessuna prenotazione ancora",
+    "searchHotels": "Sfoglia hotel",
+    "coupon": {
+      "title": "Risparmia con un Coupon",
+      "oneTime": "Sconto Una Tantum",
+      "oneTimeDesc": "15% di sconto sulla tua prenotazione attuale",
+      "annual": "Abbonamento Annuale",
+      "annualDesc": "15% di sconto su tutte le prenotazioni per 1 anno",
+      "skip": "Salta per ora",
+      "skipDesc": "Continua senza coupon",
+      "save": "Salva",
+      "purchase": "Acquista Coupon",
+      "loginRequired": "Accesso richiesto per l'acquisto",
+      "processing": "Elaborazione in corso...",
+      "info": "💡 Acquista un coupon per ottenere il 15% di sconto sulle tue commissioni di prenotazione. Riceverai un codice univoco da usare in qualsiasi momento."
     }
   },
   "oldBooking": {
@@ -753,5 +940,29 @@
     "perNight": "per night",
     "viewDetails": "View Details",
     "viewMore": "View More Hotels"
+  },
+  "excursions": {
+    "title": "Tour & Attività",
+    "subtitle": "Scopri tour e attività straordinarie nella tua destinazione",
+    "notActive": "Tour & Attività in arrivo",
+    "notActiveDesc": "Stiamo lavorando per integrare tour e attività nella nostra piattaforma. Torna presto a trovarci!",
+    "noWidget": "Nessun widget disponibile",
+    "feature1": "Tour in spiaggia",
+    "feature1Desc": "Esplora bellissime spiagge e attività costiere",
+    "feature2": "Avventure in montagna",
+    "feature2Desc": "Vivi emozionanti attività in montagna ed escursionismo",
+    "feature3": "Tour culturali",
+    "feature3Desc": "Scopri la cultura locale e i siti storici",
+    "feature4": "Tour gastronomici",
+    "feature4Desc": "Assaggia la cucina locale e le esperienze culinarie",
+    "infoTitle": "Perché prenotare con noi?",
+    "benefit1": "Migliori prezzi garantiti",
+    "benefit2": "Guide locali esperte",
+    "benefit3": "Conferma istantanea",
+    "benefit4": "Supporto clienti 24/7",
+    "ctaTitle": "Inizia a esplorare",
+    "ctaDesc": "Sfoglia la nostra collezione di tour straordinari e prenota la tua prossima avventura oggi.",
+    "browseTours": "Sfoglia i tour",
+    "backHome": "Torna alla home"
   }
 }

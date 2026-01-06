@@ -10,7 +10,166 @@
     "bookAFlight": "Reservar vuelo",
     "howItWorks": "Cómo funciona",
     "lastminuteDeals": "Ofertas de último minuto",
-    "referralProgram": "Programa de referencia"
+    "referralProgram": "Programa de referencia",
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "logout": "Cerrar sesión",
+    "profile": "Mi Perfil"
+  },
+  "auth": {
+    "login": {
+      "title": "Bienvenido de vuelta",
+      "subtitle": "Inicia sesión en tu cuenta de FreeStays",
+      "fields": {
+        "email": "Dirección de correo electrónico",
+        "password": "Contraseña",
+        "remember": "Recuérdame",
+        "forgot": "¿Olvidaste tu contraseña?"
+      },
+      "validation": {
+        "emailRequired": "El correo electrónico es requerido",
+        "invalidEmail": "Por favor, ingresa una dirección de correo electrónico válida",
+        "passwordRequired": "La contraseña es requerida"
+      },
+      "submit": "Iniciar sesión",
+      "signingIn": "Iniciando sesión...",
+      "success": "¡Inicio de sesión exitoso! Redirigiendo...",
+      "error": "Error al iniciar sesión",
+      "noAccount": "¿No tienes una cuenta?",
+      "registerLink": "Registrarse",
+      "features": {
+        "title": "Qué ofrecemos",
+        "subtitle": "Experimenta ofertas hoteleras inmemorables",
+        "description": "Obtén el mejor valor en hoteles de lujo y presupuesto en todo el mundo",
+        "hotels": "Hoteles asociados",
+        "savings": "Ahorro promedio",
+        "support": "Soporte",
+        "items": [
+          {
+            "title": "Noches de hotel gratis",
+            "description": "Obtén noches gratis con media pensión u opciones todo incluido"
+          },
+          {
+            "title": "Descuento de hasta 50%",
+            "description": "Ahorra en estancias normales en habitación en comparación con sitios de reserva"
+          },
+          {
+            "title": "450K+ hoteles asociados",
+            "description": "Accede a hoteles en todo el mundo a precios inmemorables"
+          },
+          {
+            "title": "Entrega digital instantánea",
+            "description": "Recibe tus vouchers de hotel inmediatamente por correo electrónico"
+          },
+          {
+            "title": "Válido por 12 meses",
+            "description": "Reserva flexible sin obligaciones ni problemas de vencimiento"
+          },
+          {
+            "title": "Mejoras exclusivas",
+            "description": "Disfruta de mejoras de habitación y ofertas especiales como miembro"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Crear cuenta",
+      "subtitle": "Únete a FreeStays para ofertas de viaje exclusivas",
+      "fields": {
+        "name": "Nombre completo",
+        "namePlaceholder": "Juan Pérez",
+        "email": "Dirección de correo electrónico",
+        "phone": "Número de teléfono",
+        "optional": "(Opcional)",
+        "password": "Contraseña",
+        "confirmPassword": "Confirmar contraseña",
+        "referralCode": "Código de referencia",
+        "termsPrefix": "Estoy de acuerdo con los",
+        "termsLink": "Términos y Condiciones",
+        "termsAndPrivacy": "y",
+        "privacyLink": "Política de Privacidad",
+        "or": "o"
+      },
+      "validation": {
+        "nameRequired": "El nombre es requerido",
+        "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+        "emailRequired": "El correo electrónico es requerido",
+        "invalidEmail": "Por favor, ingresa una dirección de correo electrónico válida",
+        "passwordRequired": "La contraseña es requerida",
+        "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+        "passwordMismatch": "Las contraseñas no coinciden",
+        "confirmPasswordRequired": "Por favor confirma tu contraseña",
+        "termsRequired": "Debes aceptar los Términos y Condiciones y la Política de Privacidad"
+      },
+      "submit": "Crear cuenta",
+      "registering": "Creando cuenta...",
+      "success": "¡Registro exitoso! Redirigiendo...",
+      "error": "Error al registrarse",
+      "haveAccount": "¿Ya tienes una cuenta?",
+      "loginLink": "Iniciar sesión",
+      "benefits": {
+        "title": "Lo que obtienes",
+        "subtitle": "Únete a miles de viajeros felices",
+        "description": "Desbloquea beneficios exclusivos y ahorra en tus próximas vacaciones",
+        "hotels": "Hoteles asociados",
+        "savings": "Ahorro promedio",
+        "support": "Soporte",
+        "items": [
+          {
+            "title": "Noches de hotel gratis",
+            "description": "Obtén noches gratis con media pensión u opciones todo incluido"
+          },
+          {
+            "title": "Descuento de hasta 50%",
+            "description": "Ahorra en estancias normales en habitación en comparación con sitios de reserva"
+          },
+          {
+            "title": "450K+ hoteles asociados",
+            "description": "Accede a los mejores hoteles en todo el mundo"
+          },
+          {
+            "title": "Entrega digital instantánea",
+            "description": "Recibe tus vouchers de hotel inmediatamente por correo electrónico"
+          },
+          {
+            "title": "Válido por 12 meses",
+            "description": "Reserva flexible sin obligaciones ni problemas de vencimiento"
+          },
+          {
+            "title": "Mejoras de habitación exclusivas",
+            "description": "Disfruta de mejoras de habitación y ofertas especiales como miembro"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "¿Olvidaste tu contraseña?",
+      "subtitle": "Ingresa tu correo y te enviaremos un enlace para restablecerla",
+      "emailSent": "¡Enlace de restablecimiento enviado a tu correo!",
+      "error": "No se pudo enviar el enlace de restablecimiento",
+      "checkEmail": "Revisa tu correo",
+      "checkEmailDesc": "Te hemos enviado un enlace para restablecer tu contraseña. Revisa tu bandeja de entrada.",
+      "backToLogin": "Volver al inicio de sesión",
+      "fields": {
+        "email": "Correo electrónico"
+      },
+      "validation": {
+        "emailRequired": "El correo es obligatorio",
+        "invalidEmail": "Por favor ingresa un correo válido"
+      },
+      "sending": "Enviando...",
+      "submit": "Enviar enlace de restablecimiento",
+      "rememberPassword": "¿Recordaste tu contraseña?",
+      "loginLink": "Iniciar sesión",
+      "infoTitle": "Proceso de restablecimiento",
+      "step1Title": "Ingresa tu correo",
+      "step1Desc": "Proporciona el correo asociado a tu cuenta",
+      "step2Title": "Recibe el correo",
+      "step2Desc": "Revisa tu bandeja por el enlace de restablecimiento (válido por 24 horas)",
+      "step3Title": "Crea nueva contraseña",
+      "step3Desc": "Haz clic en el enlace y define tu nueva contraseña de forma segura",
+      "tip": "¿No recibiste el correo? Revisa spam o intenta de nuevo con el correo correcto."
+    }
   },
   "home": {
     "hero": {
@@ -273,7 +432,8 @@
       "countries": "Países",
       "hotels": "Hoteles",
       "guests": "Huéspedes felices",
-      "satisfaction": "Satisfacción"
+      "satisfaction": "Satisfacción",
+      "total": "Total"
     },
     "hotels": {
       "title": "Los mejores hoteles de Turquía",
@@ -507,7 +667,13 @@
     "completeYourReservation": "Ingrese su información para completar su reserva",
     "secureReservationBadge": "Reserva segura",
     "sslEncrypted": "Cifrado SSL",
-    "reservationSummary": "Resumen de reserva",
+    "steps": {
+      "selectRoom": "Elegir Habitación",
+      "guestDetails": "Datos del Huésped",
+      "payNow": "Pagar Ahora"
+    },
+    "total": "Total",
+    "totalLabel": "Total",
     "hotel": "Hotel",
     "roomType": "Tipo de habitación",
     "boardType": "Tipo de pensión",
@@ -753,5 +919,29 @@
     "perNight": "per night",
     "viewDetails": "View Details",
     "viewMore": "View More Hotels"
+  },
+  "excursions": {
+    "title": "Tours y Actividades",
+    "subtitle": "Descubre increíbles tours y actividades en tu destino",
+    "notActive": "Tours y actividades muy pronto",
+    "notActiveDesc": "Estamos integrando tours y actividades en nuestra plataforma. ¡Vuelve pronto!",
+    "noWidget": "No hay widget disponible",
+    "feature1": "Tours de playa",
+    "feature1Desc": "Explora hermosas playas y actividades costeras",
+    "feature2": "Aventuras en montaña",
+    "feature2Desc": "Vive emocionantes actividades de montaña y senderismo",
+    "feature3": "Tours culturales",
+    "feature3Desc": "Descubre la cultura local y sitios históricos",
+    "feature4": "Tours gastronómicos",
+    "feature4Desc": "Prueba la cocina local y experiencias culinarias",
+    "infoTitle": "¿Por qué reservar con nosotros?",
+    "benefit1": "Mejores precios garantizados",
+    "benefit2": "Guías locales expertos",
+    "benefit3": "Confirmación inmediata",
+    "benefit4": "Atención al cliente 24/7",
+    "ctaTitle": "Comienza a explorar",
+    "ctaDesc": "Revisa nuestra colección de tours y reserva tu próxima aventura hoy.",
+    "browseTours": "Ver tours",
+    "backHome": "Volver al inicio"
   }
 }

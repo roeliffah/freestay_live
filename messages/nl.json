@@ -10,7 +10,166 @@
     "bookAFlight": "Vlucht boeken",
     "howItWorks": "Hoe het werkt",
     "lastminuteDeals": "Last-minute aanbiedingen",
-    "referralProgram": "Referral programma"
+    "referralProgram": "Referral programma",
+    "login": "Inloggen",
+    "register": "Registreren",
+    "logout": "Uitloggen",
+    "profile": "Mijn Profiel"
+  },
+  "auth": {
+    "login": {
+      "title": "Welkom terug",
+      "subtitle": "Log in op uw FreeStays-account",
+      "fields": {
+        "email": "E-mailadres",
+        "password": "Wachtwoord",
+        "remember": "Onthoud mij",
+        "forgot": "Wachtwoord vergeten?"
+      },
+      "validation": {
+        "emailRequired": "E-mailadres is verplicht",
+        "invalidEmail": "Voer een geldig e-mailadres in",
+        "passwordRequired": "Wachtwoord is verplicht"
+      },
+      "submit": "Inloggen",
+      "signingIn": "Bezig met inloggen...",
+      "success": "Succesvol ingelogd! Doorgestuurd...",
+      "error": "Inloggen mislukt",
+      "noAccount": "Heb je nog geen account?",
+      "registerLink": "Registreren",
+      "features": {
+        "title": "Wat we bieden",
+        "subtitle": "Ontdek onslaan hoteldeals",
+        "description": "Krijg de beste waarde op luxe- en budgethotels wereldwijd",
+        "hotels": "Partnerhotels",
+        "savings": "Gemiddelde besparing",
+        "support": "Ondersteuning",
+        "items": [
+          {
+            "title": "Gratis hotelkamers",
+            "description": "Krijg gratis nachten met halfpension of all-inclusive opties"
+          },
+          {
+            "title": "Tot 50% korting",
+            "description": "Bespaar op standaard kamerprijs vergeleken met boeking sites"
+          },
+          {
+            "title": "450K+ partnerhotels",
+            "description": "Krijg toegang tot hotels wereldwijd tegen onslaan prijzen"
+          },
+          {
+            "title": "Instant digitale levering",
+            "description": "Ontvang uw hotelcheques onmiddellijk per e-mail"
+          },
+          {
+            "title": "Geldig 12 maanden",
+            "description": "Flexibele boeking zonder verplichtingen of vervalokkasaties"
+          },
+          {
+            "title": "Exclusieve upgrades",
+            "description": "Geniet van kammerupgrades en speciale aanbiedingen als lid"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Account aanmaken",
+      "subtitle": "Sluit je aan bij FreeStays voor exclusieve reisuanbiedingen",
+      "fields": {
+        "name": "Volledige naam",
+        "namePlaceholder": "Jan Jansen",
+        "email": "E-mailadres",
+        "phone": "Telefoonnummer",
+        "optional": "(Optioneel)",
+        "password": "Wachtwoord",
+        "confirmPassword": "Wachtwoord bevestigen",
+        "referralCode": "Referral code",
+        "termsPrefix": "Ik ga akkoord met de",
+        "termsLink": "Algemene Voorwaarden",
+        "termsAndPrivacy": "en",
+        "privacyLink": "Privacybeleid",
+        "or": "of"
+      },
+      "validation": {
+        "nameRequired": "Naam is verplicht",
+        "nameMinLength": "Naam moet minimaal 2 tekens lang zijn",
+        "emailRequired": "E-mailadres is verplicht",
+        "invalidEmail": "Voer een geldig e-mailadres in",
+        "passwordRequired": "Wachtwoord is verplicht",
+        "passwordTooShort": "Wachtwoord moet minimaal 6 tekens lang zijn",
+        "passwordMismatch": "Wachtwoorden komen niet overeen",
+        "confirmPasswordRequired": "Bevestig je wachtwoord",
+        "termsRequired": "Je moet de Algemene Voorwaarden en het Privacybeleid accepteren"
+      },
+      "submit": "Account aanmaken",
+      "registering": "Account wordt aangemaakt...",
+      "success": "Registratie succesvol! Doorgestuurd...",
+      "error": "Registratie mislukt",
+      "haveAccount": "Heb je al een account?",
+      "loginLink": "Inloggen",
+      "benefits": {
+        "title": "Wat u krijgt",
+        "subtitle": "Sluit je aan bij duizenden gelukkige reizigers",
+        "description": "Ontgrendel exclusieve voordelen en bespaar op uw volgende vakantie",
+        "hotels": "Partnerhotels",
+        "savings": "Gemiddelde besparing",
+        "support": "Ondersteuning",
+        "items": [
+          {
+            "title": "Gratis hotelkamers",
+            "description": "Krijg gratis nachten met halfpension of all-inclusive opties"
+          },
+          {
+            "title": "Tot 50% korting",
+            "description": "Bespaar op standaard kamerprijs vergeleken met boeking sites"
+          },
+          {
+            "title": "450K+ partnerhotels",
+            "description": "Krijg toegang tot de beste hotels ter wereld"
+          },
+          {
+            "title": "Instant digitale levering",
+            "description": "Ontvang uw hotelcheques onmiddellijk per e-mail"
+          },
+          {
+            "title": "Geldig 12 maanden",
+            "description": "Flexibele boeking zonder verplichtingen of vervalokkasaties"
+          },
+          {
+            "title": "Exclusieve kammerupgrades",
+            "description": "Geniet van kammerupgrades en speciale aanbiedingen als lid"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Wachtwoord vergeten?",
+      "subtitle": "Voer uw e-mailadres in en we sturen u een link om uw wachtwoord te resetten",
+      "emailSent": "Wachtwoord reset link verzonden naar uw e-mail!",
+      "error": "Verzenden van reset link mislukt",
+      "checkEmail": "Controleer uw e-mail",
+      "checkEmailDesc": "We hebben u een wachtwoord reset link gestuurd. Controleer uw e-mail.",
+      "backToLogin": "Terug naar inloggen",
+      "fields": {
+        "email": "E-mailadres"
+      },
+      "validation": {
+        "emailRequired": "E-mailadres is verplicht",
+        "invalidEmail": "Voer een geldig e-mailadres in"
+      },
+      "sending": "Verzenden...",
+      "submit": "Reset link verzenden",
+      "rememberPassword": "Herinnert u zich uw wachtwoord?",
+      "loginLink": "Inloggen",
+      "infoTitle": "Wachtwoord reset proces",
+      "step1Title": "Voer uw e-mail in",
+      "step1Desc": "Geef het e-mailadres op dat aan uw account is gekoppeld",
+      "step2Title": "Ontvang e-mail",
+      "step2Desc": "Controleer uw inbox voor een wachtwoord reset link (geldig voor 24 uur)",
+      "step3Title": "Maak nieuw wachtwoord aan",
+      "step3Desc": "Klik op de link en stel uw nieuwe wachtwoord veilig in",
+      "tip": "Geen e-mail ontvangen? Controleer uw spammap of probeer opnieuw met het juiste e-mailadres."
+    }
   },
   "home": {
     "hero": {
@@ -273,7 +432,8 @@
       "countries": "Landen",
       "hotels": "Hotels",
       "guests": "Tevreden Gasten",
-      "satisfaction": "Tevredenheid"
+      "satisfaction": "Tevredenheid",
+      "total": "Totaal"
     },
     "hotels": {
       "title": "De Beste Hotels van Turkije",
@@ -459,8 +619,13 @@
     "completeYourReservation": "Voer uw gegevens in om uw reservering te voltooien",
     "secureReservationBadge": "Veilige reservering",
     "sslEncrypted": "SSL-versleuteld",
-    "reservationSummary": "Reserveringsoverzicht",
-    "hotel": "Hotel",
+    "steps": {
+      "selectRoom": "Kamer kiezen",
+      "guestDetails": "Gastgegevens",
+      "payNow": "Nu betalen"
+    },
+    "total": "Totaal",
+    "totalLabel": "Totaal",
     "roomType": "Kamertype",
     "boardType": "Verblijfsarrangement",
     "checkIn": "Inchecken",
@@ -508,6 +673,7 @@
     "termsRequired": "U moet de voorwaarden accepteren",
     "marketingAccept": "Ik wil geïnformeerd worden over campagnes en aanbiedingen.",
     "completeReservation": "Reservering voltooien",
+    "totalLabel": "Totaal",
     "reservationInfoMissing": "Reserveringsinformatie ontbreekt",
     "backToSearch": "Terug naar zoeken",
     "trustBadges": {
@@ -519,6 +685,26 @@
       "customerService": "Klantenservice",
       "flexiblePayment": "Flexibele betaling",
       "installmentOptions": "Betalingsopties"
+    }
+  },
+  "bookings": {
+    "title": "Mijn Boekingen",
+    "subtitle": "Beheer uw reserveringen",
+    "noBookings": "Nog geen boekingen",
+    "searchHotels": "Hotels bladeren",
+    "coupon": {
+      "title": "Bespaar met Coupon",
+      "oneTime": "Eenmalige Korting",
+      "oneTimeDesc": "15% korting op uw huidige boeking",
+      "annual": "Jaarlijks Pass",
+      "annualDesc": "15% korting op alle boekingen voor 1 jaar",
+      "skip": "Voorlopig overslaan",
+      "skipDesc": "Doorgaan zonder coupon",
+      "save": "Opslaan",
+      "purchase": "Coupon Kopen",
+      "loginRequired": "Inloggen vereist om aan te schaffen",
+      "processing": "Aan het verwerken...",
+      "info": "💡 Koop een coupon om 15% korting te krijgen op uw boekingskosten. U ontvangt een unieke code die u op elk moment kunt gebruiken."
     }
   },
   "oldBooking": {
@@ -753,5 +939,29 @@
     "perNight": "per night",
     "viewDetails": "View Details",
     "viewMore": "View More Hotels"
+  },
+  "excursions": {
+    "title": "Tours & Activiteiten",
+    "subtitle": "Ontdek geweldige tours en activiteiten op uw bestemming",
+    "notActive": "Tours & Activiteiten binnenkort beschikbaar",
+    "notActiveDesc": "We werken eraan om tours en activiteiten in ons platform te integreren. Kom binnenkort terug!",
+    "noWidget": "Geen widget beschikbaar",
+    "feature1": "Strandtours",
+    "feature1Desc": "Verken prachtige stranden en kustactiviteiten",
+    "feature2": "Bergavonturen",
+    "feature2Desc": "Ervaar spannende bergactiviteiten en wandelen",
+    "feature3": "Culturele tours",
+    "feature3Desc": "Ontdek lokale cultuur en historische bezienswaardigheden",
+    "feature4": "Food tours",
+    "feature4Desc": "Proef lokale keuken en culinaire ervaringen",
+    "infoTitle": "Waarom bij ons boeken?",
+    "benefit1": "Beste prijzen gegarandeerd",
+    "benefit2": "Deskundige lokale gidsen",
+    "benefit3": "Onmiddellijke bevestiging",
+    "benefit4": "24/7 klantenondersteuning",
+    "ctaTitle": "Begin met verkennen",
+    "ctaDesc": "Blader door onze collectie van geweldige tours en boek vandaag nog uw volgende avontuur.",
+    "browseTours": "Tours bekijken",
+    "backHome": "Terug naar home"
   }
 }

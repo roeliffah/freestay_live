@@ -273,10 +273,11 @@ function PagesContent() {
             columns={columns}
             dataSource={pages || []}
             rowKey={(record) => record.id || `page-${Math.random()}`}
-            scroll={{ x: 'max-content' }}
+            scroll={{ x: 800 }}
             pagination={{
               pageSize: 10,
               showTotal: (total) => `Total ${total} pages`,
+              responsive: true,
             }}
           />
         </Spin>

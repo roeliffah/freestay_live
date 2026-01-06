@@ -10,7 +10,166 @@
     "bookAFlight": "Uçak Bileti Al",
     "howItWorks": "Nasıl Çalışır?",
     "lastminuteDeals": "Son Dakika Fırsatları",
-    "referralProgram": "Referral Programı"
+    "referralProgram": "Referral Programı",
+    "login": "Giriş Yap",
+    "register": "Üye Ol",
+    "logout": "Çıkış Yap",
+    "profile": "Profilim"
+  },
+  "auth": {
+    "login": {
+      "title": "Hoş Geldin",
+      "subtitle": "FreeStays hesabınıza giriş yapın",
+      "fields": {
+        "email": "E-posta Adresi",
+        "password": "Şifre",
+        "remember": "Beni Hatırla",
+        "forgot": "Şifremi Unuttum?"
+      },
+      "validation": {
+        "emailRequired": "E-posta gereklidir",
+        "invalidEmail": "Lütfen geçerli bir e-posta adresi girin",
+        "passwordRequired": "Şifre gereklidir"
+      },
+      "submit": "Giriş Yap",
+      "signingIn": "Giriş yapılıyor...",
+      "success": "Giriş başarılı! Yönlendiriliyorsunuz...",
+      "error": "Giriş başarısız",
+      "noAccount": "Hesabınız yok mu?",
+      "registerLink": "Üye Ol",
+      "features": {
+        "title": "Neler Sunuyoruz",
+        "subtitle": "Eşsiz Otel Fırsatlarını Keşfedin",
+        "description": "Dünyadaki en iyi otellerde harika fiyatlarla konaklayın",
+        "hotels": "Partner Otel",
+        "savings": "Ortalama Tasarruf",
+        "support": "Destek",
+        "items": [
+          {
+            "title": "Ücretsiz Otel Gecesi",
+            "description": "Yarım pansiyon veya her şey dahil seçenekleriyle ücretsiz geceler"
+          },
+          {
+            "title": "Adil Fiyatlara %50'ye Varan İndirim",
+            "description": "Booking.com gibi sitelerle karşılaştırıldığında inanılmaz tasarruf"
+          },
+          {
+            "title": "450K+ Partner Otel",
+            "description": "Dünya genelinde erişebileceğiniz en uygun fiyatlı oteller"
+          },
+          {
+            "title": "Anında Dijital Teslimat",
+            "description": "Otel voucherlerinizi email ile hemen alın"
+          },
+          {
+            "title": "12 Ay Geçerlilik",
+            "description": "Esnek rezervasyon, zorunluluk yok, son tarih yok"
+          },
+          {
+            "title": "Özel Oda Yükseltmeleri",
+            "description": "Üye olarak özel indirimler ve oda yükseltmelerinin keyfini çıkarın"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Hesap Oluştur",
+      "subtitle": "Özel seyahat fırsatları için FreeStays'e katılın",
+      "fields": {
+        "name": "Ad Soyad",
+        "namePlaceholder": "Ahmet Yılmaz",
+        "email": "E-posta Adresi",
+        "phone": "Telefon Numarası",
+        "optional": "(Opsiyonel)",
+        "password": "Şifre",
+        "confirmPassword": "Şifreyi Onayla",
+        "referralCode": "Referral Kodu",
+        "termsPrefix": "Kabul ediyorum",
+        "termsLink": "Hizmet Şartları",
+        "termsAndPrivacy": "ve",
+        "privacyLink": "Gizlilik Politikası",
+        "or": "veya"
+      },
+      "validation": {
+        "nameRequired": "Ad Soyad gereklidir",
+        "nameMinLength": "Ad Soyad en az 2 karakter olmalıdır",
+        "emailRequired": "E-posta gereklidir",
+        "invalidEmail": "Lütfen geçerli bir e-posta adresi girin",
+        "passwordRequired": "Şifre gereklidir",
+        "passwordTooShort": "Şifre en az 6 karakter olmalıdır",
+        "passwordMismatch": "Şifreler eşleşmiyor",
+        "confirmPasswordRequired": "Şifreyi lütfen onayla",
+        "termsRequired": "Hizmet Şartları ve Gizlilik Politikasını kabul etmelisiniz"
+      },
+      "submit": "Hesap Oluştur",
+      "registering": "Hesap oluşturuluyor...",
+      "success": "Kayıt başarılı! Yönlendiriliyorsunuz...",
+      "error": "Kayıt başarısız",
+      "haveAccount": "Zaten hesabınız var mı?",
+      "loginLink": "Giriş Yap",
+      "benefits": {
+        "title": "Neler Kazanırsınız",
+        "subtitle": "Binlerce Mutlu Gezgin'e Katılın",
+        "description": "Sonraki tatilinizde tasarruf edin ve eşsiz faydaları açığa çıkarın",
+        "hotels": "Partner Otel",
+        "savings": "Ortalama Tasarruf",
+        "support": "Destek",
+        "items": [
+          {
+            "title": "Ücretsiz Otel Gecesi",
+            "description": "Yarım pansiyon veya her şey dahil seçenekleriyle ücretsiz geceler"
+          },
+          {
+            "title": "Adil Fiyatlara %50'ye Varan İndirim",
+            "description": "Booking.com gibi sitelerle karşılaştırıldığında odaya uygun kalış"
+          },
+          {
+            "title": "450K+ Partner Otel",
+            "description": "Dünya genelinde erişebileceğiniz en iyi otellerle anlaşmalı"
+          },
+          {
+            "title": "Anında Dijital Teslimat",
+            "description": "Otel voucherlerinizi email ile hemen alın"
+          },
+          {
+            "title": "12 Ay Geçerlilik",
+            "description": "Esnek rezervasyon, zorunluluk yok, son tarih yok"
+          },
+          {
+            "title": "Özel Oda Yükseltmeleri",
+            "description": "Üye olarak özel indirimler ve oda yükseltmelerinin keyfini çıkarın"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Şifremi Unuttum?",
+      "subtitle": "E-posta adresini gir, sana şifre sıfırlama bağlantısı gönderelim",
+      "emailSent": "Şifre sıfırlama bağlantısı e-posta adresine gönderildi!",
+      "error": "Sıfırlama bağlantısı gönderilemedi",
+      "checkEmail": "E-postanı Kontrol Et",
+      "checkEmailDesc": "Şifre sıfırlama bağlantısını gönderdik. Lütfen e-postanı kontrol et.",
+      "backToLogin": "Girişe Dön",
+      "fields": {
+        "email": "E-posta Adresi"
+      },
+      "validation": {
+        "emailRequired": "E-posta gereklidir",
+        "invalidEmail": "Lütfen geçerli bir e-posta adresi girin"
+      },
+      "sending": "Gönderiliyor...",
+      "submit": "Sıfırlama Bağlantısı Gönder",
+      "rememberPassword": "Şifreni hatırlıyor musun?",
+      "loginLink": "Giriş Yap",
+      "infoTitle": "Şifre Sıfırlama Süreci",
+      "step1Title": "E-postanı Gir",
+      "step1Desc": "Hesabına kayıtlı e-posta adresini yaz",
+      "step2Title": "E-postanı Kontrol Et",
+      "step2Desc": "Gelen kutunda 24 saat geçerli şifre sıfırlama bağlantısını bul",
+      "step3Title": "Yeni Şifre Oluştur",
+      "step3Desc": "Bağlantıya tıkla ve yeni şifreni güvenle belirle",
+      "tip": "E-posta gelmediyse spam klasörünü kontrol et ya da doğru adresle tekrar dene."
+    }
   },
   "home": {
     "hero": {
@@ -449,6 +608,49 @@
       "button": "Yardım Merkezine Git"
     }
   },
+  "bookings": {
+    "title": "Rezervasyonlarım",
+    "subtitle": "Rezervasyonlarınızı yönetin",
+    "noBookings": "Henüz bir rezervasyonunuz yok",
+    "searchHotels": "Otel Aramaya Başla",
+    "coupon": {
+      "title": "Kuponla Tasarruf Edin",
+      "oneTime": "Tek Seferlik İndirim",
+      "oneTimeDesc": "Mevcut rezervasyonda %15 indirim",
+      "annual": "Yıllık Pass",
+      "annualDesc": "Tüm rezervasyonlarda 1 yıl %15 indirim",
+      "skip": "Şimdilik atla",
+      "skipDesc": "Kuponsuz devam et",
+      "save": "Tasarruf Et",
+      "purchase": "Kuponu Satın Al",
+      "loginRequired": "Satın almak için giriş yapın",
+      "processing": "İşleniyor...",
+      "info": "💡 Bir kupon satın alarak rezervasyon ücretlerinizde %15 indirim alın. İstediğiniz zaman kullanabileceğiniz benzersiz bir kod alacaksınız."
+    }
+  },
+  "profile": {
+    "title": "Profilim",
+    "subtitle": "Hesap bilgilerinizi yönetin",
+    "fields": {
+      "name": "Ad Soyad",
+      "email": "E-posta Adresi",
+      "phone": "Telefon Numarası",
+      "referralCode": "Referral Kodunuz"
+    },
+    "validation": {
+      "nameRequired": "Ad Soyad gereklidir",
+      "emailRequired": "E-posta gereklidir",
+      "invalidEmail": "Geçersiz e-posta"
+    },
+    "memberSince": "Üye Olduğu Tarih",
+    "referralCodeInfo": "Bu kodu arkadaşlarınızla paylaşarak ödüller kazanın",
+    "referralProgram": "Referral Programı",
+    "referralInfo": "Arkadaşlarınızı davet edin ve ödüller kazanın",
+    "viewProgram": "Programı Görüntüle",
+    "saveChanges": "Değişiklikleri Kaydet",
+    "updateSuccess": "Profil başarıyla güncellendi",
+    "updateError": "Profil güncellenirken bir hata oluştu"
+  },
   "footer": {
     "description": "Dünyanın en iyi otellerini keşfedin. Her bütçeye uygun konaklama seçenekleri ile unutulmaz tatil deneyimleri.",
     "quickLinks": "Hızlı Linkler",
@@ -517,7 +719,13 @@
     "completeYourReservation": "Rezervasyonunuzu tamamlamak için bilgilerinizi girin",
     "secureReservationBadge": "Güvenli Rezervasyon",
     "sslEncrypted": "SSL Şifreli",
-    "reservationSummary": "Rezervasyon Özeti",
+    "steps": {
+      "selectRoom": "Oda Seç",
+      "guestDetails": "Misafir Bilgileri",
+      "payNow": "Ödeme"
+    },
+    "total": "Toplam",
+    "totalLabel": "Toplam",
     "hotel": "Otel",
     "roomType": "Oda Tipi",
     "boardType": "Pansiyon",
@@ -825,5 +1033,29 @@
     "perNight": "gecelik",
     "viewDetails": "Detayları Gör",
     "viewMore": "Daha Fazla Otel Gör"
+  },
+  "excursions": {
+    "title": "Turlar & Aktiviteler",
+    "subtitle": "Gittiğin yerdeki harika tur ve aktiviteleri keşfet",
+    "notActive": "Turlar & Aktiviteler Çok Yakında",
+    "notActiveDesc": "Turlar ve aktiviteleri platformumuza entegre etmek için çalışıyoruz. Lütfen yakında tekrar kontrol edin!",
+    "noWidget": "Widget bulunmuyor",
+    "feature1": "Plaj Turları",
+    "feature1Desc": "Güzel plajları ve kıyı aktivitelerini keşfet",
+    "feature2": "Dağ Maceraları",
+    "feature2Desc": "Heyecan verici dağ aktiviteleri ve yürüyüş deneyimleri",
+    "feature3": "Kültür Turları",
+    "feature3Desc": "Yerel kültürü ve tarihi noktaları keşfet",
+    "feature4": "Gurme Turlar",
+    "feature4Desc": "Yerel mutfağı tadın ve lezzet deneyimleri yaşayın",
+    "infoTitle": "Neden Bizden Alın?",
+    "benefit1": "En iyi fiyat garantisi",
+    "benefit2": "Uzman yerel rehberler",
+    "benefit3": "Anında onay",
+    "benefit4": "7/24 müşteri desteği",
+    "ctaTitle": "Keşfetmeye Başla",
+    "ctaDesc": "Harika turlar koleksiyonumuzu inceleyin ve bir sonraki maceranızı bugün planlayın.",
+    "browseTours": "Turları İncele",
+    "backHome": "Ana Sayfaya Dön"
   }
 }

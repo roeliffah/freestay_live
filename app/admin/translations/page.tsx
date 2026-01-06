@@ -307,11 +307,12 @@ export default function TranslationsPage() {
           columns={columns}
           dataSource={filteredTranslations || []}
           rowKey={(record) => record.key || `trans-${Math.random()}`}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 800 }}
           pagination={{
             pageSize: 20,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} translations`,
+            responsive: true,
           }}
         />
       </Card>

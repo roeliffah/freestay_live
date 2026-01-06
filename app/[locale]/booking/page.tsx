@@ -8,7 +8,8 @@ import { BookingForm } from '@/components/booking/BookingForm';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 function BookingContent() {
   const t = useTranslations('booking');
@@ -26,8 +27,19 @@ function BookingContent() {
   const children = parseInt(searchParams.get('children') || '0');
   const price = parseFloat(searchParams.get('price') || '0');
   const currency = searchParams.get('currency') || 'EUR';
+  const imageUrl = searchParams.get('image') || '';
 
   const guests = adults + children;
+  const nights = Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)) || 1);
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      return new Intl.DateTimeFormat(locale, { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' }).format(new Date(dateStr));
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -55,12 +67,29 @@ function BookingContent() {
               </div>
             </div>
           </div>
+          {/* Steps */}
+          <div className="mt-6 flex items-center justify-center gap-3 text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center">1</div>
+              <span className="hidden sm:inline text-primary">{t('steps.selectRoom')}</span>
+            </div>
+            <div className="w-10 sm:w-16 h-0.5 bg-primary/50" />
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center ring-2 ring-primary/30">2</div>
+              <span className="hidden sm:inline text-primary">{t('steps.guestDetails')}</span>
+            </div>
+            <div className="w-10 sm:w-16 h-0.5 bg-border" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="w-9 h-9 rounded-full bg-secondary text-muted-foreground flex items-center justify-center">3</div>
+              <span className="hidden sm:inline">{t('steps.payNow')}</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           {!hotelId || !checkIn || !checkOut ? (
             <Card className="p-8 text-center">
               <p className="text-lg text-muted-foreground mb-4">
@@ -71,18 +100,90 @@ function BookingContent() {
               </Link>
             </Card>
           ) : (
-            <BookingForm
-              hotelId={hotelId}
-              hotelName={hotelName}
-              roomName={roomName}
-              boardType={boardType}
-              checkIn={checkIn}
-              checkOut={checkOut}
-              guests={guests}
-              totalPrice={price}
-              currency={currency}
-              locale={locale}
-            />
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <BookingForm
+                  hotelId={hotelId}
+                  hotelName={hotelName}
+                  roomName={roomName}
+                  boardType={boardType}
+                  checkIn={checkIn}
+                  checkOut={checkOut}
+                  guests={guests}
+                  totalPrice={price}
+                  currency={currency}
+                  locale={locale}
+                  showSummary={false}
+                />
+              </div>
+
+              {/* Sticky Summary */}
+              <div className="lg:col-span-1">
+                <Card className="p-5 sticky top-24 shadow-lg">
+                  <div className="flex gap-3 mb-4">
+                    <div className="relative w-24 h-24 overflow-hidden rounded-xl bg-muted">
+                      <Image
+                        src={imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=400&q=80'}
+                        alt={hotelName}
+                        fill
+                        sizes="96px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-muted-foreground mb-1">{t('hotel')}</p>
+                      <p className="font-semibold leading-tight line-clamp-2">{hotelName}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{roomName}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('roomType')}</span>
+                      <span className="font-medium text-right">{roomName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('boardType')}</span>
+                      <span className="font-medium text-right">{boardType}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('checkIn')}</span>
+                      <span className="font-medium text-right">{formatDate(checkIn)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('checkOut')}</span>
+                      <span className="font-medium text-right">{formatDate(checkOut)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">{t('guests')}</span>
+                      <span className="font-medium text-right">{guests}</span>
+                    </div>
+                  </div>
+
+                  <div className="my-4 border-t" />
+
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>{t('roomType')} ({nights} {t('nights')})</span>
+                    <span className="font-semibold">{price.toFixed(2)} {currency}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-emerald-600 text-sm mb-3">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{t('secureReservationBadge')}</span>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-muted-foreground text-xs">{t('total', { default: 'Total' })}</p>
+                      <p className="text-2xl font-bold text-primary">{price.toFixed(2)} {currency}</p>
+                    </div>
+                    <Button size="sm" className="rounded-full" disabled>
+                      {t('steps.payNow')}
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </div>
           )}
         </div>
       </div>

@@ -12,7 +12,6 @@ import {
   Input,
   InputNumber,
   Select,
-  DatePicker,
   Switch,
   Typography,
   Dropdown,
@@ -47,15 +46,24 @@ const { Title, Text } = Typography;
 interface Coupon {
   id: string;
   code: string;
-  discountType: 'percentage' | 'fixed';
-  discountValue: number;
-  maxUses: number;
-  usedCount: number;
-  minBookingAmount: number;
-  usageType: 'single' | 'annual';
-  validFrom?: string;
-  validUntil?: string;
+  kind: 0 | 1 | 'Annual' | 'OneTime'; // API'den string olarak geliyor
+  discountType?: 0 | 1 | 'percentage' | 'fixed';
+  discountValue?: number;
+  usageLimit?: number | null;
+  usageCount?: number;
+  maxUses?: number;
+  usedCount?: number;
+  minimumAmount?: number | null;
+  maximumDiscount?: number | null;
+  validFrom: string;
+  validUntil: string;
   isActive: boolean;
+  assignedUserId?: string | null;
+  assignedEmail?: string | null;
+  usedAt?: string | null;
+  priceAmount?: number;
+  priceCurrency?: string;
+  stripePaymentIntentId?: string | null;
   createdAt: string;
 }
 
@@ -75,7 +83,7 @@ function CouponsContent() {
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     fetchCoupons();
@@ -94,62 +102,78 @@ function CouponsContent() {
     }
   };
 
+  const generateRandomCode = (prefix: string): string => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `${prefix}-${code}`;
+  };
+
+  const generateCoupon = async (kind: 0 | 1) => {
+    setCreating(true);
+    try {
+      const prefix = kind === 0 ? 'PASS' : 'GOLD';
+      const code = generateRandomCode(prefix);
+      const now = dayjs();
+      
+      const couponData: any = {
+        code,
+        description: kind === 0 ? 'Single-use pass coupon' : 'Annual gold membership coupon',
+        kind,
+        discountType: 0,
+        discountValue: kind === 0 ? 10 : 20,
+        minimumAmount: null,
+        maximumDiscount: null,
+        usageLimit: kind === 0 ? 1 : -1,
+        validFrom: now.toISOString(),
+        validUntil: now.add(1, 'year').toISOString(),
+      };
+
+      console.log('🔵 Creating coupon with data:', JSON.stringify(couponData, null, 2));
+      await adminAPI.createCoupon(couponData);
+      messageApi.success(`${kind === 0 ? 'One-time' : 'Annual'} coupon created: ${code}`);
+      fetchCoupons();
+    } catch (error: any) {
+      console.error('❌ Failed to generate coupon:', error);
+      messageApi.error(error.message || 'Failed to generate coupon');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const showModal = (coupon?: Coupon) => {
     if (coupon) {
       setEditingCoupon(coupon);
       const formValues: any = { ...coupon };
-      if (coupon.validFrom && coupon.validUntil) {
-        formValues.dateRange = [dayjs(coupon.validFrom), dayjs(coupon.validUntil)];
-      }
+      // API'den string olarak geliyor, 'Annual' veya 'OneTime'
+      formValues.kind = coupon.kind === 1 || coupon.kind === 'Annual' ? 'Annual' : 'OneTime';
+      formValues.discountType = coupon.discountType === 0 || coupon.discountType === 'percentage' ? 'percentage' : 'fixed';
+      formValues.minimumAmount = coupon.minimumAmount ?? (coupon as any).minBookingAmount ?? 0;
       form.setFieldsValue(formValues);
-    } else {
-      setEditingCoupon(null);
-      form.resetFields();
+      setIsModalOpen(true);
     }
-    setIsModalOpen(true);
   };
 
   const handleOk = async () => {
-    setSaving(true);
     try {
       const values = await form.validateFields();
       
-      const couponData: any = {
-        code: values.code,
-        description: values.description || '',
-        discountType: values.discountType === 'percentage' ? 0 : 1, // Convert to enum
-        discountValue: values.discountValue,
-        minimumAmount: values.minimumAmount || null,
-        maximumDiscount: values.maximumDiscount || null,
-        usageLimit: values.usageLimit || null,
-        validFrom: dayjs().toISOString(),
-        validUntil: dayjs().add(1, 'year').toISOString(),
-      };
-
-      // Tarih alanları girilmişse ekle
-      if (values.dateRange && values.dateRange.length === 2) {
-        const [validFrom, validUntil] = values.dateRange;
-        couponData.validFrom = validFrom.toISOString();
-        couponData.validUntil = validUntil.toISOString();
-      }
-
       if (editingCoupon) {
+        const createdAt = editingCoupon.validFrom ? dayjs(editingCoupon.validFrom) : dayjs();
+        const isAnnual = editingCoupon.kind === 1 || editingCoupon.kind === 'Annual';
         const updateData: any = {
           description: values.description || '',
           discountValue: values.discountValue,
-          minimumAmount: values.minimumAmount || null,
-          maximumDiscount: values.maximumDiscount || null,
-          usageLimit: values.usageLimit || null,
+          minimumAmount: values.minimumAmount ?? null,
+          maximumDiscount: values.maximumDiscount ?? null,
+          usageLimit: isAnnual ? -1 : 1,
           isActive: values.isActive,
+          validUntil: createdAt.add(1, 'year').toISOString(),
         };
-        if (values.dateRange && values.dateRange.length === 2) {
-          updateData.validUntil = values.dateRange[1].toISOString();
-        }
         await adminAPI.updateCoupon(editingCoupon.id, updateData);
         messageApi.success('Coupon updated successfully');
-      } else {
-        await adminAPI.createCoupon(couponData);
-        messageApi.success('Coupon created successfully');
       }
 
       setIsModalOpen(false);
@@ -158,8 +182,6 @@ function CouponsContent() {
     } catch (error: any) {
       console.error('Failed to save coupon:', error);
       messageApi.error(error.message || 'Failed to save coupon');
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -182,6 +204,19 @@ const handleDelete = async (id: string) => {
     } catch (error: any) {
       console.error('Failed to toggle coupon:', error);
       messageApi.error(error.message || 'Failed to toggle coupon status');
+    }
+  };
+
+  const extendCoupon = async (coupon: Coupon) => {
+    try {
+      const baseDate = coupon.validUntil ? dayjs(coupon.validUntil) : dayjs(coupon.validFrom);
+      const newValidUntil = baseDate.add(1, 'year').toISOString();
+      await adminAPI.updateCoupon(coupon.id, { validUntil: newValidUntil, isActive: true });
+      messageApi.success('Coupon extended by 1 year');
+      fetchCoupons();
+    } catch (error: any) {
+      console.error('Failed to extend coupon:', error);
+      messageApi.error(error.message || 'Failed to extend coupon');
     }
   };
 
@@ -210,13 +245,10 @@ const handleDelete = async (id: string) => {
       onClick: () => toggleActive(record),
     },
     {
-      type: 'divider',
-    },
-    {
-      key: 'delete',
-      icon: <DeleteOutlined />,
-      label: 'Delete',
-      danger: true,
+      key: 'extend',
+      icon: <ReloadOutlined />,
+      label: 'Extend 1 year',
+      onClick: () => extendCoupon(record),
     },
   ];
 
@@ -237,53 +269,37 @@ const handleDelete = async (id: string) => {
       ),
     },
     {
-      title: 'Discount',
-      key: 'discount',
-      render: (_: any, record: Coupon) => (
-        <Space>
-          {record.discountType === 'percentage' ? (
-            <Tag color="blue" icon={<PercentageOutlined />}>
-              %{record.discountValue}
-            </Tag>
-          ) : (
-            <Tag color="green" icon={<DollarOutlined />}>
-              €{record.discountValue}
-            </Tag>
-          )}
-        </Space>
-      ),
-    },
-    {
       title: 'Usage Type',
-      key: 'usageType',
-      render: (_: any, record: Coupon) => (
-        <Tag color={record.usageType === 'single' ? 'blue' : 'green'}>
-          {record.usageType === 'single' ? 'Single Use' : 'Annual'}
-        </Tag>
-      ),
+      key: 'kind',
+      render: (_: any, record: Coupon) => {
+        const isAnnual = record.kind === 1 || record.kind === 'Annual';
+        return (
+          <Tag color={isAnnual ? 'green' : 'blue'}>
+            {isAnnual ? 'Annual' : 'One Time'}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Usage',
       key: 'usage',
       render: (_: any, record: Coupon) => {
-        const percent = record.maxUses === -1 ? 0 : (record.usedCount / record.maxUses) * 100;
+        const used = record.usedCount ?? record.usageCount ?? 0;
+        // Annual kuponlar sınırsız, OneTime kuponlar 1 kullanım
+        const isAnnual = record.kind === 1 || record.kind === 'Annual';
+        const max = isAnnual ? -1 : 1;
+        const percent = max === -1 ? 0 : (used / max) * 100;
         return (
           <div>
             <Text>
-              {record.usedCount} / {record.maxUses === -1 ? '∞' : record.maxUses}
+              {used} / {max === -1 ? '∞' : max}
             </Text>
-            {record.maxUses !== -1 && percent >= 90 && (
+            {max !== -1 && max && percent >= 90 && (
               <Tag color="red" style={{ marginLeft: 8 }}>Running Out</Tag>
             )}
           </div>
         );
       },
-    },
-    {
-      title: 'Min. Amount',
-      dataIndex: 'minBookingAmount',
-      key: 'minBookingAmount',
-      render: (amount: number) => amount > 0 ? `€${amount}` : '-',
     },
     {
       title: 'Validity',
@@ -296,7 +312,7 @@ const handleDelete = async (id: string) => {
         const isNotStarted = dayjs(record.validFrom).isAfter(dayjs());
         return (
           <div>
-            <Text>{record.validFrom} - {record.validUntil}</Text>
+            <Text>{dayjs(record.validFrom).format('YYYY-MM-DD')} - {dayjs(record.validUntil).format('YYYY-MM-DD')}</Text>
             {isExpired && <Tag color="red" style={{ marginLeft: 8 }}>Expired</Tag>}
             {isNotStarted && <Tag color="orange" style={{ marginLeft: 8 }}>Not Started</Tag>}
           </div>
@@ -321,28 +337,33 @@ const handleDelete = async (id: string) => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 80,
+      width: 100,
       render: (_: any, record: Coupon) => (
-        <Dropdown
-          menu={{
-            items: getActionItems(record),
-            onClick: ({ key }) => {
-              if (key === 'delete') {
-                Modal.confirm({
-                  title: 'Delete Coupon',
-                  content: `Are you sure you want to delete coupon "${record.code}"?`,
-                  okText: 'Delete',
-                  okType: 'danger',
-                  cancelText: 'Cancel',
-                  onOk: () => handleDelete(record.id),
-                });
-              }
-            },
-          }}
-          trigger={['click']}
-        >
-          <Button type="text" icon={<MoreOutlined />} />
-        </Dropdown>
+        <Space size="small">
+          <Dropdown
+            menu={{
+              items: getActionItems(record),
+            }}
+            trigger={['click']}
+          >
+            <Button type="text" size="small" icon={<MoreOutlined />} />
+          </Dropdown>
+          <Popconfirm
+            title="Delete Coupon"
+            description={`Are you sure you want to delete coupon "${record.code}"?`}
+            okText="Delete"
+            okType="danger"
+            cancelText="Cancel"
+            onConfirm={() => handleDelete(record.id)}
+          >
+            <Button 
+              type="text" 
+              size="small"
+              danger 
+              icon={<DeleteOutlined />}
+            />
+          </Popconfirm>
+        </Space>
       ),
     },
   ];
@@ -353,8 +374,13 @@ const handleDelete = async (id: string) => {
 
   const activeCoupons = coupons.filter(c => c.isActive).length;
   const inactiveCoupons = coupons.filter(c => !c.isActive).length;
-  const totalUsage = coupons.reduce((sum, c) => sum + c.usedCount, 0);
-  const totalMaxUses = coupons.reduce((sum, c) => c.maxUses === -1 ? sum : sum + c.maxUses, 0);
+  const totalUsage = coupons.reduce((sum, c) => sum + (c.usedCount ?? c.usageCount ?? 0), 0);
+  const totalMaxUses = coupons.reduce((sum, c) => {
+    const isAnnual = c.kind === 1 || c.kind === 'Annual';
+    const limit = isAnnual ? null : 1;
+    if (!limit) return sum;
+    return sum + limit;
+  }, 0);
   const usageRate = totalMaxUses > 0 ? Math.round((totalUsage / totalMaxUses) * 100) : 0;
   const expiredCoupons = coupons.filter(c => c.validUntil && dayjs(c.validUntil).isBefore(dayjs())).length;
 
@@ -368,24 +394,38 @@ const handleDelete = async (id: string) => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, gap: 16 }}>
+        <Title level={2} style={{ margin: 0, minWidth: '200px' }}>
           <GiftOutlined style={{ marginRight: 12 }} />
           Coupons
         </Title>
-        <Space>
+        <Space wrap>
           <Button icon={<ReloadOutlined />} onClick={fetchCoupons}>
             Refresh
           </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => showModal()}>
-            New Coupon
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />} 
+            onClick={() => generateCoupon(0)}
+            loading={creating}
+          >
+            Generate One-Time Pass
+          </Button>
+          <Button 
+            type="primary" 
+            style={{ background: '#fbbf24', borderColor: '#fbbf24' }}
+            icon={<GiftOutlined />} 
+            onClick={() => generateCoupon(1)}
+            loading={creating}
+          >
+            Generate Annual Gold
           </Button>
         </Space>
       </div>
 
       {/* Stats */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={6}>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic 
               title="Total Coupons" 
@@ -394,7 +434,7 @@ const handleDelete = async (id: string) => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic 
               title="Active / Inactive" 
@@ -404,7 +444,7 @@ const handleDelete = async (id: string) => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic 
               title="Total Usage" 
@@ -414,7 +454,7 @@ const handleDelete = async (id: string) => {
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} lg={6}>
           <Card>
             <Statistic 
               title={expiredCoupons > 0 ? "Expired Coupons" : "Usage Rate"}
@@ -442,26 +482,26 @@ const handleDelete = async (id: string) => {
           columns={columns}
           dataSource={filteredCoupons || []}
           rowKey={(record) => record.id || `coupon-${Math.random()}`}
-          scroll={{ x: 'max-content' }}
+          scroll={{ x: 800 }}
           pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} coupons`,
+            responsive: true,
           }}
         />
       </Card>
 
       <Modal
-        title={editingCoupon ? 'Edit Coupon' : 'New Coupon'}
+        title="Edit Coupon"
         open={isModalOpen}
         onOk={handleOk}
         onCancel={() => {
           setIsModalOpen(false);
           form.resetFields();
         }}
-        okText={editingCoupon ? 'Update' : 'Create'}
+        okText="Update"
         cancelText="Cancel"
-        confirmLoading={saving}
         width={550}
       >
         <Form
@@ -469,26 +509,10 @@ const handleDelete = async (id: string) => {
           layout="vertical"
           initialValues={{
             discountType: 'percentage',
-            usageLimit: 100,
             minimumAmount: 0,
             isActive: true,
           }}
         >
-          <Form.Item
-            name="code"
-            label="Coupon Code"
-            rules={[
-              { required: true, message: 'Coupon code is required' },
-              { pattern: /^[A-Z0-9]+$/, message: 'Use only uppercase letters and numbers' },
-            ]}
-          >
-            <Input 
-              placeholder="WINTER25" 
-              style={{ textTransform: 'uppercase' }}
-              onChange={(e) => form.setFieldValue('code', e.target.value.toUpperCase())}
-            />
-          </Form.Item>
-
           <Form.Item
             name="description"
             label="Description"
@@ -496,8 +520,8 @@ const handleDelete = async (id: string) => {
             <Input.TextArea rows={2} placeholder="Coupon description (optional)" />
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="discountType"
                 label="Discount Type"
@@ -509,7 +533,7 @@ const handleDelete = async (id: string) => {
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="discountValue"
                 label="Discount Value"
@@ -520,17 +544,8 @@ const handleDelete = async (id: string) => {
             </Col>
           </Row>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="usageLimit"
-                label="Maximum Usage"
-                tooltip="Leave empty for unlimited"
-              >
-                <InputNumber min={1} style={{ width: '100%' }} placeholder="Unlimited" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
               <Form.Item
                 name="minimumAmount"
                 label="Minimum Order Amount (€)"
@@ -546,14 +561,6 @@ const handleDelete = async (id: string) => {
             tooltip="For percentage discounts, cap the discount amount"
           >
             <InputNumber min={0} style={{ width: '100%' }} placeholder="No limit" />
-          </Form.Item>
-
-          <Form.Item
-            name="dateRange"
-            label="Validity Period (Optional)"
-            tooltip="Leave empty for no expiry"
-          >
-            <DatePicker.RangePicker style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item

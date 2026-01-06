@@ -135,6 +135,20 @@ export default function HotelDetailPage() {
         const checkOut = searchCheckOut;
         const adults = searchAdults;
         const children = searchChildren;
+
+        const hotelIdNumber = Number(hotelId);
+        if (!Number.isFinite(hotelIdNumber)) {
+          console.warn('⚠️ Invalid hotel id, skipping request', { hotelId });
+          setHotelData(null);
+          return;
+        }
+
+        // Skip invalid date ranges
+        if (!checkIn || !checkOut || new Date(checkOut) < new Date(checkIn)) {
+          console.warn('⚠️ Invalid date range, skipping request', { checkIn, checkOut });
+          setHotelData(null);
+          return;
+        }
         
         console.log('🏨 Loading hotel detail:', {
           hotelId,
@@ -144,16 +158,18 @@ export default function HotelDetailPage() {
           children,
         });
 
+        const params = {
+          checkIn,
+          checkOut,
+          currency: 'EUR',
+          ...(adults > 0 && { adults }),
+          ...(children > 0 && { children }),
+        };
+
         // Fetch hotel details from LIVE API
         const response = await sunhotelsAPI.getHotelDetails(
-          parseInt(hotelId),
-          {
-            checkIn,
-            checkOut,
-            adults,
-            children,
-            currency: 'EUR',
-          }
+          hotelIdNumber,
+          params
         );
 
         // Kar marjı ve KDV hesaplamasını rooms üzerinde uygula

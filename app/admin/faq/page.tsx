@@ -384,13 +384,14 @@ function FAQContent() {
               columns={columns}
               dataSource={filteredFaqs || []}
               rowKey={(record) => record.id || `faq-${Math.random()}`}
-              scroll={{ x: 'max-content' }}
+              scroll={{ x: 800 }}
               pagination={{
                 current: currentPage,
                 pageSize: pageSize,
                 total: totalCount,
                 showSizeChanger: true,
                 showTotal: (total) => `Total ${total} FAQs`,
+                responsive: true,
                 onChange: (page, size) => {
                   setCurrentPage(page);
                   if (size !== pageSize) {

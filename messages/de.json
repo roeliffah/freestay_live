@@ -10,7 +10,166 @@
     "bookAFlight": "Flug buchen",
     "howItWorks": "Wie es funktioniert",
     "lastminuteDeals": "Last-Minute-Angebote",
-    "referralProgram": "Empfehlungsprogramm"
+    "referralProgram": "Empfehlungsprogramm",
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "profile": "Mein Profil"
+  },
+  "auth": {
+    "login": {
+      "title": "Willkommen zurück",
+      "subtitle": "Melden Sie sich bei Ihrem FreeStays-Konto an",
+      "fields": {
+        "email": "E-Mail-Adresse",
+        "password": "Passwort",
+        "remember": "Angemeldet bleiben",
+        "forgot": "Passwort vergessen?"
+      },
+      "validation": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "passwordRequired": "Passwort ist erforderlich"
+      },
+      "submit": "Anmelden",
+      "signingIn": "Wird angemeldet...",
+      "success": "Erfolgreich angemeldet! Umleitung läuft...",
+      "error": "Anmeldung fehlgeschlagen",
+      "noAccount": "Sie haben kein Konto?",
+      "registerLink": "Registrieren",
+      "features": {
+        "title": "Was wir anbieten",
+        "subtitle": "Unschlagbare Hotelangebote erleben",
+        "description": "Erhalten Sie die besten Preise für Luxus- und Budget-Hotels weltweit",
+        "hotels": "Partner-Hotels",
+        "savings": "Durchschnittliche Ersparnisse",
+        "support": "Unterstützung",
+        "items": [
+          {
+            "title": "Kostenlose Hotelübernachtungen",
+            "description": "Erhalten Sie kostenlose Nächte mit Halbpension oder All-inclusive-Optionen"
+          },
+          {
+            "title": "Bis zu 50% Rabatt",
+            "description": "Sparen Sie bei regulären Zimmerpreisen im Vergleich zu Buchungsseiten"
+          },
+          {
+            "title": "450K+ Partner-Hotels",
+            "description": "Greifen Sie auf Hotels weltweit zu unschlagbaren Preisen zu"
+          },
+          {
+            "title": "Sofortige digitale Lieferung",
+            "description": "Erhalten Sie Ihre Hotelgutscheine sofort per E-Mail"
+          },
+          {
+            "title": "12 Monate gültig",
+            "description": "Flexible Buchung ohne Verpflichtung oder Ablaufprobleme"
+          },
+          {
+            "title": "Exklusive Upgrades",
+            "description": "Genießen Sie Zimmerupgrades und spezielle Angebote als Mitglied"
+          }
+        ]
+      }
+    },
+    "register": {
+      "title": "Konto erstellen",
+      "subtitle": "Treten Sie FreeStays bei, um exklusive Reiseangebote zu erhalten",
+      "fields": {
+        "name": "Vollständiger Name",
+        "namePlaceholder": "Max Mustermann",
+        "email": "E-Mail-Adresse",
+        "phone": "Telefonnummer",
+        "optional": "(Optional)",
+        "password": "Passwort",
+        "confirmPassword": "Passwort bestätigen",
+        "referralCode": "Referral-Code",
+        "termsPrefix": "Ich akzeptiere die",
+        "termsLink": "Nutzungsbedingungen",
+        "termsAndPrivacy": "und",
+        "privacyLink": "Datenschutzrichtlinie",
+        "or": "oder"
+      },
+      "validation": {
+        "nameRequired": "Name ist erforderlich",
+        "nameMinLength": "Name muss mindestens 2 Zeichen lang sein",
+        "emailRequired": "E-Mail ist erforderlich",
+        "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein",
+        "passwordRequired": "Passwort ist erforderlich",
+        "passwordTooShort": "Passwort muss mindestens 6 Zeichen lang sein",
+        "passwordMismatch": "Passwörter stimmen nicht überein",
+        "confirmPasswordRequired": "Bitte bestätigen Sie Ihr Passwort",
+        "termsRequired": "Sie müssen die Nutzungsbedingungen und die Datenschutzrichtlinie akzeptieren"
+      },
+      "submit": "Konto erstellen",
+      "registering": "Konto wird erstellt...",
+      "success": "Registrierung erfolgreich! Umleitung läuft...",
+      "error": "Registrierung fehlgeschlagen",
+      "haveAccount": "Haben Sie bereits ein Konto?",
+      "loginLink": "Anmelden",
+      "benefits": {
+        "title": "Was Sie erhalten",
+        "subtitle": "Treten Sie Tausenden glücklicher Reisender bei",
+        "description": "Schalten Sie exklusive Vorteile frei und sparen Sie beim nächsten Urlaub",
+        "hotels": "Partner-Hotels",
+        "savings": "Durchschnittliche Ersparnisse",
+        "support": "Unterstützung",
+        "items": [
+          {
+            "title": "Kostenlose Hotelübernachtungen",
+            "description": "Erhalten Sie kostenlose Nächte mit Halbpension oder All-inclusive-Optionen"
+          },
+          {
+            "title": "Bis zu 50% Rabatt",
+            "description": "Sparen Sie bei regulären Zimmerpreisen im Vergleich zu Buchungsseiten"
+          },
+          {
+            "title": "450K+ Partner-Hotels",
+            "description": "Greifen Sie auf die besten Hotels weltweit zu"
+          },
+          {
+            "title": "Sofortige digitale Lieferung",
+            "description": "Erhalten Sie Ihre Hotelgutscheine sofort per E-Mail"
+          },
+          {
+            "title": "12 Monate gültig",
+            "description": "Flexible Buchung ohne Verpflichtung oder Ablaufprobleme"
+          },
+          {
+            "title": "Exklusive Zimmerupgrades",
+            "description": "Genießen Sie Zimmerupgrades und spezielle Angebote als Mitglied"
+          }
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Passwort vergessen?",
+      "subtitle": "Geben Sie Ihre E-Mail ein und wir senden Ihnen einen Link zum Zurücksetzen des Passworts",
+      "emailSent": "Link zum Zurücksetzen des Passworts wurde an Ihre E-Mail gesendet!",
+      "error": "Senden des Reset-Links fehlgeschlagen",
+      "checkEmail": "Überprüfen Sie Ihre E-Mail",
+      "checkEmailDesc": "Wir haben Ihnen einen Link zum Zurücksetzen des Passworts gesendet. Bitte überprüfen Sie Ihre E-Mail.",
+      "backToLogin": "Zurück zur Anmeldung",
+      "fields": {
+        "email": "E-Mail-Adresse"
+      },
+      "validation": {
+        "emailRequired": "E-Mail ist erforderlich",
+        "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein"
+      },
+      "sending": "Wird gesendet...",
+      "submit": "Reset-Link senden",
+      "rememberPassword": "Erinnern Sie sich an Ihr Passwort?",
+      "loginLink": "Anmelden",
+      "infoTitle": "Passwort-Reset-Prozess",
+      "step1Title": "Geben Sie Ihre E-Mail ein",
+      "step1Desc": "Geben Sie die mit Ihrem Konto verknüpfte E-Mail-Adresse an",
+      "step2Title": "E-Mail erhalten",
+      "step2Desc": "Überprüfen Sie Ihren Posteingang auf einen Link zum Zurücksetzen des Passworts (gültig für 24 Stunden)",
+      "step3Title": "Neues Passwort erstellen",
+      "step3Desc": "Klicken Sie auf den Link und setzen Sie Ihr neues Passwort sicher fest",
+      "tip": "E-Mail nicht erhalten? Überprüfen Sie Ihren Spam-Ordner oder versuchen Sie es erneut mit der richtigen E-Mail-Adresse."
+    }
   },
   "home": {
     "hero": {
@@ -275,7 +434,8 @@
       "countries": "Länder",
       "hotels": "Hotels",
       "guests": "Zufriedene Gäste",
-      "satisfaction": "Zufriedenheit"
+      "satisfaction": "Zufriedenheit",
+      "total": "Gesamt"
     },
     "hotels": {
       "title": "Die besten Hotels der Türkei",
@@ -461,7 +621,13 @@
     "completeYourReservation": "Geben Sie Ihre Daten ein, um Ihre Reservierung abzuschließen",
     "secureReservationBadge": "Sichere Reservierung",
     "sslEncrypted": "SSL-verschlüsselt",
+    "steps": {
+      "selectRoom": "Zimmer wählen",
+      "guestDetails": "Gästeinformationen",
+      "payNow": "Jetzt bezahlen"
+    },
     "reservationSummary": "Reservierungszusammenfassung",
+    "totalLabel": "Gesamt",
     "hotel": "Hotel",
     "roomType": "Zimmertyp",
     "boardType": "Verpflegung",
@@ -521,6 +687,26 @@
       "customerService": "Kundenservice",
       "flexiblePayment": "Flexible Zahlung",
       "installmentOptions": "Ratenoptionen"
+    }
+  },
+  "bookings": {
+    "title": "Meine Buchungen",
+    "subtitle": "Verwalten Sie Ihre Reservierungen",
+    "noBookings": "Noch keine Buchungen",
+    "searchHotels": "Hotels durchsuchen",
+    "coupon": {
+      "title": "Mit Gutschein sparen",
+      "oneTime": "Einmaliger Rabatt",
+      "oneTimeDesc": "15% Rabatt auf Ihre aktuelle Buchung",
+      "annual": "Jahrespass",
+      "annualDesc": "15% Rabatt auf alle Buchungen für 1 Jahr",
+      "skip": "Jetzt überspringen",
+      "skipDesc": "Ohne Gutschein fortfahren",
+      "save": "Speichern",
+      "purchase": "Gutschein kaufen",
+      "loginRequired": "Anmeldung erforderlich zum Kaufen",
+      "processing": "Wird verarbeitet...",
+      "info": "💡 Kaufen Sie einen Gutschein, um 15% Rabatt auf Ihre Buchungsgebühren zu erhalten. Sie erhalten einen eindeutigen Code zur jederzeit Verwendung."
     }
   },
   "oldBooking": {
@@ -754,5 +940,29 @@
     "perNight": "pro Nacht",
     "viewDetails": "Details ansehen",
     "viewMore": "Weitere Hotels ansehen"
+  },
+  "excursions": {
+    "title": "Touren & Aktivitäten",
+    "subtitle": "Entdecken Sie erstaunliche Touren und Aktivitäten an Ihrem Reiseziel",
+    "notActive": "Touren & Aktivitäten demnächst verfügbar",
+    "notActiveDesc": "Wir arbeiten daran, Touren und Aktivitäten in unsere Plattform zu integrieren. Bitte schauen Sie bald wieder vorbei!",
+    "noWidget": "Kein Widget verfügbar",
+    "feature1": "Strandtouren",
+    "feature1Desc": "Erkunden Sie wunderschöne Strände und Küstenaktivitäten",
+    "feature2": "Bergabenteuer",
+    "feature2Desc": "Erleben Sie spannende Bergaktivitäten und Wandern",
+    "feature3": "Kulturtouren",
+    "feature3Desc": "Entdecken Sie lokale Kultur und historische Stätten",
+    "feature4": "Food-Touren",
+    "feature4Desc": "Probieren Sie lokale Küche und kulinarische Erlebnisse",
+    "infoTitle": "Warum bei uns buchen?",
+    "benefit1": "Beste Preise garantiert",
+    "benefit2": "Erfahrene lokale Guides",
+    "benefit3": "Sofortige Bestätigung",
+    "benefit4": "24/7 Kundensupport",
+    "ctaTitle": "Beginnen Sie zu erkunden",
+    "ctaDesc": "Durchsuchen Sie unsere Sammlung erstaunlicher Touren und buchen Sie Ihr nächstes Abenteuer noch heute.",
+    "browseTours": "Touren durchsuchen",
+    "backHome": "Zurück zur Startseite"
   }
 }

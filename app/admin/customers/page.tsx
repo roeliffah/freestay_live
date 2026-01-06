@@ -468,13 +468,13 @@ function CustomersContent() {
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, width: '100%' }}>
           <Input
             placeholder="Search by name, email or phone..."
             prefix={<SearchOutlined />}
             value={searchText}
             onChange={(e) => handleSearch(e.target.value)}
-            style={{ width: 350 }}
+            style={{ width: '100%', maxWidth: 350 }}
             allowClear
           />
         </div>
@@ -492,8 +492,9 @@ function CustomersContent() {
             showSizeChanger: true,
             showTotal: (total) => `Total ${total} customers`,
             pageSizeOptions: ['10', '20', '50', '100'],
+            responsive: true,
           }}
-          scroll={{ x: 1200 }}
+          scroll={{ x: 800 }}
         />
       </Card>
 
@@ -518,8 +519,8 @@ function CustomersContent() {
       >
         {selectedCustomer && (
           <>
-            <Row gutter={16} style={{ marginBottom: 24 }}>
-              <Col span={12}>
+            <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+              <Col xs={24} sm={12}>
                 <Card size="small">
                   <Statistic
                     title="Total Bookings"
@@ -528,7 +529,7 @@ function CustomersContent() {
                   />
                 </Card>
               </Col>
-              <Col span={12}>
+              <Col xs={24} sm={12}>
                 <Card size="small">
                   <Statistic
                     title="Total Spent"

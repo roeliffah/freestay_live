@@ -144,7 +144,7 @@ interface UseCreateBookingResult {
   isLoading: boolean;
   error: string | null;
   createBooking: (data: BookingRequest) => Promise<Booking | null>;
-  validateCoupon: (code: string, amount: number, type: 'hotel' | 'flight' | 'car') => Promise<{
+  validateCoupon: (code: string, amount: number) => Promise<{
     valid: boolean;
     discountAmount?: number;
     finalAmount?: number;
@@ -172,9 +172,9 @@ export const useCreateBooking = (): UseCreateBookingResult => {
   }, []);
 
   const validateCoupon = useCallback(
-    async (code: string, amount: number, type: 'hotel' | 'flight' | 'car') => {
+    async (code: string, amount: number) => {
       try {
-        const response = await api.coupons.validate(code, amount, type);
+        const response = await api.coupons.validate(code, amount);
         const data = response.data;
         
         if (data.valid && data.coupon) {
