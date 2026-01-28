@@ -29,6 +29,8 @@ export interface LastMinuteHotel {
   rooms: LastMinuteRoom[];
   lastMinuteCheckIn: string;
   lastMinuteCheckOut: string;
+  destinationId?: string | number;
+  resortId?: number;
 }
 
 export interface LastMinuteResponse {

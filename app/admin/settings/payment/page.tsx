@@ -97,18 +97,31 @@ function PaymentSettingsContent() {
     try {
       const data = await adminAPI.getPaymentSettings() as any;
       
-      // Yeni API yapısını parse et
-      if (data?.provider === 'stripe') {
+      console.log('📥 Received payment settings:', data);
+      
+      // Backend flat field names döndürüyor - TestModePublicKey, TestModeSecretKey etc.
+      // Ayrıca nested format da destekleniyor (geriye uyumluluk)
+      if (data?.provider === 'stripe' || data?.Provider === 'stripe') {
         const settings = {
-          isEnabled: data.isActive,
-          testMode: !data.isLive,
-          publicKeyTest: data.testMode?.publicKey || '',
-          secretKeyTest: data.testMode?.secretKey || '',
-          publicKeyLive: data.liveMode?.publicKey || '',
-          secretKeyLive: data.liveMode?.secretKey || '',
-          webhookSecret: data.webhookSecret || '',
+          isEnabled: data.isActive ?? data.IsActive ?? false,
+          testMode: !(data.isLive ?? data.IsLive ?? true),
+          // Flat format (yeni) veya nested format (eski) desteği
+          publicKeyTest: data.TestModePublicKey || data.testMode?.publicKey || data.testModePublicKey || '',
+          secretKeyTest: data.TestModeSecretKey || data.testMode?.secretKey || data.testModeSecretKey || '',
+          publicKeyLive: data.LiveModePublicKey || data.liveMode?.publicKey || data.liveModePublicKey || '',
+          secretKeyLive: data.LiveModeSecretKey || data.liveMode?.secretKey || data.liveModeSecretKey || '',
+          webhookSecret: data.WebhookSecret || data.webhookSecret || '',
           webhookUrl: `${process.env.NEXT_PUBLIC_API_URL}/webhooks/stripe`,
         };
+        
+        console.log('🔧 Mapped settings:', {
+          publicKeyTest: settings.publicKeyTest?.substring(0, 15) + '...',
+          secretKeyTest: settings.secretKeyTest?.substring(0, 15) + '...',
+          publicKeyLive: settings.publicKeyLive?.substring(0, 15) + '...',
+          secretKeyLive: settings.secretKeyLive?.substring(0, 15) + '...',
+          isEnabled: settings.isEnabled,
+          testMode: settings.testMode
+        });
         
         setStripeSettings(settings);
         stripeForm.setFieldsValue(settings);
@@ -128,21 +141,29 @@ function PaymentSettingsContent() {
   const handleStripeSave = async (values: any) => {
     setSaving(true);
     try {
-      // Backend API'nin beklediği yeni formata dönüştür
+      // Backend API'nin beklediği flat formata dönüştür
+      // IMPORTANT: Backend flat field names bekliyor - TestModePublicKey, TestModeSecretKey etc.
       const paymentData = {
-        provider: 'stripe',
-        testMode: {
-          publicKey: values.publicKeyTest || '',
-          secretKey: values.secretKeyTest || ''
-        },
-        liveMode: {
-          publicKey: values.publicKeyLive || '',
-          secretKey: values.secretKeyLive || ''
-        },
-        webhookSecret: values.webhookSecret || '',
-        isLive: !values.testMode,
-        isActive: values.isEnabled
+        Provider: 'stripe',
+        // Test mode keys - publicKeyTest input -> TestModePublicKey field
+        TestModePublicKey: values.publicKeyTest || '',
+        TestModeSecretKey: values.secretKeyTest || '',
+        // Live mode keys - publicKeyLive input -> LiveModePublicKey field  
+        LiveModePublicKey: values.publicKeyLive || '',
+        LiveModeSecretKey: values.secretKeyLive || '',
+        WebhookSecret: values.webhookSecret || '',
+        IsLive: !values.testMode,
+        IsActive: values.isEnabled
       };
+      
+      console.log('📤 Sending payment settings:', {
+        TestModePublicKey: paymentData.TestModePublicKey?.substring(0, 15) + '...',
+        TestModeSecretKey: paymentData.TestModeSecretKey?.substring(0, 15) + '...',
+        LiveModePublicKey: paymentData.LiveModePublicKey?.substring(0, 15) + '...',
+        LiveModeSecretKey: paymentData.LiveModeSecretKey?.substring(0, 15) + '...',
+        IsLive: paymentData.IsLive,
+        IsActive: paymentData.IsActive
+      });
       
       await adminAPI.updatePaymentSettings(paymentData);
       setStripeSettings({ ...stripeSettings, ...values });

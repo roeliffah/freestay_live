@@ -114,10 +114,13 @@ function SearchPage() {
   const t = useTranslations('search');
 
   // Map locale to SunHotels language code
-  const selectedLang = validateAndMapLocale(locale, 'en');
+  // API dili sabit kalsın; locale değişse bile backend'e hep aynı dil ile gidiyoruz
+  const selectedLang = 'en';
 
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState<string>(''); // Loading durumu mesajı
+  const [retryCount, setRetryCount] = useState(0); // Retry sayacı
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [profitMargin, setProfitMargin] = useState(0); // Kar marjı %
@@ -183,7 +186,7 @@ function SearchPage() {
   useEffect(() => {
     setCurrentPage(1); // Reset to page 1 when search params change
     loadHotels(1);
-  }, [searchParams, locale]);
+  }, [searchParams]);
 
   // Debounced filter effect - wait before making API call
   useEffect(() => {
@@ -234,7 +237,7 @@ function SearchPage() {
     }
     
     loadFilterOptions();
-  }, [locale, selectedLang]);
+  }, []);
   
   const loadFilterOptions = async () => {
     try {
@@ -344,8 +347,9 @@ function SearchPage() {
 
       // Get all search parameters
       const destination = searchParams.get('destination') || '';
-      const destinationId = searchParams.get('destinationId');
+      let destinationId = searchParams.get('destinationId');
       const hotelId = searchParams.get('hotelId');
+      let resortId = searchParams.get('resortId');
       const countryCode = searchParams.get('country');
       const themeId = searchParams.get('themeId');
       // Tarihleri önce filters'dan al, yoksa query string'den al
@@ -354,10 +358,50 @@ function SearchPage() {
       const adults = parseInt(searchParams.get('adults') || '2');
       const children = parseInt(searchParams.get('children') || '0');
 
+      const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+      // If hotelId is provided but no destinationId/resortId, fetch hotel info first
+      // This is needed because the search API requires at least one of these parameters
+      if (hotelId && !destinationId && !resortId) {
+        console.log('🏨 Fetching hotel info to get destinationId/resortId for hotelId:', hotelId);
+        try {
+          const hotelInfoResponse = await fetch(`${API_URL}/sunhotels/hotels/${hotelId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept-Language': locale || 'en',
+            },
+          });
+          
+          if (hotelInfoResponse.ok) {
+            const hotelInfo = await hotelInfoResponse.json();
+            console.log('✅ Hotel info fetched:', { 
+              hotelId: hotelInfo.hotelId || hotelInfo.id,
+              destinationId: hotelInfo.destinationId,
+              resortId: hotelInfo.resortId,
+              name: hotelInfo.name
+            });
+            
+            // Use hotel's destinationId and resortId for search
+            if (hotelInfo.destinationId) {
+              destinationId = String(hotelInfo.destinationId);
+            }
+            if (hotelInfo.resortId) {
+              resortId = String(hotelInfo.resortId);
+            }
+          } else {
+            console.warn('⚠️ Failed to fetch hotel info:', hotelInfoResponse.status);
+          }
+        } catch (hotelFetchError) {
+          console.warn('⚠️ Error fetching hotel info:', hotelFetchError);
+        }
+      }
+
       console.log('🔍 Unified Search Parameters:', {
         destination,
         destinationId,
         hotelId,
+        resortId,
         countryCode,
         themeId,
         checkIn,
@@ -371,209 +415,177 @@ function SearchPage() {
         filtersCheckOut: filters.checkOut
       });
 
-      // Build request body for unified endpoint
-      const requestBody: any = {
-        language: selectedLang, // Use selectedLang which falls back to 'en' if locale not supported
-        adults,
-        children,
-        numberOfRooms: 1, // Varsayılan olarak 1 oda
-        currency: 'EUR', // Varsayılan para birimi
-        page: validPage - 1, // Backend uses 0-based indexing (now guaranteed >= 0)
-        pageSize: 20,
-      };
-
-      // Add dates if provided (dynamic search)
-      if (checkIn && checkOut) {
-        requestBody.checkindate = checkIn;
-        requestBody.checkoutdate = checkOut;
-      }
-
-      // Add filters
-      // Belirli bir otel aranıyorsa (date picker'dan geldiyse)
-      if (hotelId) {
-        requestBody.hotelIds = [parseInt(hotelId)];
-      }
-      if (destinationId) {
-        requestBody.destinationIds = [destinationId];
-      }
-      if (countryCode && (!filters.countries || filters.countries.length === 0)) {
-        requestBody.countryCodes = [countryCode];
-      }
-      if (themeId && (!filters.themes || filters.themes.length === 0)) {
-        // themeId query param'ından geliyorsa sayı olarak gönder
-        const themeIdNum = parseInt(themeId);
-        if (!isNaN(themeIdNum)) {
-          requestBody.themeIds = [themeIdNum];
-        }
-      }
-      if (destination && !destinationId) {
-        requestBody.searchTerm = destination;
-      }
-      if (filters.starRating && filters.starRating.length > 0) {
-        requestBody.minStars = Math.min(...filters.starRating);
-        requestBody.maxStars = Math.max(...filters.starRating);
-      }
-      // Yeni filtreler - sadece dolu olanları gönder
-      if (filters.countries && filters.countries.length > 0) {
-        requestBody.countryCodes = filters.countries;
-      }
-      if (filters.cities && filters.cities.length > 0) {
-        requestBody.cityNames = filters.cities;
-      }
-      if (filters.hotelName && filters.hotelName.trim()) {
-        requestBody.searchTerm = filters.hotelName.trim();
-      }
-      
-      // Non-static search: Send destination IDs when dates are selected
-      const isNonStaticSearch = checkIn && checkOut;
-      if (isNonStaticSearch && filters.destinations && filters.destinations.length > 0) {
-        // Convert destination UUIDs to sunHotelsIds (numbers)
-        const destinationNumbers = filters.destinations
-          .map(destId => {
-            const dest = destinations.find(d => d.id === destId);
-            return dest?.sunHotelsId;
-          })
-          .filter(id => id !== undefined && id !== null) as number[];
-        if (destinationNumbers.length > 0) {
-          requestBody.destinationIds = destinationNumbers;
-          console.log('📍 Non-static search with destinations:', destinationNumbers);
-        }
-      }
-      if (filters.themes && filters.themes.length > 0) {
-        // Theme ID'lerini sunHotelsId (sayı) olarak gönder
-        const themeNumbers = filters.themes
-          .map(themeId => {
-            const theme = themes.find(t => t.id === themeId);
-            return theme?.sunHotelsId;
-          })
-          .filter(id => id !== undefined && id !== null) as number[];
-        if (themeNumbers.length > 0) {
-          requestBody.themeIds = themeNumbers;
-        }
-      }
-      if (filters.features && filters.features.length > 0) {
-        // Feature ID'lerini sunHotelsId (sayı) olarak gönder
-        const featureNumbers = filters.features
-          .map(featureId => {
-            const feature = features.find(f => f.id === featureId);
-            return feature?.sunHotelsId;
-          })
-          .filter(id => id !== undefined && id !== null) as number[];
-        if (featureNumbers.length > 0) {
-          requestBody.featureIds = featureNumbers;
-        }
-      }
-      if (filters.resorts && filters.resorts.length > 0) {
-        // Resort ID'lerini sunHotelsId (sayı) olarak gönder
-        const resortNumbers = filters.resorts
-          .map(resortId => {
-            const resort = resorts.find(r => r.id === resortId);
-            return resort?.sunHotelsId;
-          })
-          .filter(id => id !== undefined && id !== null) as number[];
-        if (resortNumbers.length > 0) {
-          requestBody.resortIds = resortNumbers;
-        }
-      }
-      if (filters.roomTypes && filters.roomTypes.length > 0) {
-        // Room type ID'lerini sunHotelsId (sayı) olarak gönder
-        const roomTypeNumbers = filters.roomTypes
-          .map(roomTypeId => {
-            const roomType = roomTypes.find(rt => rt.id === roomTypeId);
-            return roomType?.sunHotelsId;
-          })
-          .filter(id => id !== undefined && id !== null) as number[];
-        if (roomTypeNumbers.length > 0) {
-          requestBody.roomTypeIds = roomTypeNumbers;
-        }
-      }
-
-      console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
-      console.log('🔐 Using language:', selectedLang, '(original locale:', locale, ')');
-      
       // Measure API call time
       const apiStartTime = performance.now();
       console.log('🚀 API request starting at:', new Date().toLocaleTimeString());
       
-      // Call unified search endpoint with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      // Call backend search endpoint with retry mechanism
+      const SEARCH_TIMEOUT = 45000; // 45 saniye timeout (SunHotels V3 yavaş olabilir)
+      const MAX_RETRIES = 2;
+      
+      // Retry mekanizmalı fetch fonksiyonu
+      const fetchWithRetry = async (url: string, options: RequestInit, retries: number = MAX_RETRIES): Promise<Response> => {
+        for (let attempt = 0; attempt <= retries; attempt++) {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), SEARCH_TIMEOUT);
+          
+          try {
+            setLoadingMessage(attempt > 0 
+              ? `Yeniden deneniyor... (${attempt}/${retries})` 
+              : 'Oteller aranıyor...');
+            setRetryCount(attempt);
+            
+            const response = await fetch(url, { ...options, signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (response.ok || attempt === retries) {
+              return response;
+            }
+            
+            // Başarısız ama retry hakkı var
+            console.warn(`⚠️ Attempt ${attempt + 1} failed, retrying...`);
+            await new Promise(r => setTimeout(r, 1000 * (attempt + 1))); // Exponential backoff
+          } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (attempt === retries) throw error;
+            
+            if (error.name === 'AbortError') {
+              console.warn(`⏱️ Attempt ${attempt + 1} timed out, retrying...`);
+              setLoadingMessage(`Zaman aşımı, yeniden deneniyor... (${attempt + 1}/${retries})`);
+            }
+            await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+          }
+        }
+        throw new Error('Max retries exceeded');
+      };
       
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/sunhotels/search/unified`,
+        // Build query string for GET request (Swagger: /api/v1/public/hotels/search)
+        // Prepare themeIds and featureIds as comma-separated strings (e.g., "7,12")
+        const themeIdsFromQuery = searchParams.get('themeIds') || searchParams.get('themeId') || '';
+        const featureIdsFromQuery = searchParams.get('featureIds') || searchParams.get('featureId') || '';
+
+        // Map selected filter UUIDs to SunHotels numeric IDs when available
+        const selectedThemeIds = (filters.themes || [])
+          .map(uuid => themes.find(t => t.id === uuid)?.sunHotelsId)
+          .filter((id): id is number => typeof id === 'number');
+        const selectedFeatureIds = (filters.features || [])
+          .map(uuid => features.find(f => f.id === uuid)?.sunHotelsId)
+          .filter((id): id is number => typeof id === 'number');
+
+        const themeIdsCSV = selectedThemeIds.length > 0
+          ? selectedThemeIds.join(',')
+          : (themeIdsFromQuery || '');
+        const featureIdsCSV = selectedFeatureIds.length > 0
+          ? selectedFeatureIds.join(',')
+          : (featureIdsFromQuery || '');
+
+        // resortId'yi URL'den veya hotel info'dan al
+        const finalResortId = resortId || searchParams.get('resortId');
+        
+        const queryParams = new URLSearchParams({
+          ...(destination && { destination }),
+          ...(destinationId && { destinationId }),
+          ...(finalResortId && { resortIds: finalResortId }),
+          ...(checkIn && { checkIn }),
+          ...(checkOut && { checkOut }),
+          adults: adults.toString(),
+          children: children.toString(),
+          ...(themeIdsCSV && { themeIds: themeIdsCSV }),
+          ...(featureIdsCSV && { featureIds: featureIdsCSV }),
+        });
+
+        const response = await fetchWithRetry(
+          `${API_URL}/public/hotels/search?${queryParams}`,
           {
-            method: 'POST',
+            method: 'GET',
             headers: {
               'Content-Type': 'application/json',
+              'Accept-Language': locale || 'en',
             },
-            body: JSON.stringify(requestBody),
-            signal: controller.signal,
           }
         );
-
-        clearTimeout(timeoutId);
         const apiEndTime = performance.now();
         const apiDuration = apiEndTime - apiStartTime;
         console.log(`⏱️ API response received in: ${apiDuration.toFixed(2)}ms (${(apiDuration / 1000).toFixed(2)}s)`);
 
         if (response.ok) {
           const jsonStartTime = performance.now();
-          const result: SearchResponse = await response.json();
+          const result: any = await response.json();
           const jsonEndTime = performance.now();
           console.log(`⏱️ JSON parsing took: ${(jsonEndTime - jsonStartTime).toFixed(2)}ms`);
           
-          console.log('✅ Unified search result:', result);
-          console.log('📊 Search Type:', result.searchType, '| Hotels count:', result.hotels.length, '| Total:', result.totalCount);
-          console.log('🏨 FULL Hotels data:', result.hotels);
-          if (result.hotels.length > 0) {
-            console.log('📍 First hotel detailed:', JSON.stringify(result.hotels[0], null, 2));
-            console.log('🔍 First hotel field check:', {
-              hotelId: result.hotels[0].hotelId,
-              name: result.hotels[0].name,
-              category: result.hotels[0].category,
-              city: result.hotels[0].city,
-              country: result.hotels[0].country,
-              imageUrls: result.hotels[0].imageUrls,
-              rooms: result.hotels[0].rooms,
-              firstRoom: result.hotels[0].rooms?.[0]
-            });
+          console.log('✅ Backend search result:', result);
+          console.log('📊 Hotels count:', result.hotels?.length);
+          
+          // Log first hotel to debug structure
+          if (result.hotels && result.hotels.length > 0) {
+            console.log('🔍 First hotel structure:', result.hotels[0]);
           }
           
-          // Calculate final prices with profit margin and VAT
-          const enrichedHotels = result.hotels.map(hotel => {
-            // Kar marjı ve KDV eklenmiş fiyatını hesapla
-            const finalPrice = calculateFinalPrice(hotel.minPrice);
-            
-            return {
-              ...hotel,
-              minPrice: finalPrice, // Original API fiyatını override et
-              originalPrice: hotel.minPrice, // Orijinal fiyatı saklayalım (isteğe bağlı)
-            };
+          // Map backend response to our format
+          const mappedHotels = (result.hotels || [])
+            .map((h: any, index: number) => {
+              const hotelId = h.hotel_id || h.hotelId || h.id;
+              
+              if (!hotelId) {
+                console.warn(`⚠️ Hotel at index ${index} has no ID:`, h);
+                return null;
+              }
+              
+              return {
+                hotelId,
+                name: h.name || `Hotel #${hotelId}`,
+                description: h.description || '',
+                category: h.category || 0,
+                stars: h.star_rating || h.stars || 0,
+                city: h.city || '',
+                country: h.country || '',
+                countryCode: h.country_code || h.countryCode || '',
+                address: h.address || '',
+                latitude: h.latitude || 0,
+                longitude: h.longitude || 0,
+                imageUrls: h.images || h.imageUrls || [],
+                minPrice: h.min_price || h.minPrice || 0,
+                currency: 'EUR',
+                reviewScore: h.review_score || h.reviewScore,
+                reviewCount: h.review_count || h.reviewCount,
+                checkInDate: checkIn,
+                checkOutDate: checkOut,
+                destinationId: h.destination_id || h.destinationId,
+                resortId: h.resort_id || h.resortId,
+                resortName: h.resort_name || h.resortName,
+              };
+            })
+            .filter(Boolean); // Remove null entries
+          
+          setSearchResponse({ 
+            hotels: mappedHotels, 
+            totalCount: mappedHotels.length, 
+            searchType: 'backend', 
+            hasPricing: checkIn && checkOut ? true : false 
           });
           
-          setSearchResponse({ ...result, hotels: enrichedHotels });
-          
           // Extract unique countries and cities from results
-          const countries = Array.from(new Set(result.hotels.map(h => h.country).filter(Boolean)));
-          const cities = Array.from(new Set(result.hotels.map(h => h.city).filter(Boolean)));
-          setAvailableCountries(countries);
-          setAvailableCities(cities);
+          const countries = Array.from(new Set(mappedHotels.map((h: any) => h.country).filter(Boolean)));
+          const cities = Array.from(new Set(mappedHotels.map((h: any) => h.city).filter(Boolean)));
+          setAvailableCountries(countries as string[]);
+          setAvailableCities(cities as string[]);
         } else {
           // Log detailed error
           const errorText = await response.text();
-          console.error('❌ Unified search failed:', response.status);
+          console.error('❌ Backend search failed:', response.status);
           console.error('❌ Error details:', errorText);
-          console.error('❌ Request was:', JSON.stringify(requestBody, null, 2));
           setSearchResponse({ hotels: [], totalCount: 0, searchType: 'error', hasPricing: false });
         }
       } catch (fetchError: any) {
-        clearTimeout(timeoutId);
         if (fetchError.name === 'AbortError') {
-          console.error('⏱️ API request TIMEOUT - took more than 15 seconds');
-          console.error('⚠️ This indicates the backend is very slow or unresponsive');
+          console.error('⏱️ API request TIMEOUT - took more than 45 seconds after retries');
+          console.error('⚠️ Backend is very slow or unresponsive');
+          setLoadingMessage('Sunucu yanıt vermiyor. Lütfen daha sonra tekrar deneyin.');
         } else {
           console.error('❌ Fetch error:', fetchError);
+          setLoadingMessage('Bağlantı hatası oluştu.');
         }
         setSearchResponse({ hotels: [], totalCount: 0, searchType: 'error', hasPricing: false });
       }
@@ -1116,24 +1128,42 @@ function SearchPage() {
 
             <div className="space-y-4">
               {loading ? (
-                // Loading Skeleton
-                Array.from({ length: 3 }).map((_, i) => (
-                  <Card key={i} className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Skeleton className="h-48 w-full rounded-lg" />
-                      <div className="md:col-span-2 space-y-3">
-                        <Skeleton className="h-8 w-3/4" />
-                        <Skeleton className="h-4 w-1/2" />
-                        <Skeleton className="h-20 w-full" />
-                        <div className="flex gap-2">
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-6 w-16" />
-                          <Skeleton className="h-6 w-16" />
-                        </div>
-                      </div>
+                // Loading State - Geliştirilmiş versiyon
+                <div className="space-y-4">
+                  {/* Loading Message Card */}
+                  <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-200 dark:border-blue-800">
+                    <div className="flex flex-col items-center justify-center py-4">
+                      <div className="animate-spin h-10 w-10 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+                      <p className="text-lg font-medium text-blue-900 dark:text-blue-100">
+                        {loadingMessage || 'Oteller aranıyor...'}
+                      </p>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-2">
+                        {retryCount > 0 ? `Deneme: ${retryCount + 1}` : 'Sunhotels veritabanında arama yapılıyor'}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Bu işlem 30-45 saniye sürebilir
+                      </p>
                     </div>
                   </Card>
-                ))
+                  {/* Skeleton Cards */}
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <Card key={i} className="p-6 opacity-50">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Skeleton className="h-48 w-full rounded-lg" />
+                        <div className="md:col-span-2 space-y-3">
+                          <Skeleton className="h-8 w-3/4" />
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-20 w-full" />
+                          <div className="flex gap-2">
+                            <Skeleton className="h-6 w-16" />
+                            <Skeleton className="h-6 w-16" />
+                            <Skeleton className="h-6 w-16" />
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               ) : filteredAndSortedHotels.length === 0 ? (
                 <Card className="p-12 text-center">
                   <p className="text-lg text-muted-foreground">
@@ -1148,7 +1178,10 @@ function SearchPage() {
                 </Card>
               ) : (
                 filteredAndSortedHotels.map((hotel) => (
-                  <HotelCard key={hotel.hotelId} hotel={hotel} />
+                  <HotelCard 
+                    key={hotel.hotelId || `hotel-${Math.random()}`} 
+                    hotel={hotel} 
+                  />
                 ))
               )}
             </div>

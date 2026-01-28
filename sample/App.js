@@ -9,9 +9,22 @@ import { useTranslation } from 'react-i18next';
 import './i18n';
 import { languages } from './i18n';
 
+// Drag and Drop
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
 // Stripe
 import { loadStripe } from "@stripe/stripe-js";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
+
+// Extracted Pages (Refactored from monolith)
+import ContactPage from "@/pages/ContactPage";
+import WhoWeArePage from "@/pages/WhoWeArePage";
+import AboutPage from "@/pages/AboutPage";
+import ReferFriendPage from "@/pages/ReferFriendPage";
+import SurveyPage from "@/pages/SurveyPage";
+import HowItWorksPage from "@/pages/HowItWorksPage";
+import CookieConsent from "@/components/CookieConsent";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -48,8 +61,51 @@ import {
   Lock, Trash2, Plus, Edit, BarChart3, DollarSign, Gift, Percent, Info, AlertCircle,
   CheckCircle, XCircle, Send, Euro, Briefcase, LogIn, Share2, MessageCircle, Twitter,
   Languages, Wallet, Plane, ClipboardCheck, CalendarX, RefreshCw, MoreVertical,
-  Eye, FileText, Download, Printer, UserPlus, Moon, Sun
+  Eye, FileText, Download, Printer, UserPlus, Moon, Sun, Database, Camera, Image, Play,
+  ArrowUpDown, Bell, Smartphone, Activity, History, TrendingUp, Trophy, Save, ExternalLink,
+  MessageSquare, ThumbsUp, Home, CircleSlash, GripVertical
 } from "lucide-react";
+
+// ==================== BREADCRUMBS COMPONENT ====================
+const Breadcrumbs = ({ items }) => {
+  const { t } = useTranslation();
+  
+  if (!items || items.length === 0) return null;
+  
+  return (
+    <nav aria-label="Breadcrumb" className="flex items-center text-sm text-muted-foreground mb-4">
+      <ol className="flex items-center flex-wrap gap-1">
+        <li className="flex items-center">
+          <Link 
+            to="/" 
+            className="hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{t('common.home', 'Home')}</span>
+          </Link>
+        </li>
+        {items.map((item, index) => (
+          <li key={index} className="flex items-center">
+            <ChevronRight className="w-4 h-4 mx-1 text-muted-foreground/50" />
+            {item.href ? (
+              <Link 
+                to={item.href} 
+                className="hover:text-foreground transition-colors truncate max-w-[150px] sm:max-w-[200px]"
+                title={item.label}
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <span className="text-foreground font-medium truncate max-w-[150px] sm:max-w-[250px]" title={item.label}>
+                {item.label}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+};
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -152,33 +208,99 @@ const ThemeToggle = ({ variant = "ghost", size = "sm", showLabel = false }) => {
 };
 
 // ==================== PWA INSTALL PROMPT ====================
-const InstallAppPrompt = () => {
+// PWA Install Context for sharing install functionality
+const PWAInstallContext = createContext();
+
+const usePWAInstall = () => useContext(PWAInstallContext);
+
+const PWAInstallProvider = ({ children }) => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
-  const { t } = useTranslation();
+  const [canInstall, setCanInstall] = useState(false);
+  const [installId, setInstallId] = useState(() => localStorage.getItem('pwa-install-id'));
+
+  // Track PWA install to backend
+  const trackInstall = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      // Detect platform and browser
+      const ua = navigator.userAgent;
+      let platform = 'unknown';
+      let browser = 'unknown';
+      
+      if (/Android/i.test(ua)) platform = 'Android';
+      else if (/iPhone|iPad|iPod/i.test(ua)) platform = 'iOS';
+      else if (/Windows/i.test(ua)) platform = 'Windows';
+      else if (/Mac/i.test(ua)) platform = 'macOS';
+      else if (/Linux/i.test(ua)) platform = 'Linux';
+      
+      if (/Chrome/i.test(ua) && !/Edge|Edg/i.test(ua)) browser = 'Chrome';
+      else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+      else if (/Firefox/i.test(ua)) browser = 'Firefox';
+      else if (/Edge|Edg/i.test(ua)) browser = 'Edge';
+      
+      const response = await axios.post(`${API}/pwa/track-install`, {
+        platform,
+        browser,
+        device_info: {
+          screen_width: window.screen.width,
+          screen_height: window.screen.height,
+          standalone: window.matchMedia('(display-mode: standalone)').matches
+        },
+        app_version: '1.0.0'
+      }, { headers });
+      
+      if (response.data.install_id) {
+        localStorage.setItem('pwa-install-id', response.data.install_id);
+        setInstallId(response.data.install_id);
+      }
+    } catch (error) {
+      console.error('Failed to track PWA install:', error);
+    }
+  };
+
+  // Track activity heartbeat
+  const trackActivity = async () => {
+    const storedInstallId = localStorage.getItem('pwa-install-id');
+    if (!storedInstallId) return;
+    
+    try {
+      await axios.post(`${API}/pwa/track-activity`, { install_id: storedInstallId });
+    } catch (error) {
+      // Silent fail for activity tracking
+    }
+  };
 
   useEffect(() => {
-    // Check if already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    // Check if already installed (standalone mode)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (isStandalone) {
       setIsInstalled(true);
-      return;
-    }
-
-    // Check if dismissed recently
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed);
-      // Show again after 7 days
-      if (Date.now() - dismissedTime < 7 * 24 * 60 * 60 * 1000) {
-        return;
-      }
+      // Track activity for installed apps
+      trackActivity();
+      // Periodic activity tracking every 10 minutes
+      const activityInterval = setInterval(trackActivity, 10 * 60 * 1000);
+      return () => clearInterval(activityInterval);
     }
 
     const handleBeforeInstall = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show banner after 10 seconds on site
+      setCanInstall(true);
+      
+      // Check if dismissed recently for banner
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      if (dismissed) {
+        const dismissedTime = parseInt(dismissed);
+        if (Date.now() - dismissedTime < 7 * 24 * 60 * 60 * 1000) {
+          return;
+        }
+      }
+      // Show banner after 10 seconds
       setTimeout(() => setShowInstallBanner(true), 10000);
     };
 
@@ -188,7 +310,39 @@ const InstallAppPrompt = () => {
       setIsInstalled(true);
       setShowInstallBanner(false);
       setDeferredPrompt(null);
+      setCanInstall(false);
+      // Track the install to backend
+      trackInstall();
     });
+
+    // Listen for service worker updates
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'SW_UPDATED') {
+          console.log('App updated to version:', event.data.version);
+          // Optionally reload to get the latest version
+          // window.location.reload();
+        }
+      });
+
+      // Check for updates periodically (every 30 minutes)
+      const checkForUpdates = () => {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.update();
+        });
+      };
+      
+      // Initial check after 5 seconds
+      setTimeout(checkForUpdates, 5000);
+      
+      // Periodic check
+      const updateInterval = setInterval(checkForUpdates, 30 * 60 * 1000);
+      
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+        clearInterval(updateInterval);
+      };
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -196,21 +350,43 @@ const InstallAppPrompt = () => {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) return false;
     
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     
     if (outcome === 'accepted') {
       setShowInstallBanner(false);
+      setCanInstall(false);
+      // Track install immediately
+      trackInstall();
     }
     setDeferredPrompt(null);
+    return outcome === 'accepted';
   };
 
-  const handleDismiss = () => {
+  const dismissBanner = () => {
     setShowInstallBanner(false);
     localStorage.setItem('pwa-install-dismissed', Date.now().toString());
   };
+
+  return (
+    <PWAInstallContext.Provider value={{ 
+      canInstall, 
+      isInstalled, 
+      showInstallBanner,
+      handleInstall, 
+      dismissBanner,
+      installId
+    }}>
+      {children}
+    </PWAInstallContext.Provider>
+  );
+};
+
+const InstallAppPrompt = () => {
+  const { showInstallBanner, handleInstall, dismissBanner, isInstalled } = usePWAInstall();
+  const { t } = useTranslation();
 
   if (isInstalled || !showInstallBanner) return null;
 
@@ -219,9 +395,11 @@ const InstallAppPrompt = () => {
       <Card className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur-lg">
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-7 h-7 text-white" />
-            </div>
+            <img 
+              src="/assets/logo.png" 
+              alt="FreeStays" 
+              className="w-14 h-14 rounded-xl object-contain flex-shrink-0"
+            />
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-base mb-1">{t('pwa.installTitle', 'Install FreeStays App')}</h3>
               <p className="text-sm text-muted-foreground mb-3">
@@ -232,7 +410,7 @@ const InstallAppPrompt = () => {
                   <Download className="w-4 h-4" />
                   {t('pwa.install', 'Install')}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={handleDismiss} className="rounded-full">
+                <Button size="sm" variant="ghost" onClick={dismissBanner} className="rounded-full">
                   {t('pwa.notNow', 'Not Now')}
                 </Button>
               </div>
@@ -241,7 +419,7 @@ const InstallAppPrompt = () => {
               variant="ghost" 
               size="icon" 
               className="h-8 w-8 flex-shrink-0" 
-              onClick={handleDismiss}
+              onClick={dismissBanner}
             >
               <X className="w-4 h-4" />
             </Button>
@@ -467,6 +645,7 @@ const Header = () => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { canInstall, isInstalled, handleInstall } = usePWAInstall();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -607,6 +786,20 @@ const Header = () => {
                   <Link to="/contact" className="text-lg font-medium flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
                     <Phone className="w-5 h-5" /> {t('footer.contact', 'Contact')}
                   </Link>
+                  
+                  {/* Install App Link */}
+                  {canInstall && !isInstalled && (
+                    <button 
+                      className="text-lg font-medium flex items-center gap-2 text-primary hover:text-primary/80 transition-colors"
+                      onClick={async () => {
+                        await handleInstall();
+                        setMobileMenuOpen(false);
+                      }}
+                    >
+                      <Download className="w-5 h-5" /> {t('pwa.installApp', 'Install App')}
+                    </button>
+                  )}
+                  
                   {user && (
                     <>
                       <Separator className="my-1" />
@@ -672,6 +865,7 @@ const AuthDialog = ({ defaultTab = "login" }) => {
   const { t } = useTranslation();
   const [tab, setTab] = useState(defaultTab);
   const { login, register, loginWithGoogle } = useAuth();
+  const { canInstall, isInstalled, handleInstall } = usePWAInstall();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "", name: "", referralCode: "" });
   const dialogCloseRef = useRef(null);
@@ -839,6 +1033,31 @@ const AuthDialog = ({ defaultTab = "login" }) => {
               </span>
             </div>
           </div>
+          
+          {/* PWA Install Prompt */}
+          {canInstall && !isInstalled && (
+            <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl">
+              {tab === "register" ? (
+                // Register tab - Download to start
+                <button 
+                  onClick={handleInstall}
+                  className="w-full flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{t('pwa.downloadToStart', 'Download our FreeStays app to get started!')}</span>
+                </button>
+              ) : (
+                // Login tab - Already downloaded?
+                <button 
+                  onClick={handleInstall}
+                  className="w-full flex items-center justify-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>{t('pwa.alreadyDownloaded', 'Did you download our FreeStays app already?')}</span>
+                </button>
+              )}
+            </div>
+          )}
         </Tabs>
       </div>
     </DialogContent>
@@ -1371,7 +1590,7 @@ const GuestSelector = ({ guests, setGuests, childrenAges, setChildrenAges, varia
 };
 
 // ==================== DESTINATION AUTOCOMPLETE ====================
-const DestinationAutocomplete = ({ value, onChange, onSelect, placeholder = "City, region, or hotel" }) => {
+const DestinationAutocomplete = ({ value, onChange, onSelect, placeholder = "City, region, or hotel name" }) => {
   const { query, setQuery, destinations, loading, setSelectedDestination } = useDestinationSearch();
   const [open, setOpen] = useState(false);
 
@@ -1385,6 +1604,10 @@ const DestinationAutocomplete = ({ value, onChange, onSelect, placeholder = "Cit
     onSelect(dest);
     setOpen(false);
   };
+
+  // Separate destinations and hotels for better display
+  const destinationResults = destinations.filter(d => d.type !== 'hotel');
+  const hotelResults = destinations.filter(d => d.type === 'hotel');
 
   return (
     <div className="relative">
@@ -1402,29 +1625,80 @@ const DestinationAutocomplete = ({ value, onChange, onSelect, placeholder = "Cit
       />
       
       {open && (value.length >= 2) && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-lg border z-50 max-h-64 overflow-auto">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-card rounded-xl shadow-lg border z-50 max-h-80 overflow-auto">
           {loading ? (
             <div className="p-4 text-center">
               <Loader2 className="w-5 h-5 animate-spin mx-auto text-muted-foreground" />
             </div>
           ) : destinations.length > 0 ? (
-            destinations.map((dest) => (
-              <button
-                key={dest.id}
-                className="w-full px-4 py-3 text-left hover:bg-secondary flex items-center gap-3 transition-colors"
-                onClick={() => handleSelect(dest)}
-                data-testid={`dest-option-${dest.id}`}
-              >
-                <MapPin className="w-4 h-4 text-muted-foreground" />
+            <>
+              {/* Destinations Section */}
+              {destinationResults.length > 0 && (
                 <div>
-                  <p className="font-medium">{dest.name}</p>
-                  <p className="text-sm text-muted-foreground">{dest.country}</p>
+                  <div className="px-4 py-2 bg-secondary/50 text-xs font-semibold text-muted-foreground uppercase tracking-wide sticky top-0">
+                    Destinations
+                  </div>
+                  {destinationResults.map((dest) => (
+                    <button
+                      key={`dest-${dest.id}`}
+                      className="w-full px-4 py-3 text-left hover:bg-secondary flex items-center gap-3 transition-colors"
+                      onClick={() => handleSelect(dest)}
+                      data-testid={`dest-option-${dest.id}`}
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-4 h-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{dest.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{dest.country} • {dest.hotel_count || 0} hotels</p>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-              </button>
-            ))
+              )}
+              
+              {/* Hotels Section */}
+              {hotelResults.length > 0 && (
+                <div>
+                  <div className="px-4 py-2 bg-secondary/50 text-xs font-semibold text-muted-foreground uppercase tracking-wide sticky top-0">
+                    Hotels
+                  </div>
+                  {hotelResults.map((dest) => (
+                    <button
+                      key={`hotel-${dest.hotel_id}`}
+                      className="w-full px-4 py-3 text-left hover:bg-secondary flex items-center gap-3 transition-colors"
+                      onClick={() => handleSelect(dest)}
+                      data-testid={`hotel-option-${dest.hotel_id}`}
+                    >
+                      {dest.thumbnail ? (
+                        <img 
+                          src={dest.thumbnail} 
+                          alt={dest.name}
+                          className="w-12 h-12 rounded-lg object-cover flex-shrink-0 bg-secondary"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div 
+                        className={`w-12 h-12 rounded-lg bg-accent/20 items-center justify-center flex-shrink-0 ${dest.thumbnail ? 'hidden' : 'flex'}`}
+                      >
+                        <Building2 className="w-5 h-5 text-accent-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{dest.name}</p>
+                        <p className="text-sm text-muted-foreground truncate">{dest.country}</p>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
             <div className="p-4 text-center text-muted-foreground">
-              No destinations found
+              No destinations or hotels found
             </div>
           )}
         </div>
@@ -1437,6 +1711,9 @@ const DestinationAutocomplete = ({ value, onChange, onSelect, placeholder = "Cit
 const LastMinuteDeals = () => {
   const navigate = useNavigate();
   const { user, hasValidPass } = useAuth();
+  const [email, setEmail] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
+  const [subscribed, setSubscribed] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['lastMinuteDeals'],
@@ -1445,6 +1722,22 @@ const LastMinuteDeals = () => {
       return response.data;
     }
   });
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    
+    setSubscribing(true);
+    try {
+      await axios.post(`${API}/newsletter/subscribe`, { email });
+      setSubscribed(true);
+      toast.success('Successfully subscribed to our newsletter!');
+    } catch (error) {
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -1464,6 +1757,58 @@ const LastMinuteDeals = () => {
 
   const hotels = data?.hotels || [];
   const badgeText = data?.badge_text || "Hot Deals";
+
+  // Show "no offers" card when no real last minute deals are available
+  if (hotels.length === 0) {
+    return (
+      <Card className="overflow-hidden bg-gradient-to-br from-accent/10 to-primary/10 border-accent/30">
+        <div className="p-8 md:p-12 text-center">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-accent/20 flex items-center justify-center">
+            <Clock className="w-10 h-10 text-accent" />
+          </div>
+          <h3 className="text-2xl font-serif font-semibold mb-3">
+            Here we will show you our Last Minute deals
+          </h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            Check later for our exclusive offers with up to 30% off selected hotels!
+          </p>
+          
+          {!subscribed ? (
+            <div className="max-w-sm mx-auto">
+              <p className="text-sm font-medium mb-3">
+                Subscribe to get Last Minute deals in your inbox
+              </p>
+              <form onSubmit={handleSubscribe} className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="flex-1"
+                  required
+                />
+                <Button type="submit" disabled={subscribing} className="shrink-0">
+                  {subscribing ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-1" />
+                      Subscribe
+                    </>
+                  )}
+                </Button>
+              </form>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 text-green-600">
+              <CheckCircle className="w-5 h-5" />
+              <span className="font-medium">You're subscribed! We'll notify you of new deals.</span>
+            </div>
+          )}
+        </div>
+      </Card>
+    );
+  }
 
   // Dynamically adjust grid columns based on number of hotels
   const gridCols = hotels.length <= 3 ? 'md:grid-cols-3' : hotels.length === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3 lg:grid-cols-5';
@@ -1631,6 +1976,192 @@ const TestimonialsSection = () => {
   );
 };
 
+// How It Works Tabbed Component
+const HowItWorksTabs = () => {
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState('discover');
+  
+  const tabs = [
+    { id: 'discover', label: t('howItWorks.tabs.discover', 'Discover') },
+    { id: 'activate', label: t('howItWorks.tabs.activatePass', 'Activate Pass') },
+    { id: 'save', label: t('howItWorks.tabs.saveBig', 'Save Big') },
+    { id: 'book', label: t('howItWorks.tabs.bookEnjoy', 'Book & Enjoy') },
+  ];
+  
+  const tabContent = {
+    discover: (
+      <div className="space-y-4">
+        <p className="text-muted-foreground">
+          {t('howItWorks.discover.intro', 'Hotels keep their revenue instead of losing up to 30% to booking platforms. This allows them to:')}
+        </p>
+        <ul className="space-y-2 text-muted-foreground">
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-accent" />
+            {t('howItWorks.discover.benefit1', 'Offer better value')}
+          </li>
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-accent" />
+            {t('howItWorks.discover.benefit2', 'Invest in service and quality')}
+          </li>
+          <li className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-accent" />
+            {t('howItWorks.discover.benefit3', 'Keep prices fair and competitive')}
+          </li>
+        </ul>
+        <p className="font-medium text-foreground">
+          {t('howItWorks.discover.conclusion', 'Freestays saves hotels money — without cutting corners.')}
+        </p>
+      </div>
+    ),
+    activate: (
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">1</div>
+            <h4 className="font-semibold">{t('howItWorks.activate.step1Title', 'Choose Your FreeStays Pass')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step1Desc', 'Search 450,000+ Hotels Worldwide. Use our powerful search to find your perfect hotel anywhere in the world.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step1Desc2', 'Real-time availability and instant pricing from our hotel network.')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">2</div>
+            <h4 className="font-semibold">{t('howItWorks.activate.step2Title', 'Instant Activation')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step2Desc', 'Your pass is activated immediately after purchase.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step2Desc2', 'Start booking right away with exclusive member pricing.')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">3</div>
+            <h4 className="font-semibold">{t('howItWorks.activate.step3Title', 'No Booking Fees')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step3Desc', 'New Pass holders never pay the first €15 booking fee.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.activate.step3Desc2', 'Enjoy unlimited searches and bookings with your pass.')}
+          </p>
+        </div>
+      </div>
+    ),
+    save: (
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">1</div>
+            <h4 className="font-semibold">{t('howItWorks.save.step1Title', 'Hotels Pay 0% Commission')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.save.step1Desc', 'Traditional platforms charge hotels 15-30% commission.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.save.step1Desc2', 'We charge hotels nothing — they pass the savings to YOU.')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">2</div>
+            <h4 className="font-semibold">{t('howItWorks.save.step2Title', 'No Markup')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.save.step2Desc', 'While other platforms add 20%+ markup, we add zero.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11 font-medium text-primary">
+            {t('howItWorks.save.step2Desc2', 'The result? Your room is essentially FREE — you only pay for meals!')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">3</div>
+            <h4 className="font-semibold">{t('howItWorks.save.step3Title', 'Transparent Pricing')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.save.step3Desc', 'See the full price breakdown before you book.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.save.step3Desc2', 'Your Pass calculates your Net price + one time booking costs (including VAT) = Your total. No surprises ever.')}
+          </p>
+        </div>
+      </div>
+    ),
+    book: (
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">1</div>
+            <h4 className="font-semibold">{t('howItWorks.book.step1Title', 'Secure Payment')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step1Desc', 'Pay securely through Stripe with your credit card, iDEAL and more.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step1Desc2', 'Your booking is confirmed instantly with the hotel.')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">2</div>
+            <h4 className="font-semibold">{t('howItWorks.book.step2Title', 'Instant Confirmation')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step2Desc', 'Receive your booking confirmation and voucher by email.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step2Desc2', 'All details ready for your trip — no waiting, no hassle.')}
+          </p>
+        </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white font-bold">3</div>
+            <h4 className="font-semibold">{t('howItWorks.book.step3Title', 'Travel & Save')}</h4>
+          </div>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step3Desc', 'Show your voucher at check-in and enjoy your stay.')}
+          </p>
+          <p className="text-muted-foreground text-sm pl-11">
+            {t('howItWorks.book.step3Desc2', 'Refer friends and earn €15 credit to apply on booking costs, for each referral!')}
+          </p>
+        </div>
+      </div>
+    ),
+  };
+  
+  return (
+    <div className="bg-card rounded-3xl p-6 md:p-8 shadow-lg border border-border/50">
+      {/* Tab Headers */}
+      <div className="flex flex-wrap justify-center gap-2 mb-8">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`px-6 py-3 rounded-full font-medium transition-all ${
+              activeTab === tab.id
+                ? 'bg-accent text-white shadow-lg'
+                : 'bg-secondary hover:bg-secondary/80 text-foreground'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      
+      {/* Tab Content */}
+      <div className="min-h-[200px] animate-fadeInUp">
+        {tabContent[activeTab]}
+      </div>
+    </div>
+  );
+};
+
 // Last Minute Section with dynamic settings
 const LastMinuteSection = () => {
   const { data, isLoading } = useQuery({
@@ -1684,8 +2215,19 @@ const HomePage = () => {
   const [checkOut, setCheckOut] = useState(addDays(new Date(), 10));
   const [guests, setGuests] = useState({ adults: 2, children: 0, rooms: 1 });
   const [childrenAges, setChildrenAges] = useState([]);
+  const [selectedHotel, setSelectedHotel] = useState(null); // For direct hotel selection
 
   const handleSearch = () => {
+    // If a specific hotel is selected, go directly to hotel page
+    if (selectedHotel) {
+      const checkInStr = format(checkIn, 'yyyy-MM-dd');
+      const checkOutStr = format(checkOut, 'yyyy-MM-dd');
+      const destIdParam = selectedHotel.dest_id ? `&destinationId=${selectedHotel.dest_id}` : '';
+      const resortIdParam = selectedHotel.resort_id ? `&resortId=${selectedHotel.resort_id}` : '';
+      navigate(`/hotel/${selectedHotel.hotel_id}?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests.adults}&children=${guests.children}${destIdParam}${resortIdParam}`);
+      return;
+    }
+    
     const params = new URLSearchParams({
       destination,
       destinationId: destinationId || '',
@@ -1701,17 +2243,55 @@ const HomePage = () => {
   };
 
   const handleDestinationSelect = (dest) => {
+    // If it's a hotel, store hotel info and let user pick dates
+    if (dest.type === 'hotel' && dest.hotel_id) {
+      setSelectedHotel({
+        hotel_id: dest.hotel_id,
+        name: dest.name,
+        dest_id: dest.id,
+        resort_id: dest.resort_id || '',
+        thumbnail: dest.thumbnail
+      });
+      setDestination(dest.name);
+      setDestinationId(dest.id);
+      return;
+    }
+    // Otherwise, set destination for search
+    setSelectedHotel(null); // Clear any selected hotel
     setDestination(dest.name);
     setDestinationId(dest.id);
     setResortId(dest.resort_id || '');
   };
 
-  const featuredDestinations = [
-    { name: "Santorini", country: "Greece", image: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600", hotels: "1,240+", id: "10045" },
-    { name: "Barcelona", country: "Spain", image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600", hotels: "2,100+", id: "10012" },
-    { name: "Vienna", country: "Austria", image: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=600", hotels: "890+", id: "10025" },
-    { name: "Amalfi", country: "Italy", image: "https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=600", hotels: "450+", id: "10078" }
-  ];
+  const clearSelectedHotel = () => {
+    setSelectedHotel(null);
+    setDestination('');
+    setDestinationId('');
+  };
+
+  const [featuredDestinations, setFeaturedDestinations] = useState([
+    { name: "Santorini", country: "Greece", image: "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=600", hotels: "1,240+", destination_id: "16330" },
+    { name: "Barcelona", country: "Spain", image: "https://images.unsplash.com/photo-1583422409516-2895a77efded?w=600", hotels: "2,100+", destination_id: "17429" },
+    { name: "Vienna", country: "Austria", image: "https://images.unsplash.com/photo-1516550893923-42d28e5677af?w=600", hotels: "890+", destination_id: "18180" },
+    { name: "Amalfi", country: "Italy", image: "https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=600", hotels: "450+", destination_id: "10515" }
+  ]);
+  const [destinationsCount, setDestinationsCount] = useState(4);
+
+  // Fetch popular destinations from API
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const response = await axios.get(`${API}/destinations`);
+        if (response.data?.destinations?.length > 0) {
+          setFeaturedDestinations(response.data.destinations);
+          setDestinationsCount(response.data.display_count || 4);
+        }
+      } catch (error) {
+        console.error("Failed to fetch destinations:", error);
+      }
+    };
+    fetchDestinations();
+  }, []);
 
   return (
     <div className="min-h-screen" data-testid="home-page">
@@ -1727,87 +2307,92 @@ const HomePage = () => {
           <div className="absolute inset-0 bg-gradient-to-l from-black/50 to-transparent md:from-black/30" />
         </div>
 
-        {/* Floating Elements */}
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-accent/20 rounded-full blur-3xl animate-float hidden lg:block" />
-        <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-primary/20 rounded-full blur-3xl animate-float hidden md:block" style={{ animationDelay: '1s' }} />
+        {/* Floating Elements - Blue theme */}
+        <div className="absolute top-1/4 right-1/4 w-64 h-64 bg-primary/20 rounded-full blur-3xl animate-float hidden lg:block" />
+        <div className="absolute bottom-1/3 right-1/3 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl animate-float hidden md:block" style={{ animationDelay: '1s' }} />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 md:px-8 w-full py-16 md:py-20">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left: Hero Content */}
             <div className="animate-fadeInUp text-center md:text-left">
-              {/* Revolutionary Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-accent to-blue-400 text-accent-foreground px-4 md:px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold mb-6 md:mb-8 shadow-lg animate-pulse-glow" data-testid="hero-badge">
-                <Gift className="w-4 h-4 md:w-5 md:h-5" />
+              {/* Revolutionary Badge - Blue theme */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-blue-500 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-full text-xs md:text-sm font-bold mb-6 md:mb-8 shadow-lg animate-pulse-glow" data-testid="hero-badge">
+                <Sparkles className="w-4 h-4 md:w-5 md:h-5" />
                 {t('hero.badge')}
               </div>
               
-              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-7xl text-white font-bold leading-[1.1] mb-4 md:mb-6">
+              <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-white font-bold leading-[1.1] mb-4 md:mb-6">
                 <span className="block">{t('hero.title1')}</span>
-                <span className="block text-accent">{t('hero.title2')}</span>
+                <span className="block text-primary">{t('hero.title2')}</span>
               </h1>
               
-              <div className="text-base md:text-xl lg:text-2xl text-white/90 mb-6 md:mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
-                {/* Mobile: inline text */}
-                <p className="md:hidden">
-                  {t('hero.subtitle')}
-                  <span className="text-accent font-semibold"> {t('hero.hotelsSave')}</span> {t('hero.passItToYou')}
-                </p>
-                {/* Desktop: 3 separate lines */}
-                <div className="hidden md:block space-y-1">
-                  <p>{t('hero.subtitle')}</p>
-                  <p className="text-accent font-semibold">{t('hero.hotelsSave')}</p>
-                  <p>{t('hero.passItToYou')}</p>
+              {/* Sub-headline */}
+              <p className="text-lg md:text-xl lg:text-2xl text-white/90 mb-4 md:mb-6 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                {t('hero.subtitle')}
+              </p>
+
+              {/* Animated rotating text */}
+              <div className="text-base md:text-lg text-primary font-semibold mb-6 md:mb-8 h-8">
+                <div className="animate-pulse">
+                  {t('hero.animatedText')}
                 </div>
               </div>
 
-              {/* Key Benefits - Improved mobile layout */}
+              {/* 3 Value Pillars - Blue theme */}
               <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-3 md:gap-4 mb-8 md:mb-10">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-                  <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
-                    <Gift className="w-5 h-5 text-accent-foreground" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-sm">{t('hero.roomFree')}</p>
-                    <p className="text-white/70 text-xs">{t('hero.payMealsOnly')}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                    <Percent className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-white font-bold text-sm">{t('hero.saved')}</p>
-                    <p className="text-white/70 text-xs">{t('hero.noCommissions')}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/20">
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-primary/30">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                     <Building2 className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-left">
-                    <p className="text-white font-bold text-sm">{t('hero.hotels')}</p>
-                    <p className="text-white/70 text-xs">{t('hero.worldwideAccess')}</p>
+                    <p className="text-white font-bold text-sm">{t('hero.pillar1Title')}</p>
+                    <p className="text-white/70 text-xs">{t('hero.pillar1Desc')}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-primary/30">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <CircleSlash className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">{t('hero.pillar2Title')}</p>
+                    <p className="text-white/70 text-xs">{t('hero.pillar2Desc')}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-primary/30">
+                  <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-white font-bold text-sm">{t('hero.pillar3Title')}</p>
+                    <p className="text-white/70 text-xs">{t('hero.pillar3Desc')}</p>
                   </div>
                 </div>
               </div>
 
-              {/* CTA Buttons - Better mobile layout */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center md:items-start">
+              {/* CTA Buttons - Blue theme */}
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center md:items-start mb-6">
                 <Dialog>
                   <DialogTrigger asChild>
-                    <Button size="lg" className="w-full sm:w-auto rounded-full px-8 h-12 md:h-14 text-base md:text-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
-                      <Sparkles className="mr-2 w-4 h-4 md:w-5 md:h-5" />
-                      {t('hero.getFreeRoom')}
+                    <Button size="lg" className="w-full sm:w-auto rounded-full px-8 h-12 md:h-14 text-base md:text-lg bg-primary hover:bg-primary/90 text-white font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
+                      <Search className="mr-2 w-4 h-4 md:w-5 md:h-5" />
+                      {t('hero.primaryCta')}
                     </Button>
                   </DialogTrigger>
                   <AuthDialog defaultTab="register" />
                 </Dialog>
                 <Link to="/about" className="w-full sm:w-auto">
-                  <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full px-8 h-12 md:h-14 text-base md:text-lg bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm">
-                    {t('hero.howItWorks')}
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto rounded-full px-8 h-12 md:h-14 text-base md:text-lg bg-white/10 border-primary/50 text-white hover:bg-primary/20 backdrop-blur-sm">
+                    {t('hero.secondaryCta')}
                     <ArrowRight className="ml-2 w-4 h-4 md:w-5 md:h-5" />
                   </Button>
                 </Link>
+              </div>
+
+              {/* Trust indicators */}
+              <div className="flex flex-wrap gap-3 md:gap-4 justify-center md:justify-start text-xs md:text-sm text-white/70">
+                <span className="flex items-center gap-1"><Check className="w-3 h-3 text-primary" /> {t('hero.trust1')}</span>
+                <span className="flex items-center gap-1"><Check className="w-3 h-3 text-primary" /> {t('hero.trust2')}</span>
+                <span className="flex items-center gap-1"><Check className="w-3 h-3 text-primary" /> {t('hero.trust3')}</span>
               </div>
             </div>
 
@@ -1821,11 +2406,41 @@ const HomePage = () => {
               <div className="space-y-4">
                 <div>
                   <Label className="text-sm font-medium text-foreground mb-2 block">{t('search.destination')}</Label>
-                  <DestinationAutocomplete 
-                    value={destination}
-                    onChange={setDestination}
-                    onSelect={handleDestinationSelect}
-                  />
+                  {selectedHotel ? (
+                    /* Selected Hotel Card */
+                    <div className="relative p-3 rounded-xl bg-primary/10 border-2 border-primary/30">
+                      <div className="flex items-center gap-3">
+                        {selectedHotel.thumbnail && (
+                          <img 
+                            src={selectedHotel.thumbnail} 
+                            alt={selectedHotel.name}
+                            className="w-12 h-12 rounded-lg object-cover"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{selectedHotel.name}</p>
+                          <p className="text-xs text-primary flex items-center gap-1">
+                            <Building2 className="w-3 h-3" />
+                            {t('search.hotelSelected', 'Hotel selected - pick your dates')}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                          onClick={clearSelectedHotel}
+                        >
+                          <XCircle className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <DestinationAutocomplete 
+                      value={destination}
+                      onChange={setDestination}
+                      onSelect={handleDestinationSelect}
+                    />
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -1885,8 +2500,17 @@ const HomePage = () => {
                   className="w-full rounded-xl h-14 text-lg font-bold btn-primary-enhanced shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
                   data-testid="search-btn"
                 >
-                  <Search className="mr-2 w-5 h-5" />
-                  {t('search.searchButton')}
+                  {selectedHotel ? (
+                    <>
+                      <Building2 className="mr-2 w-5 h-5" />
+                      {t('search.viewHotel', 'View Hotel')}
+                    </>
+                  ) : (
+                    <>
+                      <Search className="mr-2 w-5 h-5" />
+                      {t('search.searchButton')}
+                    </>
+                  )}
                 </Button>
               </div>
 
@@ -1908,7 +2532,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* How It Works - The Secret Revealed */}
+      {/* How It Works - Tabbed Design */}
       <section className="py-20 md:py-28 bg-gradient-to-b from-secondary/50 to-background relative overflow-hidden">
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-10 left-10 w-40 h-40 bg-primary rounded-full blur-3xl" />
@@ -1918,92 +2542,52 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-8 relative">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-accent/20 text-accent-foreground border-accent/30">
-              <Sparkles className="w-4 h-4 mr-1" /> The FreeStays Concept
+              <Sparkles className="w-4 h-4 mr-1" /> {t('howItWorks.badge', 'The FreeStays Concept')}
             </Badge>
-            <h2 className="font-serif text-3xl md:text-5xl font-bold mb-6">How Your Room Becomes FREE</h2>
-            <div className="text-muted-foreground text-lg max-w-4xl mx-auto space-y-4">
-              <p>
-                Unlike other booking platforms that charge hotels up to 30% commission, Freestays does not charge commission on room bookings.
-              </p>
-              <p>
-                Instead of keeping margins, we return the full value directly to you — and that value equals <span className="font-semibold text-primary">100% of your room price</span> when you book with a meal package (Half Board, Full Board or All Inclusive).
-              </p>
-              <p className="text-primary font-medium">
-                Fair, transparent and built to benefit you.
-              </p>
-            </div>
+            <h2 className="font-serif text-3xl md:text-5xl font-bold mb-6">{t('howItWorks.title', 'How Freestays Makes Travel Smarter — and Rooms FREE')}</h2>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            {/* Step 1 */}
-            <div className="relative group">
-              <div className="bg-card rounded-3xl p-8 shadow-lg border border-border/50 h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/20 to-transparent rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-6 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">1</span>
-                </div>
-                <h3 className="font-serif text-xl font-semibold mb-3">Hotels Pay 0%</h3>
-                <div className="text-muted-foreground text-sm space-y-3">
-                  <p>Hotels save up to <span className="font-semibold">50%</span> compared to other booking platforms.</p>
-                  <p>Freestays charges no commission on room accommodation, allowing hotels to keep their revenue and invest in better service and quality.</p>
-                </div>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-            </div>
+          {/* 4-Tab Navigation */}
+          <HowItWorksTabs />
 
-            {/* Step 2 */}
-            <div className="relative group">
-              <div className="bg-card rounded-3xl p-8 shadow-lg border border-border/50 h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/20 to-transparent rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-6 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">2</span>
-                </div>
-                <h3 className="font-serif text-xl font-semibold mb-3">No Commission on Rooms</h3>
-                <div className="text-muted-foreground text-sm space-y-3">
-                  <p>Freestays does not earn money on your room.</p>
-                  <p>Hotels only contribute a small, transparent fee for bringing them guests — not a commission on accommodation.</p>
-                </div>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-            </div>
-
-            {/* Step 3 */}
-            <div className="relative group">
-              <div className="bg-card rounded-3xl p-8 shadow-lg border border-border/50 h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/20 to-transparent rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-6 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">3</span>
-                </div>
-                <h3 className="font-serif text-xl font-semibold mb-3">We Give It Back to YOU</h3>
-                <div className="text-muted-foreground text-sm space-y-3">
-                  <p>Instead of keeping that value, Freestays gives it entirely to you as a discount.</p>
-                  <p>That discount always equals the room price when you book with a meal package.</p>
-                </div>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-            </div>
-
-            {/* Step 4 */}
-            <div className="relative group">
-              <div className="bg-gradient-to-br from-accent to-blue-400 rounded-3xl p-8 shadow-xl h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-lg">
-                  <Gift className="w-8 h-8 text-accent-foreground" />
-                </div>
-                <h3 className="font-serif text-xl font-bold mb-3 text-accent-foreground">Room = FREE!</h3>
-                <div className="text-accent-foreground/90 text-sm space-y-3">
-                  <p>You only pay for your meals<br/>(Half Board, Full Board or All Inclusive).</p>
-                  <p className="text-lg">💙 The room accommodation is on us.</p>
-                </div>
-              </div>
-            </div>
+          {/* 3 Comparison Squares */}
+          <div className="grid md:grid-cols-3 gap-6 mt-12">
+            <Card className="p-6 rounded-2xl bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800">
+              <h4 className="font-semibold text-red-700 dark:text-red-400 mb-3 flex items-center gap-2">
+                <XCircle className="w-5 h-5" />
+                {t('howItWorks.otherPlatforms', 'Other Platforms')}
+              </h4>
+              <p className="text-red-600 dark:text-red-300 text-sm">
+                {t('howItWorks.otherPlatformsDesc', 'Charge hotels 15-30% commission, add 20%+ markup to your price')}
+              </p>
+            </Card>
+            
+            <Card className="p-6 rounded-2xl bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800">
+              <h4 className="font-semibold text-green-700 dark:text-green-400 mb-3 flex items-center gap-2">
+                <CheckCircle className="w-5 h-5" />
+                FreeStays
+              </h4>
+              <p className="text-green-600 dark:text-green-300 text-sm">
+                {t('howItWorks.freestaysDesc', '0% hotel commission, 0% customer commission — Your room is FREE!')}
+              </p>
+            </Card>
+            
+            <Card className="p-6 rounded-2xl bg-accent/10 border-accent/30">
+              <h4 className="font-semibold text-accent-foreground mb-3 flex items-center gap-2">
+                <Euro className="w-5 h-5" />
+                {t('howItWorks.yourSavings', 'Your Savings')}
+              </h4>
+              <p className="text-muted-foreground text-sm">
+                {t('howItWorks.yourSavingsDesc', 'Average 30% savings on every booking. Room = FREE, you only pay for meals!')}
+              </p>
+            </Card>
           </div>
 
-          {/* Learn More Button */}
+          {/* CTA Button */}
           <div className="text-center mt-12">
-            <Link to="/about">
-              <Button size="lg" variant="outline" className="rounded-full px-8">
-                {t('hero.howItWorks', 'Learn More')}
+            <Link to="/how-it-works">
+              <Button size="lg" className="rounded-full px-8 bg-accent hover:bg-accent/90">
+                {t('common.learnMore', 'Learn More')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
@@ -2144,20 +2728,24 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <Badge className="mb-3 bg-secondary text-secondary-foreground">Popular Destinations</Badge>
-              <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-2">Where Will Your Free Room Be?</h2>
-              <p className="text-muted-foreground">Discover stunning destinations with commission-free stays</p>
+              <Badge className="mb-3 bg-secondary text-secondary-foreground">{t('destinations.badge', 'Popular Destinations')}</Badge>
+              <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-2">{t('destinations.title', 'Where Will Your Free Room Be?')}</h2>
+              <p className="text-muted-foreground">{t('destinations.subtitle', 'Discover stunning destinations with commission-free stays')}</p>
             </div>
             <Link to="/search" className="hidden md:flex items-center text-sm font-medium text-primary hover:underline">
-              View all <ArrowRight className="w-4 h-4 ml-1" />
+              {t('destinations.viewAll', 'View all')} <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
-            {featuredDestinations.map((dest, idx) => (
+            {featuredDestinations.slice(0, destinationsCount).map((dest, idx) => {
+              // Default dates: tomorrow to 3 days later
+              const defaultCheckIn = format(addDays(new Date(), 1), 'yyyy-MM-dd');
+              const defaultCheckOut = format(addDays(new Date(), 4), 'yyyy-MM-dd');
+              return (
               <Link 
                 key={dest.name} 
-                to={`/search?destination=${dest.name}&destinationId=${dest.id}`}
+                to={`/search?destination=${encodeURIComponent(dest.name)}&destinationId=${dest.destination_id}&checkIn=${defaultCheckIn}&checkOut=${defaultCheckOut}&adults=2&children=0&rooms=1`}
                 className="group relative rounded-3xl overflow-hidden aspect-[4/5] card-hover shadow-xl"
                 data-testid={`destination-${dest.name.toLowerCase()}`}
                 style={{ animationDelay: `${idx * 0.1}s` }}
@@ -2170,7 +2758,7 @@ const HomePage = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/30 text-xs">
-                    {dest.hotels} hotels
+                    {dest.hotels} {t('destinations.hotels', 'hotels')}
                   </Badge>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 p-6">
@@ -2180,7 +2768,8 @@ const HomePage = () => {
                   </p>
                 </div>
               </Link>
-            ))}
+            );
+            })}
           </div>
         </div>
       </section>
@@ -2326,6 +2915,7 @@ const SearchPage = () => {
     ? searchParams.get('childrenAges').split(',').filter(a => a).map(a => parseInt(a))
     : [];
   const [childrenAges, setChildrenAges] = useState(initialChildrenAges);
+  const [selectedHotel, setSelectedHotel] = useState(null); // For direct hotel selection
   
   const [priceRange, setPriceRange] = useState([0, 1000]);
   const [starFilter, setStarFilter] = useState([]);
@@ -2357,7 +2947,7 @@ const SearchPage = () => {
       });
       return response.data;
     },
-    enabled: destination.length > 0
+    enabled: destination.length > 0 || destinationId.length > 0 || resortId.length > 0
   });
 
   // Show email capture popup for non-logged-in users when comparison data is available
@@ -2431,6 +3021,16 @@ const SearchPage = () => {
   }
 
   const handleSearch = () => {
+    // If a specific hotel is selected, go directly to hotel page
+    if (selectedHotel) {
+      const checkInStr = format(checkIn, 'yyyy-MM-dd');
+      const checkOutStr = format(checkOut, 'yyyy-MM-dd');
+      const destIdParam = selectedHotel.dest_id ? `&destinationId=${selectedHotel.dest_id}` : '';
+      const resortIdParam = selectedHotel.resort_id ? `&resortId=${selectedHotel.resort_id}` : '';
+      navigate(`/hotel/${selectedHotel.hotel_id}?checkIn=${checkInStr}&checkOut=${checkOutStr}&adults=${guests.adults}&children=${guests.children}${destIdParam}${resortIdParam}`);
+      return;
+    }
+    
     const params = new URLSearchParams({
       destination,
       destinationId: destinationId || '',
@@ -2447,29 +3047,93 @@ const SearchPage = () => {
   };
 
   const handleDestinationSelect = (dest) => {
+    // If it's a hotel, store hotel info and let user pick dates
+    if (dest.type === 'hotel' && dest.hotel_id) {
+      setSelectedHotel({
+        hotel_id: dest.hotel_id,
+        name: dest.name,
+        dest_id: dest.id,
+        resort_id: dest.resort_id || '',
+        thumbnail: dest.thumbnail
+      });
+      setDestination(dest.name);
+      setDestinationId(dest.id);
+      return;
+    }
+    // Otherwise, set destination for search
+    setSelectedHotel(null);
     setDestination(dest.name);
     setDestinationId(dest.id);
     setResortId(dest.resort_id || '');
   };
+  
+  const clearSelectedHotel = () => {
+    setSelectedHotel(null);
+    setDestination('');
+    setDestinationId('');
+  };
 
   return (
     <div className="min-h-screen pt-20" data-testid="search-page">
+      {/* Breadcrumbs */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-4">
+        <Breadcrumbs items={[
+          { label: t('search.searchTitle', 'Search Results'), href: null }
+        ]} />
+      </div>
+      
       {/* Compact Search Bar */}
       <div className="bg-secondary/50 border-b">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <div className="flex flex-wrap gap-3 items-center">
             <div className="relative flex-1 min-w-[200px]">
-              <DestinationAutocomplete 
-                value={destination}
-                onChange={setDestination}
-                onSelect={handleDestinationSelect}
-                placeholder="Where to?"
-              />
+              {selectedHotel ? (
+                /* Selected Hotel Card */
+                <div className="relative p-2 rounded-lg bg-primary/10 border border-primary/30">
+                  <div className="flex items-center gap-2">
+                    {selectedHotel.thumbnail && (
+                      <img 
+                        src={selectedHotel.thumbnail} 
+                        alt={selectedHotel.name}
+                        className="w-10 h-10 rounded object-cover"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{selectedHotel.name}</p>
+                      <p className="text-xs text-primary">{t('search.hotelSelected', 'Hotel selected')}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 w-7 p-0"
+                      onClick={clearSelectedHotel}
+                    >
+                      <XCircle className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <DestinationAutocomplete 
+                  value={destination}
+                  onChange={setDestination}
+                  onSelect={handleDestinationSelect}
+                  placeholder="Where to?"
+                />
+              )}
             </div>
             
             <Button onClick={handleSearch} className="h-11 rounded-lg" data-testid="search-submit">
-              <Search className="w-4 h-4 mr-2" />
-              Search
+              {selectedHotel ? (
+                <>
+                  <Building2 className="w-4 h-4 mr-2" />
+                  {t('search.viewHotel', 'View Hotel')}
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4 mr-2" />
+                  Search
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -2563,10 +3227,202 @@ const SearchPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-4 md:py-8">
+        {/* Mobile Compact Filter Bar */}
+        <div className="md:hidden mb-4">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {/* Price Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant={priceRange[0] > 0 || priceRange[1] < 1000 ? "default" : "outline"} 
+                  size="sm" 
+                  className="flex-shrink-0 h-9 rounded-full gap-1"
+                >
+                  <Euro className="w-3.5 h-3.5" />
+                  {priceRange[0] > 0 || priceRange[1] < 1000 
+                    ? `€${priceRange[0]}-${priceRange[1] === 1000 ? '1000+' : priceRange[1]}`
+                    : t('search.price', 'Price')
+                  }
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-3" align="start">
+                <div className="space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t('search.price', 'Price')}</span>
+                    <span className="font-medium">€{priceRange[0]} - €{priceRange[1] === 1000 ? '1000+' : priceRange[1]}</span>
+                  </div>
+                  <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    max={1000}
+                    step={25}
+                  />
+                  <div className="grid grid-cols-4 gap-1">
+                    {[100, 200, 300, 500].map(price => (
+                      <Button
+                        key={price}
+                        variant={priceRange[1] === price ? "default" : "outline"}
+                        size="sm"
+                        className="text-xs h-7 px-2"
+                        onClick={() => setPriceRange([0, price])}
+                      >
+                        &lt;€{price}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Stars Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant={starFilter.length > 0 ? "default" : "outline"} 
+                  size="sm" 
+                  className="flex-shrink-0 h-9 rounded-full gap-1"
+                >
+                  <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                  {starFilter.length > 0 
+                    ? `${starFilter.length} ${t('search.selected', 'selected')}`
+                    : t('search.stars', 'Stars')
+                  }
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-3" align="start">
+                <div className="space-y-2">
+                  {[5, 4, 3, 2].map(star => (
+                    <Button
+                      key={star}
+                      variant={starFilter.includes(star) ? "default" : "outline"}
+                      size="sm"
+                      className="w-full h-9 justify-start gap-2"
+                      onClick={() => {
+                        if (starFilter.includes(star)) {
+                          setStarFilter(starFilter.filter(s => s !== star));
+                        } else {
+                          setStarFilter([...starFilter, star]);
+                        }
+                      }}
+                    >
+                      {Array.from({ length: star }).map((_, i) => (
+                        <Star key={i} className={`w-3 h-3 ${starFilter.includes(star) ? 'fill-white text-white' : 'fill-yellow-400 text-yellow-400'}`} />
+                      ))}
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Hotel Type Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  variant={themeFilter.length > 0 ? "default" : "outline"} 
+                  size="sm" 
+                  className="flex-shrink-0 h-9 rounded-full gap-1"
+                >
+                  <Building2 className="w-3.5 h-3.5" />
+                  {themeFilter.length > 0 
+                    ? `${themeFilter.length} types`
+                    : t('search.hotelType', 'Type')
+                  }
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3" align="start">
+                <ScrollArea className="h-48">
+                  <div className="space-y-1">
+                    {[
+                      { id: 'family', icon: '👨‍👩‍👧‍👦', label: t('themes.family', 'Family') },
+                      { id: 'romantic', icon: '💑', label: t('themes.romantic', 'Romantic') },
+                      { id: 'business', icon: '💼', label: t('themes.business', 'Business') },
+                      { id: 'beach', icon: '🏖️', label: t('themes.beach', 'Beach') },
+                      { id: 'spa', icon: '🧖', label: t('themes.spa', 'Spa & Wellness') },
+                      { id: 'budget', icon: '💰', label: t('themes.budget', 'Budget') }
+                    ].map(theme => (
+                      <Button
+                        key={theme.id}
+                        variant={themeFilter.includes(theme.id) ? "default" : "ghost"}
+                        size="sm"
+                        className="w-full h-8 justify-start gap-2 text-sm"
+                        onClick={() => {
+                          if (themeFilter.includes(theme.id)) {
+                            setThemeFilter(themeFilter.filter(t => t !== theme.id));
+                          } else {
+                            setThemeFilter([...themeFilter, theme.id]);
+                          }
+                        }}
+                      >
+                        <span>{theme.icon}</span>
+                        {theme.label}
+                      </Button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+
+            {/* Sort Dropdown */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-shrink-0 h-9 rounded-full gap-1">
+                  <ArrowUpDown className="w-3.5 h-3.5" />
+                  {t('search.sort', 'Sort')}
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-40 p-2" align="start">
+                {[
+                  { value: 'recommended', label: t('search.recommended', 'Recommended') },
+                  { value: 'price_asc', label: t('search.priceAsc', 'Price: Low to High') },
+                  { value: 'price_desc', label: t('search.priceDesc', 'Price: High to Low') },
+                  { value: 'rating', label: t('search.rating', 'Rating') }
+                ].map(option => (
+                  <Button
+                    key={option.value}
+                    variant={sortBy === option.value ? "default" : "ghost"}
+                    size="sm"
+                    className="w-full h-8 justify-start text-sm"
+                    onClick={() => setSortBy(option.value)}
+                  >
+                    {option.label}
+                  </Button>
+                ))}
+              </PopoverContent>
+            </Popover>
+
+            {/* Clear Filters - Only show if filters active */}
+            {(starFilter.length > 0 || themeFilter.length > 0 || priceRange[0] > 0 || priceRange[1] < 1000) && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex-shrink-0 h-9 text-xs text-muted-foreground"
+                onClick={() => {
+                  setStarFilter([]);
+                  setThemeFilter([]);
+                  setAmenityFilter([]);
+                  setPriceRange([0, 1000]);
+                }}
+              >
+                <XCircle className="w-3.5 h-3.5 mr-1" />
+                {t('search.clear', 'Clear')}
+              </Button>
+            )}
+          </div>
+          
+          {/* Results count for mobile */}
+          <div className="text-sm text-muted-foreground">
+            {filteredHotels.length} {t('search.hotelsFound', 'hotels found')}
+          </div>
+        </div>
+
         <div className="flex flex-col md:flex-row gap-8">
-          {/* Enhanced Filter Sidebar */}
-          <aside className="w-full md:w-80 flex-shrink-0">
+          {/* Enhanced Filter Sidebar - Hidden on Mobile */}
+          <aside className="hidden md:block w-80 flex-shrink-0">
             <Card className="p-6 sticky top-24 shadow-lg border-0">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-serif text-lg font-semibold flex items-center gap-2">
@@ -3071,11 +3927,15 @@ const HotelCard = ({ hotel, nights, checkIn, checkOut, guests }) => {
     <Card className="overflow-hidden rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 group" data-testid={`hotel-card-${hotel.hotel_id}`}>
       <div className="flex flex-col lg:flex-row">
         {/* Image Section */}
-        <div className="relative w-full lg:w-80 h-56 lg:h-auto flex-shrink-0 overflow-hidden">
+        <div className="relative w-full lg:w-80 h-56 lg:h-auto flex-shrink-0 overflow-hidden bg-secondary">
           <img 
-            src={hotel.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'} 
+            src={hotel.image_url || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400'} 
             alt={hotel.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            onError={(e) => {
+              e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400';
+            }}
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           
@@ -3261,9 +4121,6 @@ const HotelCard = ({ hotel, nights, checkIn, checkOut, guests }) => {
                     </span>
                     <span className="text-xs text-muted-foreground">per night</span>
                   </div>
-                  {!validPass && (
-                    <p className="text-xs text-muted-foreground">+ €{BOOKING_FEE} booking fee</p>
-                  )}
                 </div>
               </div>
 
@@ -3282,6 +4139,156 @@ const HotelCard = ({ hotel, nights, checkIn, checkOut, guests }) => {
   );
 };
 
+// ==================== NO ROOMS AVAILABLE COMPONENT ====================
+const NoRoomsAvailable = ({ hotelId, hotelName, checkIn, checkOut, adults, children, destinationId }) => {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [alternatives, setAlternatives] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showAlternatives, setShowAlternatives] = useState(false);
+  
+  const nights = differenceInDays(new Date(checkOut), new Date(checkIn));
+
+  const findAlternatives = async () => {
+    setLoading(true);
+    setShowAlternatives(true);
+    try {
+      const response = await axios.get(`${API}/hotels/${hotelId}/alternatives`, {
+        params: {
+          check_in: checkIn,
+          check_out: checkOut,
+          adults: adults,
+          children: children,
+          destination_id: destinationId
+        }
+      });
+      setAlternatives(response.data.alternatives || []);
+    } catch (error) {
+      console.error('Error finding alternatives:', error);
+      setAlternatives([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tryDifferentDates = () => {
+    // Navigate to search page with destination to find availability
+    if (destinationId) {
+      navigate(`/search?destinationId=${destinationId}&checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`);
+    } else {
+      navigate('/');
+    }
+  };
+
+  return (
+    <Card className="p-8 text-center bg-secondary/30 border-dashed" data-testid="no-rooms-available">
+      <div className="max-w-md mx-auto">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+          <CalendarX className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+        </div>
+        
+        <h3 className="font-semibold text-lg mb-2">
+          {t('hotel.noRoomsAvailable', 'No Rooms Available')}
+        </h3>
+        
+        <p className="text-muted-foreground mb-6 text-sm">
+          {t('hotel.noRoomsMessage', `Unfortunately, ${hotelName || 'this hotel'} has no availability for your selected dates. Try different dates or check out similar hotels nearby.`).replace('${hotelName}', hotelName || 'this hotel')}
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Button
+            variant="outline"
+            onClick={tryDifferentDates}
+            className="rounded-full"
+          >
+            <CalendarIcon className="w-4 h-4 mr-2" />
+            {t('hotel.tryDifferentDates', 'Try Different Dates')}
+          </Button>
+          
+          <Button
+            onClick={findAlternatives}
+            disabled={loading}
+            className="rounded-full"
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Search className="w-4 h-4 mr-2" />
+            )}
+            {t('hotel.findNearbyHotels', 'Find Hotels Nearby')}
+          </Button>
+        </div>
+
+        {/* Alternative Hotels Section */}
+        {showAlternatives && (
+          <div className="mt-8 pt-6 border-t border-border">
+            <h4 className="font-medium mb-4 flex items-center justify-center gap-2">
+              <Building2 className="w-5 h-5 text-primary" />
+              {t('hotel.alternativeHotels', 'Available Hotels Nearby')}
+            </h4>
+            
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : alternatives.length > 0 ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {alternatives.slice(0, 4).map(hotel => (
+                  <Card 
+                    key={hotel.hotel_id} 
+                    className="p-4 cursor-pointer hover:shadow-md transition-all text-left"
+                    onClick={() => navigate(`/hotel/${hotel.hotel_id}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}&destinationId=${destinationId || ''}`)}
+                  >
+                    <div className="flex gap-3">
+                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-secondary">
+                        <img 
+                          src={hotel.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200'}
+                          alt={hotel.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=200'; }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h5 className="font-medium text-sm line-clamp-2">{hotel.name}</h5>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <MapPin className="w-3 h-3" />
+                          {hotel.city}
+                        </div>
+                        <div className="flex items-center gap-1 mt-2">
+                          {Array.from({ length: Math.floor(hotel.star_rating || 0) }).map((_, i) => (
+                            <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                          ))}
+                        </div>
+                        <p className="text-primary font-semibold text-sm mt-1">
+                          €{hotel.min_price?.toFixed(0) || '---'} <span className="text-xs text-muted-foreground font-normal">/ night</span>
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm py-4">
+                {t('hotel.noAlternativesFound', 'No alternative hotels found for your dates. Try adjusting your search dates.')}
+              </p>
+            )}
+            
+            {alternatives.length > 4 && (
+              <Button 
+                variant="link" 
+                className="mt-4"
+                onClick={tryDifferentDates}
+              >
+                {t('hotel.viewMoreHotels', 'View all available hotels')} →
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    </Card>
+  );
+};
+
 // ==================== HOTEL DETAIL PAGE ====================
 const HotelDetailPage = () => {
   const { t } = useTranslation();
@@ -3289,18 +4296,22 @@ const HotelDetailPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, hasValidPass } = useAuth();
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
   
   const checkIn = searchParams.get('checkIn') || format(addDays(new Date(), 7), 'yyyy-MM-dd');
   const checkOut = searchParams.get('checkOut') || format(addDays(new Date(), 10), 'yyyy-MM-dd');
   const adults = parseInt(searchParams.get('adults') || '2');
   const children = parseInt(searchParams.get('children') || '0');
   const b2c = parseInt(searchParams.get('b2c') || '0');  // 1 for last minute deals
+  const destinationId = searchParams.get('destinationId') || '';  // City context for room search
+  const resortId = searchParams.get('resortId') || '';  // Resort/area context
   
   const nights = differenceInDays(new Date(checkOut), new Date(checkIn));
   const validPass = hasValidPass?.() || false;
 
   const { data: hotel, isLoading } = useQuery({
-    queryKey: ['hotel', hotelId, checkIn, checkOut, adults, children, b2c],
+    queryKey: ['hotel', hotelId, checkIn, checkOut, adults, children, b2c, destinationId, resortId],
     queryFn: async () => {
       const response = await axios.get(`${API}/hotels/${hotelId}`, {
         params: {
@@ -3308,12 +4319,44 @@ const HotelDetailPage = () => {
           check_out: checkOut,
           adults: adults,
           children: children,
-          b2c: b2c  // Pass b2c flag for last minute availability
+          b2c: b2c,  // Pass b2c flag for last minute availability
+          destination_id: destinationId || undefined,  // City context for room search
+          resort_id: resortId || undefined  // Resort/area context
         }
       });
       return response.data;
     }
   });
+
+  // Keyboard navigation for gallery
+  useEffect(() => {
+    if (!galleryOpen || !hotel?.images) return;
+    
+    const handleKeyDown = (e) => {
+      switch (e.key) {
+        case 'Escape':
+          setGalleryOpen(false);
+          break;
+        case 'ArrowLeft':
+          setGalleryIndex((prev) => (prev === 0 ? hotel.images.length - 1 : prev - 1));
+          break;
+        case 'ArrowRight':
+          setGalleryIndex((prev) => (prev === hotel.images.length - 1 ? 0 : prev + 1));
+          break;
+        default:
+          break;
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    // Prevent body scroll when gallery is open
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'unset';
+    };
+  }, [galleryOpen, hotel?.images]);
 
   if (isLoading) {
     return (
@@ -3341,29 +4384,164 @@ const HotelDetailPage = () => {
 
   return (
     <div className="min-h-screen pt-20" data-testid="hotel-detail-page">
-      <div className="relative h-[40vh] md:h-[50vh]">
-        <img 
-          src={hotel.image_url || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200'} 
-          alt={hotel.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center gap-1 mb-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className={`w-5 h-5 ${i < hotel.star_rating ? 'fill-yellow-400 text-yellow-400' : 'text-white/40'}`} />
-              ))}
+      {/* Breadcrumbs */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 pt-4 pb-2">
+        <Breadcrumbs items={[
+          { label: t('search.searchTitle', 'Search'), href: '/search' },
+          { label: hotel.name }
+        ]} />
+      </div>
+      
+      {/* Hotel Image Gallery - 2/3 Main + 1/3 Thumbnails */}
+      <div className="relative h-[40vh] md:h-[50vh] bg-secondary">
+        <div className="h-full max-w-7xl mx-auto flex">
+          {/* Main Image - 2/3 width */}
+          <div 
+            className="w-full md:w-2/3 h-full relative overflow-hidden cursor-pointer group"
+            onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
+          >
+            <img 
+              src={hotel.image_url || hotel.images?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200'} 
+              alt={hotel.name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1.5 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              View all photos
             </div>
-            <h1 className="font-serif text-3xl md:text-4xl text-white font-semibold mb-2">{hotel.name}</h1>
-            <div className="flex items-center gap-2 text-white/90">
-              <MapPin className="w-5 h-5" />
-              <span>{hotel.address}, {hotel.city}, {hotel.country}</span>
+          </div>
+          
+          {/* Thumbnail Gallery - 1/3 width (desktop only) */}
+          {hotel.images && hotel.images.length > 1 && (
+            <div className="hidden md:flex w-1/3 h-full flex-col gap-1 pl-1 relative">
+              <div 
+                className="flex-1 flex flex-col gap-1 overflow-y-auto scrollbar-hide"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {hotel.images.slice(1, 4).map((img, idx) => (
+                  <div 
+                    key={idx} 
+                    className="flex-1 min-h-[80px] relative overflow-hidden cursor-pointer group"
+                    onClick={() => { setGalleryIndex(idx + 1); setGalleryOpen(true); }}
+                  >
+                    <img 
+                      src={img} 
+                      alt={`${hotel.name} - ${idx + 2}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
+                  </div>
+                ))}
+              </div>
+              {/* Show more photos button */}
+              {hotel.images.length > 4 && (
+                <button 
+                  className="absolute bottom-2 right-2 bg-white/90 dark:bg-black/70 text-foreground dark:text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-white dark:hover:bg-black/80 transition-colors shadow-lg"
+                  onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
+                >
+                  <Camera className="w-4 h-4" />
+                  +{hotel.images.length - 4} photos
+                </button>
+              )}
+            </div>
+          )}
+          
+          {/* Mobile: View photos button */}
+          {hotel.images && hotel.images.length > 1 && (
+            <button 
+              className="md:hidden absolute bottom-20 right-4 bg-white/90 dark:bg-black/70 text-foreground dark:text-white px-3 py-2 rounded-lg text-sm flex items-center gap-2 shadow-lg"
+              onClick={() => { setGalleryIndex(0); setGalleryOpen(true); }}
+            >
+              <Camera className="w-4 h-4" />
+              {hotel.images.length} photos
+            </button>
+          )}
+        </div>
+        
+        {/* Hotel Info Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8 pointer-events-none">
+          <div className="max-w-7xl mx-auto">
+            <div className="md:w-2/3">
+              <div className="flex items-center gap-1 mb-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className={`w-5 h-5 ${i < hotel.star_rating ? 'fill-yellow-400 text-yellow-400' : 'text-white/40'}`} />
+                ))}
+              </div>
+              <h1 className="font-serif text-3xl md:text-4xl text-white font-semibold mb-2">{hotel.name}</h1>
+              <div className="flex items-center gap-2 text-white/90">
+                <MapPin className="w-5 h-5" />
+                <span>{hotel.address}, {hotel.city}, {hotel.country}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Gallery Modal */}
+      {galleryOpen && hotel.images && (
+        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+          {/* Close button */}
+          <button 
+            className="absolute top-4 right-4 text-white/80 hover:text-white z-10 p-2"
+            onClick={() => setGalleryOpen(false)}
+            title="Close (ESC)"
+          >
+            <XCircle className="w-8 h-8" />
+          </button>
+          
+          {/* Image counter and keyboard hint */}
+          <div className="absolute top-4 left-4 text-white/80 text-sm z-10 flex items-center gap-4">
+            <span>{galleryIndex + 1} / {hotel.images.length}</span>
+            <span className="hidden md:flex items-center gap-2 text-white/50 text-xs">
+              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">←</kbd>
+              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">→</kbd>
+              <span>navigate</span>
+              <kbd className="px-1.5 py-0.5 bg-white/10 rounded text-[10px]">ESC</kbd>
+              <span>close</span>
+            </span>
+          </div>
+          
+          {/* Previous button */}
+          <button 
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10 p-2 bg-black/30 rounded-full hover:bg-black/50 transition-colors"
+            onClick={() => setGalleryIndex((prev) => (prev === 0 ? hotel.images.length - 1 : prev - 1))}
+            title="Previous (←)"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+          
+          {/* Main image */}
+          <img 
+            src={hotel.images[galleryIndex]} 
+            alt={`${hotel.name} - ${galleryIndex + 1}`}
+            className="max-w-full max-h-[85vh] object-contain"
+          />
+          
+          {/* Next button */}
+          <button 
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white z-10 p-2 bg-black/30 rounded-full hover:bg-black/50 transition-colors"
+            onClick={() => setGalleryIndex((prev) => (prev === hotel.images.length - 1 ? 0 : prev + 1))}
+            title="Next (→)"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+          
+          {/* Thumbnail strip */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto p-2 bg-black/50 rounded-lg">
+            {hotel.images.map((img, idx) => (
+              <button
+                key={idx}
+                className={`w-16 h-12 rounded overflow-hidden flex-shrink-0 transition-all ${idx === galleryIndex ? 'ring-2 ring-white scale-110' : 'opacity-60 hover:opacity-100'}`}
+                onClick={() => setGalleryIndex(idx)}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 md:px-8 py-8">
         <div className="grid md:grid-cols-3 gap-8">
@@ -3400,7 +4578,12 @@ const HotelDetailPage = () => {
             </Card>
 
             <div>
-              <h2 className="font-serif text-xl font-semibold mb-4">{t('hotel.roomsAvailable', 'Available Rooms')}</h2>
+              <h2 className="font-serif text-xl font-semibold mb-4">
+                {(!hotel.rooms || hotel.rooms.length === 0) 
+                  ? t('hotel.noRoomsAvailable', 'No Rooms Available')
+                  : t('hotel.roomsAvailable', 'Available Rooms')
+                }
+              </h2>
               
               {/* Hotel Notes */}
               {hotel.hotel_notes && (
@@ -3415,22 +4598,67 @@ const HotelDetailPage = () => {
                 </Card>
               )}
               
-              <div className="space-y-4">
-                {hotel.rooms?.map(room => {
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2" style={{ scrollbarWidth: 'thin' }}>
+                {hotel.rooms && hotel.rooms.length > 0 ? (
+                  hotel.rooms.map(room => {
                   const pricing = calculatePricing(room.price * nights, validPass);
+                  const roomImages = room.images && room.images.length > 0 ? room.images : (room.image_url ? [room.image_url] : []);
 
                   return (
                     <Card key={room.room_id} className="p-6" data-testid={`room-${room.room_id}`}>
                       <div className="flex flex-col md:flex-row gap-4">
-                        {/* Room Image */}
-                        {room.image_url && (
-                          <div className="w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
-                            <img 
-                              src={room.image_url} 
-                              alt={room.room_type}
-                              className="w-full h-full object-cover"
-                              onError={(e) => { e.target.style.display = 'none'; }}
-                            />
+                        {/* Room Images Carousel */}
+                        {roomImages.length > 0 && (
+                          <div className="w-full md:w-56 flex-shrink-0">
+                            <div className="relative group">
+                              {/* Main scrollable image container */}
+                              <div 
+                                className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-hide rounded-lg"
+                                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                              >
+                                {roomImages.map((img, imgIdx) => {
+                                  // Handle different image formats (URL string or object with id)
+                                  let imgUrl = img;
+                                  if (typeof img === 'object' && img.id) {
+                                    imgUrl = img.id.startsWith('http') 
+                                      ? img.id 
+                                      : `https://hotelimages.sunhotels.net/HotelInfo/hotelImage.aspx?id=${img.id}`;
+                                  } else if (typeof img === 'string' && !img.startsWith('http')) {
+                                    imgUrl = `https://hotelimages.sunhotels.net/HotelInfo/hotelImage.aspx?id=${img}`;
+                                  }
+                                  
+                                  return (
+                                    <div 
+                                      key={imgIdx} 
+                                      className="w-full md:w-56 h-36 flex-shrink-0 snap-center rounded-lg overflow-hidden bg-secondary"
+                                    >
+                                      <img 
+                                        src={imgUrl} 
+                                        alt={`${room.room_type} - ${imgIdx + 1}`}
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                        onError={(e) => { e.target.parentElement.style.display = 'none'; }}
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              {/* Image counter badge */}
+                              {roomImages.length > 1 && (
+                                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                                  <Camera className="w-3 h-3" />
+                                  {roomImages.length}
+                                </div>
+                              )}
+                              {/* Scroll hint for multiple images */}
+                              {roomImages.length > 1 && (
+                                <div className="absolute top-1/2 -translate-y-1/2 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <div className="bg-white/80 dark:bg-black/60 rounded-full p-1">
+                                    <ChevronRight className="w-4 h-4" />
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         )}
                         
@@ -3527,11 +4755,11 @@ const HotelDetailPage = () => {
                           {validPass ? (
                             <Badge className="bg-accent text-accent-foreground mb-2">
                               <Tag className="w-3 h-3 mr-1" />
-                              {t('common.save', 'Save')} €{pricing.discountAmount.toFixed(0)}
+                              {t('common.saveMoney', 'Save')} €{pricing.discountAmount.toFixed(0)}
                             </Badge>
                           ) : (
                             <Badge variant="secondary" className="mb-2">
-                              {t('common.save', 'Save')} €{pricing.potentialSavings.toFixed(0)} {t('booking.discount', 'with pass')}
+                              {t('common.saveMoney', 'Save')} €{pricing.potentialSavings.toFixed(0)} {t('booking.discount', 'with pass')}
                             </Badge>
                           )}
                           <Button 
@@ -3545,7 +4773,18 @@ const HotelDetailPage = () => {
                     </div>
                     </Card>
                   );
-                })}
+                })
+                ) : (
+                  <NoRoomsAvailable 
+                    hotelId={hotelId}
+                    hotelName={hotel.name}
+                    checkIn={checkIn}
+                    checkOut={checkOut}
+                    adults={adults}
+                    children={children}
+                    destinationId={destinationId}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -3904,6 +5143,13 @@ const BookingPage = () => {
       </Dialog>
 
       <div className="max-w-5xl mx-auto px-4 md:px-8">
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[
+          { label: t('search.searchTitle', 'Search'), href: '/search' },
+          hotel ? { label: hotel.name, href: `/hotel/${hotelId}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}` } : null,
+          { label: t('booking.title', 'Booking') }
+        ].filter(Boolean)} />
+        
         {/* Progress Steps */}
         <div className="flex items-center justify-center gap-2 mb-8">
           <div className="flex items-center gap-2 text-primary">
@@ -3996,15 +5242,15 @@ const BookingPage = () => {
                 <Card className="p-6 mb-6">
                   <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
                     <Crown className="w-5 h-5 text-accent-foreground" />
-                    FreeStays Pass - Save 15%
+                    {t('booking.passTitle', 'FreeStays Pass - No commissions')}
                   </h2>
 
                   {/* Existing Pass Code */}
                   <div className="mb-6">
-                    <Label className="mb-2 block">Have a pass code?</Label>
+                    <Label className="mb-2 block">{t('booking.havePassCode', 'Have a pass code?')}</Label>
                     <div className="flex gap-2">
                       <Input 
-                        placeholder="Enter pass code (e.g., GOLD-XXXXXXXX)"
+                        placeholder={t('booking.passCodePlaceholder', 'Enter pass code (e.g., GOLD-XXXXXXXX)')}
                         value={existingPassCode}
                         onChange={(e) => {
                           setExistingPassCode(e.target.value.toUpperCase());
@@ -4555,163 +5801,10 @@ const PassSuccessPage = () => {
   );
 };
 
-// ==================== EMBEDDED CHECKOUT PAGE ====================
-const CheckoutPage = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const checkoutType = searchParams.get('type'); // 'pass' or 'booking'
-  const passType = searchParams.get('pass_type');
-  
-  // Decode client secret (it may be URL encoded)
-  const rawClientSecret = searchParams.get('client_secret');
-  const clientSecret = rawClientSecret ? decodeURIComponent(rawClientSecret) : null;
-  
-  const [publishableKey, setPublishableKey] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  // Fetch Stripe publishable key on mount
-  useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await axios.get(`${API}/payments/config`);
-        const key = response.data.publishable_key;
-        if (key) {
-          setPublishableKey(key);
-        } else {
-          setError("Payment configuration not found. Please contact support.");
-        }
-      } catch (err) {
-        console.error("Failed to load payment config:", err);
-        setError("Failed to load payment configuration.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchConfig();
-  }, []);
-
-  // Create stripe promise only once when we have the key
-  const stripePromise = useMemo(() => {
-    if (publishableKey) {
-      return loadStripe(publishableKey);
-    }
-    return null;
-  }, [publishableKey]);
-
-  // Options for embedded checkout - use fetchClientSecret callback
-  const options = useMemo(() => ({
-    fetchClientSecret: () => Promise.resolve(clientSecret)
-  }), [clientSecret]);
-
-  if (!clientSecret) {
-    return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <Header />
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold mb-2">Invalid Checkout Session</h1>
-          <p className="text-muted-foreground mb-6">The checkout session is invalid or has expired.</p>
-          <Button onClick={() => navigate('/dashboard')} className="rounded-full">
-            Return to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <Header />
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading checkout...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !stripePromise) {
-    return (
-      <div className="min-h-screen pt-24 flex items-center justify-center">
-        <Header />
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold mb-2">Payment Error</h1>
-          <p className="text-muted-foreground mb-6">{error || "Unable to initialize payment. Please try again."}</p>
-          <Button onClick={() => navigate(-1)} className="rounded-full">
-            Go Back
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  const getTitle = () => {
-    if (checkoutType === 'pass') {
-      return passType === 'annual' ? 'Annual Pass Checkout' : 'One-Time Pass Checkout';
-    }
-    return 'Complete Your Booking';
-  };
-
-  const getSubtitle = () => {
-    if (checkoutType === 'pass') {
-      return passType === 'annual' 
-        ? 'Get 15% discount on unlimited bookings for 1 year'
-        : 'Get 15% discount on your next booking';
-    }
-    return 'Secure your hotel reservation';
-  };
-
-  return (
-    <div className="min-h-screen bg-secondary/30 pt-24 pb-16" data-testid="checkout-page">
-      <Header />
-      <div className="max-w-4xl mx-auto px-4">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CreditCard className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="font-serif text-3xl font-semibold mb-2">{getTitle()}</h1>
-          <p className="text-muted-foreground">{getSubtitle()}</p>
-        </div>
-
-        {/* Embedded Checkout */}
-        <Card className="rounded-3xl overflow-hidden shadow-xl">
-          <CardContent className="p-0">
-            <div id="checkout-container" className="min-h-[500px]">
-              <EmbeddedCheckoutProvider
-                stripe={stripePromise}
-                options={options}
-              >
-                <EmbeddedCheckout />
-              </EmbeddedCheckoutProvider>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security Badge */}
-        <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-          <Shield className="w-4 h-4" />
-          <span>Secure payment powered by Stripe</span>
-        </div>
-
-        {/* Cancel Link */}
-        <div className="text-center mt-4">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(-1)}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Cancel and go back
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
+// ==================== CHECKOUT PAGE REMOVED ====================
+// Dead code removed - application uses Stripe Hosted Checkout instead of Embedded Checkout
+// Original code: ~157 lines (CheckoutPage component)
+// Removal date: December 2025
 
 // ==================== LAST MINUTE PAGE ====================
 const LastMinutePage = () => {
@@ -5224,6 +6317,11 @@ const DashboardPage = () => {
   return (
     <div className="min-h-screen pt-24 pb-16 bg-gradient-to-b from-secondary/30 to-background" data-testid="dashboard-page">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[
+          { label: t('dashboard.title', 'My Dashboard') }
+        ]} />
+        
         {/* Hero Profile Section */}
         <div className="relative rounded-3xl bg-gradient-to-r from-primary to-primary/80 p-8 md:p-10 mb-8 overflow-hidden shadow-xl animate-fadeInUp">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
@@ -5306,106 +6404,199 @@ const DashboardPage = () => {
               </div>
             ) : bookingsData?.bookings?.length > 0 ? (
               <div className="space-y-8">
-                {/* Upcoming Bookings */}
+                {/* Trip Statistics Header */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 dark:from-primary/20 dark:via-accent/15 dark:to-primary/10 p-8 border border-primary/10">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                  <div className="relative z-10">
+                    <h2 className="font-serif text-2xl md:text-3xl font-bold mb-2">Your Travel Journey</h2>
+                    <p className="text-muted-foreground mb-6">Every stay is a story waiting to be told</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-white/60 dark:bg-card/60 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/50 dark:border-border/50">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Plane className="w-6 h-6 text-primary" />
+                        </div>
+                        <p className="text-2xl font-bold text-primary">{bookingsData.bookings.length}</p>
+                        <p className="text-xs text-muted-foreground">Total Trips</p>
+                      </div>
+                      <div className="bg-white/60 dark:bg-card/60 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/50 dark:border-border/50">
+                        <div className="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <CalendarIcon className="w-6 h-6 text-accent-foreground" />
+                        </div>
+                        <p className="text-2xl font-bold text-accent-foreground">{upcomingBookings.length}</p>
+                        <p className="text-xs text-muted-foreground">Upcoming</p>
+                      </div>
+                      <div className="bg-white/60 dark:bg-card/60 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/50 dark:border-border/50">
+                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Euro className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+                          €{bookingsData.bookings.reduce((acc, b) => acc + (b.discount_amount || 0), 0).toFixed(0)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Total Saved</p>
+                      </div>
+                      <div className="bg-white/60 dark:bg-card/60 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/50 dark:border-border/50">
+                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+                          <Clock className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                          {bookingsData.bookings.reduce((acc, b) => acc + differenceInDays(new Date(b.check_out), new Date(b.check_in)), 0)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">Nights Booked</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upcoming Bookings - Premium Design */}
                 {upcomingBookings.length > 0 && (
                   <div>
-                    <h2 className="font-serif text-xl font-semibold mb-4 flex items-center gap-2">
-                      <CalendarIcon className="w-5 h-5 text-primary" />
-                      Upcoming Stays
-                    </h2>
-                    <div className="space-y-4">
-                      {upcomingBookings.map((booking, idx) => (
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-serif text-xl md:text-2xl font-semibold flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg">
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                        Upcoming Adventures
+                      </h2>
+                      <Badge className="bg-primary/10 text-primary border-primary/20 px-4 py-1.5 text-sm">
+                        {upcomingBookings.length} {upcomingBookings.length === 1 ? 'trip' : 'trips'} ahead
+                      </Badge>
+                    </div>
+                    <div className="space-y-6">
+                      {upcomingBookings.map((booking, idx) => {
+                        const daysUntil = differenceInDays(new Date(booking.check_in), new Date());
+                        const nights = differenceInDays(new Date(booking.check_out), new Date(booking.check_in));
+                        return (
                         <Card 
                           key={booking.booking_id} 
-                          className="p-0 rounded-2xl overflow-hidden shadow-lg border-0 card-hover animate-fadeInUp"
+                          className="group relative overflow-hidden rounded-3xl border-0 shadow-xl hover:shadow-2xl transition-all duration-500 animate-fadeInUp bg-gradient-to-br from-card to-card/80"
                           style={{ animationDelay: `${idx * 0.1}s` }}
                           data-testid={`booking-${booking.booking_id}`}
                         >
-                          <div className="flex flex-col lg:flex-row">
-                            {/* Image Section */}
-                            <div className="lg:w-48 h-40 lg:h-auto bg-gradient-to-br from-primary/20 to-primary/5 relative flex-shrink-0">
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <Building2 className="w-16 h-16 text-primary/30" />
+                          {/* Decorative Elements */}
+                          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                          <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-accent/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+                          
+                          <div className="relative flex flex-col lg:flex-row">
+                            {/* Image/Visual Section */}
+                            <div className="lg:w-72 h-56 lg:h-auto relative flex-shrink-0 overflow-hidden">
+                              <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/80 to-accent">
+                                <div className="absolute inset-0 opacity-20" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'}} />
                               </div>
-                              <div className="absolute top-3 left-3">
-                                <Badge className="bg-accent text-accent-foreground font-semibold shadow-lg">
-                                  {differenceInDays(new Date(booking.check_in), new Date())} days
-                                </Badge>
+                              <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6">
+                                <div className="text-center">
+                                  <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 mb-4">
+                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                    <span className="text-sm font-medium">Confirmed</span>
+                                  </div>
+                                  <div className="text-6xl font-bold mb-1">{daysUntil}</div>
+                                  <div className="text-white/80 text-sm">{daysUntil === 1 ? 'day' : 'days'} to go!</div>
+                                </div>
+                              </div>
+                              {/* Corner Badge */}
+                              <div className="absolute top-4 left-4">
+                                <div className="bg-white/90 backdrop-blur-sm rounded-xl px-3 py-1.5 shadow-lg">
+                                  <span className="text-xs font-semibold text-primary">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                                </div>
                               </div>
                             </div>
                             
                             {/* Content Section */}
-                            <div className="flex-1 p-6">
-                              <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1 p-6 lg:p-8">
+                              <div className="flex items-start justify-between mb-5">
                                 <div>
-                                  <h3 className="font-serif text-xl font-semibold mb-1">{booking.hotel_name}</h3>
-                                  <p className="text-muted-foreground text-sm flex items-center gap-1">
-                                    <Bed className="w-4 h-4" />
-                                    {booking.room_type}
-                                  </p>
+                                  <h3 className="font-serif text-xl lg:text-2xl font-bold mb-2 group-hover:text-primary transition-colors">{booking.hotel_name}</h3>
+                                  <div className="flex items-center gap-3 text-muted-foreground">
+                                    <span className="flex items-center gap-1.5 text-sm">
+                                      <Bed className="w-4 h-4" />
+                                      {booking.room_type}
+                                    </span>
+                                    <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                                    <span className="flex items-center gap-1.5 text-sm">
+                                      <Users className="w-4 h-4" />
+                                      {booking.adults} {booking.adults === 1 ? 'Adult' : 'Adults'}{booking.children > 0 ? `, ${booking.children} ${booking.children === 1 ? 'Child' : 'Children'}` : ''}
+                                    </span>
+                                  </div>
                                 </div>
-                                <Badge 
-                                  className={booking.status === 'confirmed' 
-                                    ? 'bg-primary/20 text-primary border-primary/30' 
-                                    : 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                  }
-                                >
-                                  {booking.status === 'confirmed' ? (
-                                    <><CheckCircle className="w-3 h-3 mr-1" /> Confirmed</>
-                                  ) : booking.status}
-                                </Badge>
                               </div>
                               
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4">
-                                <div className="bg-secondary/50 rounded-xl p-3">
-                                  <p className="text-muted-foreground text-xs mb-1">Check-in</p>
-                                  <p className="font-semibold">{format(new Date(booking.check_in), 'EEE, MMM d')}</p>
-                                </div>
-                                <div className="bg-secondary/50 rounded-xl p-3">
-                                  <p className="text-muted-foreground text-xs mb-1">Check-out</p>
-                                  <p className="font-semibold">{format(new Date(booking.check_out), 'EEE, MMM d')}</p>
-                                </div>
-                                <div className="bg-secondary/50 rounded-xl p-3">
-                                  <p className="text-muted-foreground text-xs mb-1">Guests</p>
-                                  <p className="font-semibold flex items-center gap-1">
-                                    <Users className="w-4 h-4" />
-                                    {booking.adults}{booking.children > 0 ? ` + ${booking.children}` : ''}
-                                  </p>
-                                </div>
-                                <div className="bg-primary/10 rounded-xl p-3">
-                                  <p className="text-muted-foreground text-xs mb-1">Total Paid</p>
-                                  <p className="font-bold text-primary text-lg">€{booking.final_price?.toFixed(2)}</p>
+                              {/* Date Timeline */}
+                              <div className="relative bg-gradient-to-r from-secondary/80 via-secondary/50 to-secondary/80 dark:from-secondary/50 dark:via-secondary/30 dark:to-secondary/50 rounded-2xl p-5 mb-5">
+                                <div className="flex items-center justify-between relative">
+                                  <div className="flex-1 text-center">
+                                    <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Check-in</p>
+                                    <p className="text-lg font-bold">{format(new Date(booking.check_in), 'EEE, MMM d')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(new Date(booking.check_in), 'yyyy')}</p>
+                                  </div>
+                                  <div className="flex-shrink-0 px-4">
+                                    <div className="w-20 h-0.5 bg-gradient-to-r from-primary/50 via-primary to-primary/50 relative">
+                                      <Plane className="w-5 h-5 text-primary absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-secondary dark:bg-card rounded-full p-0.5" />
+                                    </div>
+                                  </div>
+                                  <div className="flex-1 text-center">
+                                    <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide">Check-out</p>
+                                    <p className="text-lg font-bold">{format(new Date(booking.check_out), 'EEE, MMM d')}</p>
+                                    <p className="text-xs text-muted-foreground">{format(new Date(booking.check_out), 'yyyy')}</p>
+                                  </div>
                                 </div>
                               </div>
 
-                              <div className="flex items-center justify-between pt-4 border-t border-border/50">
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                  <span>Ref: <span className="font-mono">{booking.booking_id?.slice(-8)}</span></span>
-                                  {booking.confirmation_number && (
-                                    <span>Conf: <span className="font-mono">{booking.confirmation_number}</span></span>
+                              {/* Price & Savings */}
+                              <div className="flex items-center justify-between pt-5 border-t border-border/50">
+                                <div className="flex items-center gap-4">
+                                  <div>
+                                    <p className="text-xs text-muted-foreground">Total Paid</p>
+                                    <p className="text-2xl font-bold text-primary">€{booking.final_price?.toFixed(2)}</p>
+                                  </div>
+                                  {booking.discount_amount > 0 && (
+                                    <div className="bg-green-100 dark:bg-green-900/30 rounded-xl px-3 py-2">
+                                      <div className="flex items-center gap-1.5 text-green-600 dark:text-green-400">
+                                        <Gift className="w-4 h-4" />
+                                        <span className="font-semibold">Saved €{booking.discount_amount.toFixed(2)}</span>
+                                      </div>
+                                    </div>
                                   )}
                                 </div>
+                                
                                 <div className="flex items-center gap-2">
-                                  {booking.discount_amount > 0 && (
-                                    <Badge className="bg-accent/20 text-accent-foreground">
-                                      <Gift className="w-3 h-3 mr-1" />
-                                      Saved €{booking.discount_amount.toFixed(2)}
-                                    </Badge>
-                                  )}
-                                  {/* Social Share Buttons */}
+                                  {/* Reference Info */}
                                   <Popover>
                                     <PopoverTrigger asChild>
-                                      <Button size="sm" variant="outline" className="rounded-full h-8 px-3">
-                                        <Share2 className="w-4 h-4 mr-1" />
+                                      <Button size="sm" variant="ghost" className="rounded-full h-9 px-3">
+                                        <Info className="w-4 h-4 mr-1" />
+                                        Ref
+                                      </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-64 p-4" align="end">
+                                      <p className="text-sm font-semibold mb-3">Booking References</p>
+                                      <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Booking ID:</span>
+                                          <span className="font-mono text-xs">{booking.booking_id?.slice(-8)}</span>
+                                        </div>
+                                        {booking.confirmation_number && (
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">Confirmation:</span>
+                                            <span className="font-mono text-xs">{booking.confirmation_number}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                  
+                                  {/* Share Button */}
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <Button size="sm" variant="outline" className="rounded-full h-9 px-4">
+                                        <Share2 className="w-4 h-4 mr-1.5" />
                                         Share
                                       </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-56 p-2" align="end">
-                                      <p className="text-xs text-muted-foreground mb-2 px-2">Share your trip</p>
+                                      <p className="text-xs text-muted-foreground mb-2 px-2">Share your upcoming trip</p>
                                       <div className="space-y-1">
                                         <button 
                                           onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`I'm going to ${booking.hotel_name} on ${format(new Date(booking.check_in), 'MMM d, yyyy')}! Booked with FreeStays - Room was FREE! 🎉`)}`, '_blank')}
-                                          className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-green-50 transition-colors"
+                                          className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
                                         >
                                           <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
                                             <MessageCircle className="w-4 h-4 text-white" />
@@ -5413,17 +6604,8 @@ const DashboardPage = () => {
                                           WhatsApp
                                         </button>
                                         <button 
-                                          onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?quote=${encodeURIComponent(`I'm going to ${booking.hotel_name}! Booked with FreeStays - Room was FREE!`)}`, '_blank')}
-                                          className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-blue-50 transition-colors"
-                                        >
-                                          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-                                            <Globe className="w-4 h-4 text-white" />
-                                          </div>
-                                          Facebook
-                                        </button>
-                                        <button 
                                           onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I'm going to ${booking.hotel_name}! Booked with @FreeStays - Room was FREE! 🎉`)}`, '_blank')}
-                                          className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-sky-50 transition-colors"
+                                          className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors"
                                         >
                                           <div className="w-8 h-8 rounded-full bg-sky-500 flex items-center justify-center">
                                             <Twitter className="w-4 h-4 text-white" />
@@ -5445,82 +6627,155 @@ const DashboardPage = () => {
                                       </div>
                                     </PopoverContent>
                                   </Popover>
+                                  
+                                  {/* Details Button */}
                                   <Button 
                                     size="sm" 
-                                    className="rounded-full h-8 px-3"
+                                    className="rounded-full h-9 px-5 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all"
                                     onClick={() => openBookingDetails(booking)}
                                     data-testid={`view-details-${booking.booking_id}`}
                                   >
-                                    <Eye className="w-4 h-4 mr-1" />
-                                    Details
+                                    View Details
+                                    <ArrowRight className="w-4 h-4 ml-1.5" />
                                   </Button>
                                 </div>
                               </div>
                             </div>
                           </div>
                         </Card>
-                      ))}
+                      )})}
                     </div>
                   </div>
                 )}
 
-                {/* Past Bookings */}
+                {/* Past Bookings - Memory Lane Style */}
                 {pastBookings.length > 0 && (
                   <div>
-                    <h2 className="font-serif text-xl font-semibold mb-4 flex items-center gap-2">
-                      <Clock className="w-5 h-5 text-muted-foreground" />
-                      Past Stays
-                    </h2>
-                    <div className="space-y-3">
-                      {pastBookings.map((booking) => (
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="font-serif text-xl md:text-2xl font-semibold flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-muted to-muted-foreground/20 rounded-xl flex items-center justify-center">
+                          <Clock className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        Travel Memories
+                      </h2>
+                      <span className="text-sm text-muted-foreground">{pastBookings.length} past {pastBookings.length === 1 ? 'trip' : 'trips'}</span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {pastBookings.map((booking, idx) => {
+                        const nights = differenceInDays(new Date(booking.check_out), new Date(booking.check_in));
+                        return (
                         <Card 
                           key={booking.booking_id} 
-                          className="p-5 rounded-2xl bg-secondary/30 border-0 cursor-pointer hover:bg-secondary/50 transition-colors"
+                          className="group relative overflow-hidden rounded-2xl border border-border/50 hover:border-primary/30 hover:shadow-lg transition-all duration-300 cursor-pointer animate-fadeInUp"
+                          style={{ animationDelay: `${idx * 0.05}s` }}
                           data-testid={`booking-past-${booking.booking_id}`}
                           onClick={() => openBookingDetails(booking)}
                         >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
-                                <Building2 className="w-6 h-6 text-muted-foreground" />
+                          <div className="absolute inset-0 bg-gradient-to-br from-secondary/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                          <div className="relative p-5">
+                            <div className="flex items-start gap-4">
+                              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                                <Building2 className="w-7 h-7 text-primary/60" />
                               </div>
-                              <div>
-                                <h3 className="font-semibold">{booking.hotel_name}</h3>
-                                <p className="text-sm text-muted-foreground">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-semibold text-lg truncate group-hover:text-primary transition-colors">{booking.hotel_name}</h3>
+                                <p className="text-sm text-muted-foreground mt-0.5">
                                   {format(new Date(booking.check_in), 'MMM d')} - {format(new Date(booking.check_out), 'MMM d, yyyy')}
                                 </p>
+                                <div className="flex items-center gap-2 mt-3">
+                                  <Badge variant="secondary" className="text-xs">
+                                    {nights} {nights === 1 ? 'night' : 'nights'}
+                                  </Badge>
+                                  {booking.discount_amount > 0 && (
+                                    <Badge className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs border-0">
+                                      Saved €{booking.discount_amount.toFixed(0)}
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-4">
                               <div className="text-right">
-                                <p className="font-semibold">€{booking.final_price?.toFixed(2)}</p>
-                                {booking.discount_amount > 0 && (
-                                  <p className="text-xs text-primary">Saved €{booking.discount_amount.toFixed(2)}</p>
-                                )}
+                                <p className="font-bold text-lg">€{booking.final_price?.toFixed(0)}</p>
+                                <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <ArrowRight className="w-5 h-5 text-primary" />
+                                </div>
                               </div>
-                              <Eye className="w-5 h-5 text-muted-foreground" />
                             </div>
                           </div>
                         </Card>
-                      ))}
+                      )})}
                     </div>
                   </div>
                 )}
+
+                {/* Book Another Trip CTA */}
+                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary via-primary to-accent p-8 text-white">
+                  <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'url("data:image/svg+xml,%3Csvg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z" fill="%23ffffff" fill-opacity="1" fill-rule="evenodd"/%3E%3C/svg%3E")'}} />
+                  <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                      <h3 className="text-2xl font-bold mb-2">Ready for your next adventure?</h3>
+                      <p className="text-white/80">Discover amazing hotels with FREE rooms waiting for you</p>
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/')} 
+                      className="bg-white text-primary hover:bg-white/90 rounded-full px-8 h-12 font-semibold shadow-lg hover:shadow-xl transition-all"
+                    >
+                      <Search className="w-5 h-5 mr-2" />
+                      Find Your Next Stay
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
-              <Card className="p-16 text-center rounded-3xl border-0 shadow-lg bg-gradient-to-br from-secondary/50 to-background">
-                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Ticket className="w-12 h-12 text-primary" />
+              /* Empty State - Inspiring Design */
+              <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/5 via-accent/5 to-primary/10 p-12 text-center">
+                <div className="absolute inset-0 overflow-hidden">
+                  <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
+                  <div className="absolute bottom-10 right-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
                 </div>
-                <h3 className="font-serif text-2xl font-semibold mb-3">No bookings yet</h3>
-                <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                  Start exploring hotels and book your first FREE room stay!
-                </p>
-                <Button onClick={() => navigate('/search')} className="rounded-full px-8 h-12" data-testid="find-hotels-btn">
-                  <Search className="w-5 h-5 mr-2" />
-                  Find Hotels
-                </Button>
-              </Card>
+                <div className="relative z-10">
+                  <div className="w-28 h-28 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+                    <Plane className="w-14 h-14 text-white" />
+                  </div>
+                  <h3 className="font-serif text-3xl font-bold mb-4">Your Journey Begins Here</h3>
+                  <p className="text-muted-foreground text-lg mb-8 max-w-lg mx-auto">
+                    Imagine waking up in a beautiful hotel room that cost you nothing. 
+                    With FreeStays, your room is FREE — you only pay for meals.
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <Button 
+                      onClick={() => navigate('/')} 
+                      className="rounded-full px-8 h-14 text-lg bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-xl hover:shadow-2xl transition-all" 
+                      data-testid="find-hotels-btn"
+                    >
+                      <Search className="w-5 h-5 mr-2" />
+                      Explore Hotels
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => navigate('/about')} 
+                      className="rounded-full px-8 h-14 text-lg border-2"
+                    >
+                      <Info className="w-5 h-5 mr-2" />
+                      How It Works
+                    </Button>
+                  </div>
+                  <div className="mt-10 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>450,000+ Hotels</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>Room is FREE</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>Instant Booking</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </TabsContent>
 
@@ -5931,792 +7186,25 @@ const DashboardPage = () => {
   );
 };
 
-// ==================== ABOUT PAGE ====================
-const AboutPage = () => {
-  const { t } = useTranslation();
-  return (
-    <div className="min-h-screen pt-20 pb-16" data-testid="about-page">
-      {/* Hero Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden bg-gradient-to-b from-secondary/50 to-background">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-10 left-10 w-40 h-40 bg-primary rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-60 h-60 bg-accent rounded-full blur-3xl" />
-        </div>
-        
-        <div className="max-w-4xl mx-auto px-4 md:px-8 relative text-center">
-          <Badge className="mb-4 bg-accent/20 text-accent-foreground border-accent/30">
-            <Sparkles className="w-4 h-4 mr-1" /> {t('howItWorks.badge', 'The Freestays Way')}
-          </Badge>
-          <h1 className="font-serif text-4xl md:text-6xl font-bold mb-6">{t('howItWorks.title', 'How Freestays Works')}</h1>
-          <p className="text-xl md:text-2xl font-medium text-primary mb-4">{t('howItWorks.subtitle', 'Booking as it should be in this day and age')}</p>
-          <div className="text-muted-foreground text-lg max-w-3xl mx-auto space-y-4">
-            <p>{t('howItWorks.intro1', 'We live fast. We book online. We want clarity, fair prices, and real benefits.')}</p>
-            <p>{t('howItWorks.intro2', 'Freestays is made for how we travel now — smart, transparent, and without unnecessary costs.')}</p>
-            <p className="text-primary font-semibold text-xl mt-6">{t('howItWorks.readyCta', 'Ready to experience travel differently?')}</p>
-          </div>
-        </div>
-      </section>
+// ==================== ABOUT PAGE REMOVED ====================
+// Dead code removed - using imported AboutPage from @/pages/AboutPage instead
+// Original code: ~147 lines (local AboutPage component)
+// Removal date: January 2026
 
-      {/* Steps Section */}
-      <section className="py-16 md:py-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="relative group">
-              <div className="bg-card rounded-3xl p-8 shadow-lg border border-border/50 h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/20 to-transparent rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-6 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">1</span>
-                </div>
-                <h3 className="font-serif text-xl font-semibold mb-3">{t('howItWorks.step1.title', 'Discover Hotels Worldwide')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('howItWorks.step1.subtitle', 'From a weekend getaway to the trip of a lifetime.')}</p>
-                <div className="text-muted-foreground text-sm space-y-3">
-                  <p>{t('howItWorks.step1.text1', 'Search directly among more than 450,000 hotels worldwide, with real-time availability and current prices.')}</p>
-                  <p className="font-medium text-foreground">{t('howItWorks.step1.text2', 'No waiting. No outdated info.')}</p>
-                  <p>{t('howItWorks.step1.text3', 'Just see what\'s available — where and when you want.')}</p>
-                </div>
-                <p className="text-primary font-medium mt-4 text-sm">{t('howItWorks.step1.cta', '👉 Where will you go next?')}</p>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-            </div>
+// ==================== REFER A FRIEND PAGE REMOVED ====================
+// Dead code removed - using imported ReferFriendPage from @/pages/ReferFriendPage instead
+// Original code: ~218 lines (local ReferFriendPage component)
+// Removal date: January 2026
 
-            {/* Step 2 */}
-            <div className="relative group">
-              <div className="bg-card rounded-3xl p-8 shadow-lg border border-border/50 h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-accent/20 to-transparent rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-6 shadow-lg">
-                  <span className="text-2xl font-bold text-primary-foreground">2</span>
-                </div>
-                <h3 className="font-serif text-xl font-semibold mb-3">{t('howItWorks.step2.title', 'Activate Your Freestays Pass')}</h3>
-                <p className="text-muted-foreground text-sm mb-4">{t('howItWorks.step2.subtitle', 'Want to book smarter than the rest?')}</p>
-                <div className="text-muted-foreground text-sm space-y-3">
-                  <p>{t('howItWorks.step2.text1', 'With a One-Time Pass (€35) or Annual Pass (€129), you unlock all Freestays benefits — with every booking, anywhere in the world.')}</p>
-                  <ul className="space-y-2 mt-3">
-                    <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t('howItWorks.step2.benefit1', 'Activate once')}</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t('howItWorks.step2.benefit2', 'Instant access')}</li>
-                    <li className="flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> {t('howItWorks.step2.benefit3', 'Always save')}</li>
-                  </ul>
-                </div>
-                <p className="text-primary font-medium mt-4 text-sm">{t('howItWorks.step2.cta', 'Why overpay when you can book fairly?')}</p>
-              </div>
-              <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-            </div>
+// ==================== CONTACT PAGE REMOVED ====================
+// Dead code removed - using imported ContactPage from @/pages/ContactPage instead
+// Original code: ~207 lines (local ContactPage component)
+// Removal date: December 2025
 
-            {/* Step 3 */}
-            <div className="relative group">
-              <div className="bg-gradient-to-br from-accent to-blue-400 rounded-3xl p-8 shadow-xl h-full card-hover relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-bl-full" />
-                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-lg">
-                  <Gift className="w-8 h-8 text-accent-foreground" />
-                </div>
-                <h3 className="font-serif text-xl font-bold mb-3 text-accent-foreground">{t('howItWorks.step3.title', 'Save Every Time')}</h3>
-                <p className="text-accent-foreground/80 text-sm mb-4">{t('howItWorks.step3.subtitle', 'With your Freestays Pass you pay:')}</p>
-                <div className="text-accent-foreground/90 text-sm space-y-3">
-                  <ul className="space-y-2">
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> {t('howItWorks.step3.benefit2', 'Only one time booking costs')}</li>
-                    <li className="flex items-center gap-2"><Check className="w-4 h-4 text-white" /> {t('howItWorks.step3.benefit3', 'Full transparency on every price')}</li>
-                  </ul>
-                  <p className="font-medium text-white pt-2">{t('howItWorks.step3.text1', 'No surprises afterwards.')}</p>
-                  <p className="text-white/90">{t('howItWorks.step3.text2', 'No fine print.')}</p>
-                  <p className="text-white/90">{t('howItWorks.step3.text3', 'Only smart choices that keep paying off.')}</p>
-                </div>
-                <p className="text-white font-semibold mt-4 text-sm">{t('howItWorks.step3.cta', '💡 The more you book, the more you win.')}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 md:py-20 bg-secondary/30">
-        <div className="max-w-4xl mx-auto px-4 md:px-8">
-          <div className="bg-card rounded-3xl p-8 md:p-12 shadow-xl border border-border/50 text-center">
-            <h2 className="font-serif text-2xl md:text-4xl font-bold mb-4">{t('howItWorks.cta.title', 'This Is Not A Deal.')}</h2>
-            <p className="text-xl md:text-2xl text-primary font-semibold mb-8">{t('howItWorks.cta.subtitle', 'This Is A New Way Of Traveling.')}</p>
-            
-            <p className="text-muted-foreground mb-6">{t('howItWorks.cta.forWho', 'Freestays is for:')}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-secondary/50 rounded-xl p-4">
-                <Zap className="w-6 h-6 text-primary mx-auto mb-2" />
-                <p className="font-medium text-sm">{t('howItWorks.cta.persona1', 'The fast online booker')}</p>
-              </div>
-              <div className="bg-secondary/50 rounded-xl p-4">
-                <Heart className="w-6 h-6 text-primary mx-auto mb-2" />
-                <p className="font-medium text-sm">{t('howItWorks.cta.persona2', 'The conscious traveler')}</p>
-              </div>
-              <div className="bg-secondary/50 rounded-xl p-4">
-                <Plane className="w-6 h-6 text-primary mx-auto mb-2" />
-                <p className="font-medium text-sm">{t('howItWorks.cta.persona3', 'The young explorer')}</p>
-              </div>
-              <div className="bg-secondary/50 rounded-xl p-4">
-                <Star className="w-6 h-6 text-primary mx-auto mb-2" />
-                <p className="font-medium text-sm">{t('howItWorks.cta.persona4', 'The experienced bon vivant')}</p>
-              </div>
-            </div>
-            
-            <p className="text-muted-foreground mb-6">{t('howItWorks.cta.statement', 'For everyone who feels the old system no longer fits this era.')}</p>
-            
-            <div className="space-y-3">
-              <p className="text-lg font-semibold">{t('howItWorks.cta.question', 'Why would you book any other way?')}</p>
-              <p className="text-primary text-xl font-bold">{t('howItWorks.cta.action', 'Join us. Book fairly. Travel smarter.')}</p>
-              <p className="text-3xl font-serif font-bold text-primary mt-6">{t('howItWorks.cta.welcome', 'Welcome to Freestays.')}</p>
-            </div>
-
-            <div className="mt-10">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="rounded-full px-10 text-lg h-14">
-                    {t('about.ctaButton', 'Create Free Account')}
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </DialogTrigger>
-                <AuthDialog defaultTab="register" />
-              </Dialog>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-};
-
-// ==================== REFER A FRIEND PAGE ====================
-const ReferFriendPage = () => {
-  const { t } = useTranslation();
-  const { user } = useAuth();
-  const [copied, setCopied] = useState(false);
-  
-  const referralCode = user?.referral_code || 'LOGIN-TO-GET-CODE';
-  const referralLink = `https://freestays.eu/?ref=${referralCode}`;
-  
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success('Copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const benefits = [
-    { icon: Gift, title: "Your Friend Saves", desc: "Your friend gets €15 off their booking fee when they use your referral code." },
-    { icon: Euro, title: "You Earn Rewards", desc: "When your friend completes their first booking, your next booking fee (€15) is covered!" },
-    { icon: Users, title: "Unlimited Referrals", desc: "There's no limit! Refer as many friends as you want and keep earning rewards." },
-    { icon: Heart, title: "Share the Joy", desc: "Help your friends discover the magic of free hotel stays with FreeStays." },
-  ];
-
-  const steps = [
-    { num: "1", title: "Share Your Code", desc: "Copy your unique referral code or link and share it with friends via email, social media, or messaging." },
-    { num: "2", title: "Friend Signs Up", desc: "Your friend creates a FreeStays account using your referral code during registration." },
-    { num: "3", title: "Friend Books", desc: "When your friend completes their first hotel booking, you both get rewarded!" },
-    { num: "4", title: "You Save €15", desc: "Your next booking fee is automatically waived. It's that simple!" },
-  ];
-
-  return (
-    <div className="min-h-screen pt-20 pb-16" data-testid="refer-page">
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1920')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-primary/70" />
-        
-        <div className="relative max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <Badge className="mb-6 bg-accent text-accent-foreground border-0 px-6 py-2 text-sm font-bold">
-            <Gift className="w-4 h-4 mr-2" />
-            Earn €15 Per Referral!
-          </Badge>
-          
-          <h1 className="font-serif text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Refer Friends,
-            <span className="block text-accent">Earn Rewards!</span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto mb-8 leading-relaxed">
-            Share the gift of free hotel stays with your friends and family. 
-            When they book, <span className="font-bold text-accent">you both save!</span>
-          </p>
-        </div>
-      </section>
-
-      {/* Referral Code Box */}
-      <section className="py-12 -mt-16 relative z-10">
-        <div className="max-w-2xl mx-auto px-4 md:px-8">
-          <Card className="p-8 rounded-3xl shadow-2xl border-0 bg-card">
-            <div className="text-center mb-6">
-              <h2 className="font-serif text-2xl font-semibold mb-2">Your Referral Code</h2>
-              <p className="text-muted-foreground">Share this code with friends to start earning</p>
-            </div>
-            
-            {user ? (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-secondary rounded-xl p-4 font-mono text-xl text-center font-bold tracking-wider">
-                    {referralCode}
-                  </div>
-                  <Button 
-                    size="lg"
-                    className="rounded-xl h-14 px-6"
-                    onClick={() => copyToClipboard(referralCode)}
-                  >
-                    {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                  </Button>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Input 
-                    value={referralLink}
-                    readOnly
-                    className="flex-1 h-12 rounded-xl bg-secondary/50"
-                  />
-                  <Button 
-                    variant="outline"
-                    size="lg"
-                    className="rounded-xl h-12 px-6"
-                    onClick={() => copyToClipboard(referralLink)}
-                  >
-                    Copy Link
-                  </Button>
-                </div>
-                
-                <div className="flex justify-center gap-3 pt-4">
-                  <Button 
-                    variant="outline" 
-                    className="rounded-full"
-                    onClick={() => window.open(`https://wa.me/?text=Get free hotel stays with FreeStays! Use my referral code: ${referralCode} - ${referralLink}`, '_blank')}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="rounded-full"
-                    onClick={() => window.open(`https://twitter.com/intent/tweet?text=Get free hotel stays with @FreeStays! Use my referral code: ${referralCode}&url=${referralLink}`, '_blank')}
-                  >
-                    <Twitter className="w-4 h-4 mr-2" />
-                    Twitter
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="rounded-full"
-                    onClick={() => window.open(`mailto:?subject=Free Hotel Stays with FreeStays!&body=Hey! I've been using FreeStays to get free hotel rooms. Use my referral code ${referralCode} to save €15 on your first booking! ${referralLink}`, '_blank')}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">Login to get your unique referral code</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="lg" className="rounded-full px-8">
-                      Login to Get Your Code
-                    </Button>
-                  </DialogTrigger>
-                  <AuthDialog />
-                </Dialog>
-              </div>
-            )}
-          </Card>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 md:py-24 bg-secondary/30">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-              <Sparkles className="w-4 h-4 mr-2" />
-              Simple Process
-            </Badge>
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">How It Works</h2>
-            <p className="text-muted-foreground text-lg">Four easy steps to start earning rewards</p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            {steps.map((step, index) => (
-              <div key={index} className="relative">
-                <Card className="p-6 rounded-2xl border-0 shadow-lg h-full text-center hover:shadow-xl transition-all">
-                  <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-bold mx-auto mb-4">
-                    {step.num}
-                  </div>
-                  <h3 className="font-semibold text-lg mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm">{step.desc}</p>
-                </Card>
-                {index < 3 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 w-6 h-6 bg-accent rounded-full z-10 transform -translate-y-1/2" />
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-16">
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">Why Refer Friends?</h2>
-            <p className="text-muted-foreground text-lg">Everyone wins with our referral program</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="p-6 rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all group">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-all">
-                  <benefit.icon className="w-7 h-7 text-primary group-hover:text-white" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground text-sm">{benefit.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-16 bg-gradient-to-br from-primary to-primary/90">
-        <div className="max-w-3xl mx-auto px-4 md:px-8 text-center">
-          <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-4">
-            Start Sharing Today!
-          </h2>
-          <p className="text-white/80 text-lg mb-8">
-            The more friends you refer, the more you save on your travels.
-          </p>
-          {!user && (
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="lg" className="rounded-full px-10 bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-                  <Sparkles className="mr-2 w-5 h-5" />
-                  Get Started Now
-                </Button>
-              </DialogTrigger>
-              <AuthDialog defaultTab="register" />
-            </Dialog>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-};
-
-// ==================== CONTACT PAGE ====================
-const ContactPage = () => {
-  const { t } = useTranslation();
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [sending, setSending] = useState(false);
-  const [contactInfo, setContactInfo] = useState({
-    page_title: 'Get in Touch',
-    page_subtitle: 'Have questions? We\'re here to help. Reach out to our team and we\'ll get back to you as soon as possible.',
-    email: 'hello@freestays.eu',
-    email_note: 'We respond within 24 hours',
-    phone: '+31 (0) 123 456 789',
-    phone_hours: 'Mon-Fri, 9:00 - 17:00 CET',
-    company_name: 'Euro Hotel Cards GmbH',
-    address: 'Barneveld, Netherlands',
-    support_text: 'Our booking support team is available around the clock for urgent travel assistance.'
-  });
-
-  useEffect(() => {
-    const fetchContactSettings = async () => {
-      try {
-        const response = await axios.get(`${API}/contact-settings`);
-        setContactInfo(response.data);
-      } catch (error) {
-        console.log('Using default contact settings');
-      }
-    };
-    fetchContactSettings();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSending(true);
-    try {
-      await axios.post(`${API}/contact`, formData);
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      setFormData({ name: '', email: '', subject: '', message: '' });
-    } catch (error) {
-      toast.error('Failed to send message. Please try again.');
-    } finally {
-      setSending(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen pt-24 pb-16" data-testid="contact-page">
-      {/* Hero Section */}
-      <section className="text-center mb-16 px-4">
-        <Badge className="mb-4 bg-accent/20 text-accent-foreground border-accent/30">
-          <Phone className="w-4 h-4 mr-1" /> {t('contact.badge', 'Contact Us')}
-        </Badge>
-        <h1 className="font-serif text-4xl md:text-5xl font-semibold mb-4">{contactInfo.page_title}</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          {contactInfo.page_subtitle}
-        </p>
-      </section>
-
-      {/* Contact Cards */}
-      <section className="max-w-6xl mx-auto px-4 md:px-8 mb-16">
-        <div className="grid md:grid-cols-3 gap-6">
-          {/* Email Card */}
-          <Card className="text-center p-8 rounded-2xl card-hover">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Mail className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">{t('contact.emailTitle', 'Email Us')}</h3>
-            <a href={`mailto:${contactInfo.email}`} className="text-primary hover:underline text-lg">
-              {contactInfo.email}
-            </a>
-            <p className="text-sm text-muted-foreground mt-2">{contactInfo.email_note}</p>
-          </Card>
-
-          {/* Phone Card */}
-          <Card className="text-center p-8 rounded-2xl card-hover">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-accent/20 flex items-center justify-center">
-              <Phone className="w-8 h-8 text-accent-foreground" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">{t('contact.phoneTitle', 'Call Us')}</h3>
-            <a href={`tel:${contactInfo.phone?.replace(/\s/g, '')}`} className="text-primary hover:underline text-lg">
-              {contactInfo.phone}
-            </a>
-            <p className="text-sm text-muted-foreground mt-2">{contactInfo.phone_hours}</p>
-          </Card>
-
-          {/* Address Card */}
-          <Card className="text-center p-8 rounded-2xl card-hover">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-secondary flex items-center justify-center">
-              <MapPin className="w-8 h-8 text-foreground" />
-            </div>
-            <h3 className="font-semibold text-lg mb-2">{t('contact.officeTitle', 'Visit Us')}</h3>
-            <p className="text-muted-foreground">{contactInfo.company_name}</p>
-            <p className="text-muted-foreground">{contactInfo.address}</p>
-          </Card>
-        </div>
-      </section>
-
-      {/* Contact Form & Support Section */}
-      <section className="max-w-6xl mx-auto px-4 md:px-8">
-        <div className="grid md:grid-cols-2 gap-12">
-          {/* Contact Form */}
-          <Card className="p-8 rounded-2xl">
-            <h2 className="font-serif text-2xl font-semibold mb-6">{t('contact.formTitle', 'Send us a message')}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">{t('contact.name', 'Your Name')}</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                  className="rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="email">{t('contact.email', 'Email Address')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required
-                  className="rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="subject">{t('contact.subject', 'Subject')}</Label>
-                <Input
-                  id="subject"
-                  value={formData.subject}
-                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                  required
-                  className="rounded-xl"
-                />
-              </div>
-              <div>
-                <Label htmlFor="message">{t('contact.message', 'Message')}</Label>
-                <Textarea
-                  id="message"
-                  rows={5}
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  required
-                  className="rounded-xl"
-                />
-              </div>
-              <Button type="submit" disabled={sending} className="w-full rounded-xl h-12">
-                {sending ? (
-                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {t('contact.sending', 'Sending...')}</>
-                ) : (
-                  <><Send className="w-4 h-4 mr-2" /> {t('contact.send', 'Send Message')}</>
-                )}
-              </Button>
-            </form>
-          </Card>
-
-          {/* Support Info */}
-          <div className="space-y-8">
-            <Card className="p-8 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center">
-                  <Clock className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{t('contact.support247', '24/7 Support')}</h3>
-                  <p className="text-primary-foreground/80 text-sm">{t('contact.alwaysHere', 'We\'re always here for you')}</p>
-                </div>
-              </div>
-              <p className="text-primary-foreground/90">
-                {contactInfo.support_text}
-              </p>
-            </Card>
-
-            <Card className="p-8 rounded-2xl">
-              <h3 className="font-semibold text-lg mb-4">{t('contact.faqTitle', 'Frequently Asked Questions')}</h3>
-              <div className="space-y-4">
-                <div>
-                  <p className="font-medium">{t('contact.faq1q', 'How does FreeStays work?')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('contact.faq1a', 'FreeStays partners directly with hotels, eliminating commissions. When you book with a meal package, your room becomes free!')}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <p className="font-medium">{t('contact.faq2q', 'What is the FreeStays Pass?')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('contact.faq2a', 'The Pass unlocks our best rates. Choose a One-Time Pass (€35) or Annual Pass (€129) for unlimited savings.')}
-                  </p>
-                </div>
-                <Separator />
-                <div>
-                  <p className="font-medium">{t('contact.faq3q', 'Can I cancel my booking?')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {t('contact.faq3a', 'Cancellation policies vary by hotel. Check the specific terms during booking for free cancellation deadlines.')}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-};
-
-// ==================== WHO WE ARE PAGE ====================
-const WhoWeArePage = () => {
-  const { t } = useTranslation();
-  
-  const benefits = [
-    { icon: Wallet, title: "Cost-effective", desc: "By paying only for meals, you can save money on accommodation costs and stretch your travel budget further." },
-    { icon: Globe, title: "Endless Destinations", desc: "Access to a range of top destinations and partner hotels, giving you the freedom to explore new places and cultures." },
-    { icon: RefreshCw, title: "Flexibility", desc: "Choose from one-time stays or annual subscriptions, allowing you to plan your travels around your schedule." },
-    { icon: Gift, title: "Thoughtful Gifts", desc: "Freestays vouchers make a unique and thoughtful gift for friends and family who love to travel." },
-    { icon: ClipboardCheck, title: "Practicality", desc: "Hotel descriptions clearly outline any conditions. Factor in meals, transport, and incidentals when planning." },
-  ];
-
-  const offerings = [
-    "Free hotel nights with half board or all-inclusive bookings",
-    "Up to 50% discount on regular (room-only) stays",
-    "Access to over 450,000 partner hotels worldwide",
-    "Instant digital delivery of your hotel voucher",
-    "Valid for 12 months – flexible, no obligations",
-    "Exclusive deals and room upgrades",
-    "Family sharing included with the Annual Card (up to 4 people)",
-    "Choose between one-time or unlimited bookings for a year",
-    "24/7 Booking Support – Always Available by Phone",
-  ];
-
-  const considerations = [
-    { icon: Clock, title: "Limited Availability", desc: "Popular hotels may have limited availability, so plan ahead for the best options." },
-    { icon: CalendarX, title: "Usage Restrictions", desc: "Check for blackout dates or restrictions to ensure your voucher can be used when and where you want." },
-  ];
-
-  return (
-    <div className="min-h-screen pt-20 pb-16" data-testid="whoweare-page">
-      {/* Hero Section */}
-      <section className="relative py-20 md:py-28 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1920')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/95 via-primary/85 to-primary/70" />
-        
-        <div className="relative max-w-5xl mx-auto px-4 md:px-8 text-center">
-          <Badge className="mb-6 bg-white/20 text-white border-white/30 px-6 py-2 text-sm">
-            <Sparkles className="w-4 h-4 mr-2" />
-            Since 1996 • Barneveld, Netherlands
-          </Badge>
-          
-          <h1 className="font-serif text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Dine at the Hotel.
-            <span className="block text-accent">Stay for Free!</span>
-          </h1>
-          
-          <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-8 leading-relaxed">
-            Welcome to <span className="font-bold text-accent">Freestays</span>, the innovative hospitality concept 
-            that's redefining the way we travel.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="lg" className="rounded-full px-10 h-14 text-lg bg-accent hover:bg-accent/90 text-accent-foreground font-bold shadow-xl hover:scale-105 transition-all">
-                  <Sparkles className="mr-2 w-5 h-5" />
-                  Yes! I Want This!
-                </Button>
-              </DialogTrigger>
-              <AuthDialog defaultTab="register" />
-            </Dialog>
-          </div>
-        </div>
-      </section>
-
-      {/* Introduction */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-secondary/50 to-background">
-        <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-            Located in the heart of the Netherlands, <strong className="text-foreground">Barneveld</strong>, our company has been a 
-            <strong className="text-primary"> pioneer in the industry since 1996</strong>, starting as a licensee in Germany. 
-            With a unique approach that offers <span className="text-primary font-semibold">free stays at partner hotels</span> in 
-            exchange for breakfast and dinner, Freestays is the perfect choice for travel enthusiasts looking for an 
-            <strong className="text-foreground"> affordable and exciting experience</strong>.
-          </p>
-        </div>
-      </section>
-
-      {/* Experience Freedom Section */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 px-4 py-1.5">
-              <Plane className="w-4 h-4 mr-2" />
-              Travel Freedom
-            </Badge>
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">
-              Experience the Freedom to Travel!
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Here are just a few reasons why our vouchers are the perfect choice for travelers:
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {benefits.map((benefit, index) => (
-              <Card key={index} className="p-6 rounded-2xl border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-card group">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-all">
-                  <benefit.icon className="w-7 h-7 text-primary group-hover:text-white" />
-                </div>
-                <h3 className="font-semibold text-lg mb-2">{benefit.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{benefit.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Considerations Section */}
-      <section className="py-16 bg-amber-50/50">
-        <div className="max-w-4xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-10">
-            <h2 className="font-serif text-2xl md:text-3xl font-semibold mb-3">
-              Before Using Freestays Vouchers
-            </h2>
-            <p className="text-muted-foreground">Consider these key factors to make the most of your experience:</p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-6">
-            {considerations.map((item, index) => (
-              <Card key={index} className="p-6 rounded-2xl border-amber-200 bg-white shadow-md">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
-                    <item.icon className="w-6 h-6 text-amber-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold mb-1">{item.title}</h3>
-                    <p className="text-muted-foreground text-sm">{item.desc}</p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-          
-          <p className="text-center text-sm text-muted-foreground mt-8 max-w-2xl mx-auto">
-            By understanding these factors, you can make the most of your Freestays voucher and enjoy a unique 
-            and cost-effective travel experience. Whether you're a frequent traveler or using it as a gift, 
-            consider your individual needs and preferences.
-          </p>
-        </div>
-      </section>
-
-      {/* What We Offer Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-br from-primary to-primary/90 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="relative max-w-4xl mx-auto px-4 md:px-8">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-white/20 text-white border-white/30">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              What We Offer
-            </Badge>
-            <h2 className="font-serif text-3xl md:text-4xl font-semibold text-white mb-4">
-              What Freestays.eu Offers
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            {offerings.map((offering, index) => (
-              <div 
-                key={index} 
-                className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 hover:bg-white/20 transition-all"
-              >
-                <CheckCircle className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
-                <span className="text-white/95 text-sm md:text-base">{offering}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 md:py-28">
-        <div className="max-w-4xl mx-auto px-4 md:px-8 text-center">
-          <div className="relative bg-card rounded-3xl p-10 md:p-16 shadow-2xl border border-border/50 overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
-            
-            <div className="relative">
-              <Gift className="w-16 h-16 text-primary mx-auto mb-6" />
-              <h2 className="font-serif text-3xl md:text-4xl font-semibold mb-4">
-                Ready to Travel Smarter?
-              </h2>
-              <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">
-                Join thousands of happy travelers who have discovered the joy of free stays. 
-                Your next adventure is waiting!
-              </p>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button size="lg" className="rounded-full px-12 h-14 text-lg font-bold shadow-xl hover:shadow-2xl hover:scale-105 transition-all">
-                    <Sparkles className="mr-2 w-5 h-5" />
-                    Start My Free Journey
-                  </Button>
-                </DialogTrigger>
-                <AuthDialog defaultTab="register" />
-              </Dialog>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-};
+// ==================== WHO WE ARE PAGE REMOVED ====================
+// Dead code removed - using imported WhoWeArePage from @/pages/WhoWeArePage instead
+// Original code: ~208 lines (local WhoWeArePage component)
+// Removal date: December 2025
 
 // ==================== ADMIN PAGES ====================
 
@@ -6798,9 +7286,144 @@ const AdminLoginPage = () => {
   );
 };
 
+// Sortable Destination Item for drag-and-drop reordering
+const SortableDestinationItem = ({ id, dest, index, updateDestination, removeDestination, handleDestImageUpload, uploadingDestImage, t }) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 1000 : 1,
+  };
+  
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style} 
+      className={`flex items-center gap-4 p-4 border rounded-lg bg-card ${isDragging ? 'shadow-lg ring-2 ring-primary' : ''}`}
+    >
+      {/* Drag Handle */}
+      <div 
+        {...attributes} 
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing p-2 hover:bg-secondary rounded-md transition-colors"
+      >
+        <GripVertical className="w-5 h-5 text-muted-foreground" />
+      </div>
+      
+      {/* Image Preview */}
+      <div className="w-16 h-16 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+        {dest.image ? (
+          <img src={dest.image} alt={dest.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+            <Image className="w-6 h-6" />
+          </div>
+        )}
+      </div>
+      
+      {/* Form Fields */}
+      <div className="flex-1 grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div>
+          <Label className="text-xs text-muted-foreground">{t('admin.cityName', 'City Name')}</Label>
+          <Input 
+            value={dest.name} 
+            onChange={(e) => updateDestination(index, 'name', e.target.value)}
+            placeholder="e.g. Barcelona"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">{t('admin.country', 'Country')}</Label>
+          <Input 
+            value={dest.country} 
+            onChange={(e) => updateDestination(index, 'country', e.target.value)}
+            placeholder="e.g. Spain"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">{t('admin.destinationId', 'Destination ID')}</Label>
+          <Input 
+            value={dest.destination_id} 
+            onChange={(e) => updateDestination(index, 'destination_id', e.target.value)}
+            placeholder="e.g. 17429"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">{t('admin.hotelCount', 'Hotel Count')}</Label>
+          <Input 
+            value={dest.hotels} 
+            onChange={(e) => updateDestination(index, 'hotels', e.target.value)}
+            placeholder="e.g. 2,100+"
+          />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">{t('admin.image', 'Image')}</Label>
+          <div className="flex gap-2">
+            <Input 
+              value={dest.image} 
+              onChange={(e) => updateDestination(index, 'image', e.target.value)}
+              placeholder="URL or upload"
+              className="flex-1"
+            />
+            <label className="cursor-pointer">
+              <input 
+                type="file" 
+                accept="image/*" 
+                className="hidden" 
+                onChange={(e) => handleDestImageUpload(e, index)}
+              />
+              <Button type="button" size="sm" variant="outline" disabled={uploadingDestImage}>
+                {uploadingDestImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+              </Button>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      {/* Delete Button */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="text-destructive hover:bg-destructive/10"
+        onClick={() => removeDestination(index)}
+      >
+        <Trash2 className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+};
+
 // Admin Dashboard Page
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  
+  // Helper to safely extract error message from API responses (handles Pydantic validation errors)
+  const getErrorMessage = (error, fallback = 'An error occurred') => {
+    try {
+      const detail = error?.response?.data?.detail;
+      if (typeof detail === 'string') return String(detail);
+      if (Array.isArray(detail)) {
+        return detail.map(e => {
+          if (typeof e === 'string') return e;
+          if (e && typeof e.msg === 'string') return e.msg;
+          return String(fallback);
+        }).join(', ');
+      }
+      return String(fallback);
+    } catch (e) {
+      return String(fallback);
+    }
+  };
+  
+  // Safe toast wrapper to ensure we never pass objects to toast
+  const safeToast = {
+    error: (msg) => toast.error(typeof msg === 'string' ? msg : 'An error occurred'),
+    success: (msg) => toast.success(typeof msg === 'string' ? msg : 'Success'),
+    info: (msg) => toast.info(typeof msg === 'string' ? msg : 'Info'),
+  };
+  
   const [settings, setSettings] = useState(null);
   const [stats, setStats] = useState(null);
   const [bookings, setBookings] = useState([]);
@@ -6842,6 +7465,91 @@ const AdminDashboardPage = () => {
   const [marketingEmails, setMarketingEmails] = useState('');
   const [followUpStats, setFollowUpStats] = useState({ pending_follow_ups: 0, sent_follow_ups: 0, total_with_email: 0 });
   const [sendingFollowUps, setSendingFollowUps] = useState(false);
+  const [cacheStats, setCacheStats] = useState(null);
+  const [clearingCache, setClearingCache] = useState(false);
+  const [dbSyncStatus, setDbSyncStatus] = useState(null);
+  const [syncingDb, setSyncingDb] = useState(false);
+  const [syncResults, setSyncResults] = useState(null);
+  const [autoSyncSettings, setAutoSyncSettings] = useState(null);
+  const [triggeringAutoSync, setTriggeringAutoSync] = useState(false);
+  const [testingSunhotels, setTestingSunhotels] = useState(false);
+  const [testingMysql, setTestingMysql] = useState(false);
+  const [sunhotelsTestResult, setSunhotelsTestResult] = useState(null);
+  const [mysqlTestResult, setMysqlTestResult] = useState(null);
+  const [showSyncSettings, setShowSyncSettings] = useState(false);
+  
+  // PWA Analytics state
+  const [pwaAnalytics, setPwaAnalytics] = useState(null);
+  const [pwaUpdates, setPwaUpdates] = useState([]);
+  const [loadingPwaAnalytics, setLoadingPwaAnalytics] = useState(false);
+  const [pushingUpdate, setPushingUpdate] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState('A new version of FreeStays is available! Please refresh the app to get the latest features.');
+  
+  // Email Forwarding state
+  const [emailForwardingStatus, setEmailForwardingStatus] = useState(null);
+  const [forwardedVouchers, setForwardedVouchers] = useState([]);
+  const [loadingEmailForwarding, setLoadingEmailForwarding] = useState(false);
+  const [triggeringForwarding, setTriggeringForwarding] = useState(false);
+  
+  // Referral Tiers Management state
+  const [referralTiers, setReferralTiers] = useState([
+    { name: "Starter", min: 0, max: 2, extraDiscount: 0 },
+    { name: "Bronze", min: 3, max: 5, extraDiscount: 5 },
+    { name: "Silver", min: 6, max: 9, extraDiscount: 10 },
+    { name: "Gold", min: 10, max: 19, extraDiscount: 15 },
+    { name: "Diamond", min: 20, max: 999, extraDiscount: 20 }
+  ]);
+  const [savingTiers, setSavingTiers] = useState(false);
+  
+  // Check-in Reminders state
+  const [checkinReminderStatus, setCheckinReminderStatus] = useState(null);
+  const [upcomingCheckins, setUpcomingCheckins] = useState([]);
+  const [loadingCheckinReminders, setLoadingCheckinReminders] = useState(false);
+  const [triggeringReminders, setTriggeringReminders] = useState(false);
+  
+  // Guest Feedback & Surveys state
+  const [feedbackList, setFeedbackList] = useState([]);
+  const [feedbackStats, setFeedbackStats] = useState(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackFilter, setFeedbackFilter] = useState('all');
+  const [updatingFeedbackStatus, setUpdatingFeedbackStatus] = useState(null);
+  
+  // Newsletter state
+  const [newsletterSubscribers, setNewsletterSubscribers] = useState([]);
+  const [subscribedUsers, setSubscribedUsers] = useState([]);
+
+  // Destinations state
+  const [destinations, setDestinations] = useState([]);
+  const [destinationsCount, setDestinationsCount] = useState(4);
+  const [loadingDestinations, setLoadingDestinations] = useState(false);
+  const [savingDestinations, setSavingDestinations] = useState(false);
+  const [newDestination, setNewDestination] = useState({ name: '', country: '', image: '', hotels: '', destination_id: '' });
+  const [uploadingDestImage, setUploadingDestImage] = useState(false);
+  
+  // Drag and drop sensors for destinations
+  const dndSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+  const [newsletterLogs, setNewsletterLogs] = useState([]);
+  const [loadingNewsletter, setLoadingNewsletter] = useState(false);
+  const [newsletterSubject, setNewsletterSubject] = useState('');
+  const [newsletterContent, setNewsletterContent] = useState('');
+  const [newsletterImageUrl, setNewsletterImageUrl] = useState('');
+  const [uploadingNewsletterImage, setUploadingNewsletterImage] = useState(false);
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [includeLastMinute, setIncludeLastMinute] = useState(true);
+  
+  // Last Minute b2c=1 state
+  const [lastMinuteFetched, setLastMinuteFetched] = useState([]);
+  const [lastMinuteStored, setLastMinuteStored] = useState([]);
+  const [fetchingLastMinute, setFetchingLastMinute] = useState(false);
+  const [savingLastMinute, setSavingLastMinute] = useState(false);
+  const [lastMinuteDestination, setLastMinuteDestination] = useState('');
+  const [lastMinuteCheckIn, setLastMinuteCheckIn] = useState('');
+  const [lastMinuteCheckOut, setLastMinuteCheckOut] = useState('');
+  const [lastMinuteFetchDone, setLastMinuteFetchDone] = useState(false);
+  const [lastMinuteFetchInfo, setLastMinuteFetchInfo] = useState(null);
   
   const adminToken = localStorage.getItem('admin_token');
   const adminEmail = localStorage.getItem('admin_email');
@@ -6858,7 +7566,7 @@ const AdminDashboardPage = () => {
     const headers = { Authorization: `Bearer ${adminToken}` };
     
     try {
-      const [settingsRes, statsRes, bookingsRes, usersRes, passCodesRes, testimonialsRes, referralsRes, referralStatsRes, comparisonsRes, followUpStatsRes] = await Promise.all([
+      const [settingsRes, statsRes, bookingsRes, usersRes, passCodesRes, testimonialsRes, referralsRes, referralStatsRes, comparisonsRes, followUpStatsRes, cacheStatsRes] = await Promise.all([
         axios.get(`${API}/admin/settings`, { headers }),
         axios.get(`${API}/admin/stats`, { headers }),
         axios.get(`${API}/admin/bookings`, { headers }),
@@ -6868,7 +7576,8 @@ const AdminDashboardPage = () => {
         axios.get(`${API}/admin/referrals`, { headers }).catch(() => ({ data: { referrals: [] } })),
         axios.get(`${API}/admin/referral-stats`, { headers }).catch(() => ({ data: {} })),
         axios.get(`${API}/admin/price-comparisons`, { headers }).catch(() => ({ data: { comparisons: [] } })),
-        axios.get(`${API}/admin/follow-up-emails/stats`, { headers }).catch(() => ({ data: { pending_follow_ups: 0, sent_follow_ups: 0, total_with_email: 0 } }))
+        axios.get(`${API}/admin/follow-up-emails/stats`, { headers }).catch(() => ({ data: { pending_follow_ups: 0, sent_follow_ups: 0, total_with_email: 0 } })),
+        axios.get(`${API}/admin/cache/stats`, { headers }).catch(() => ({ data: { autocomplete_cache: null } }))
       ]);
       
       setSettings(settingsRes.data);
@@ -6882,6 +7591,27 @@ const AdminDashboardPage = () => {
       setReferralStats(referralStatsRes.data);
       setPriceComparisons(comparisonsRes.data.comparisons || []);
       setFollowUpStats(followUpStatsRes.data || { pending_follow_ups: 0, sent_follow_ups: 0, total_with_email: 0 });
+      setCacheStats(cacheStatsRes.data?.autocomplete_cache || null);
+      
+      // Load DB sync status separately (non-blocking) as it's a heavy query
+      axios.get(`${API}/admin/db-sync/status`, { headers, timeout: 30000 })
+        .then(res => setDbSyncStatus(res.data))
+        .catch(() => setDbSyncStatus({ error: "Failed to load sync status" }));
+      
+      // Load auto-sync settings
+      axios.get(`${API}/admin/db-sync/auto-sync-settings`, { headers })
+        .then(res => setAutoSyncSettings(res.data))
+        .catch(() => setAutoSyncSettings(null));
+      
+      // Load PWA analytics (non-blocking)
+      axios.get(`${API}/admin/pwa/analytics`, { headers })
+        .then(res => setPwaAnalytics(res.data))
+        .catch(() => setPwaAnalytics(null));
+      
+      // Load PWA update history
+      axios.get(`${API}/admin/pwa/updates`, { headers })
+        .then(res => setPwaUpdates(res.data.updates || []))
+        .catch(() => setPwaUpdates([]));
       
       // Load contact settings from main settings
       const contactData = {
@@ -6903,6 +7633,502 @@ const AdminDashboardPage = () => {
       }
     }
   };
+  
+  // PWA Analytics functions
+  const loadPwaAnalytics = async () => {
+    setLoadingPwaAnalytics(true);
+    try {
+      const headers = { Authorization: `Bearer ${adminToken}` };
+      const [analyticsRes, updatesRes] = await Promise.all([
+        axios.get(`${API}/admin/pwa/analytics`, { headers }),
+        axios.get(`${API}/admin/pwa/updates`, { headers })
+      ]);
+      setPwaAnalytics(analyticsRes.data);
+      setPwaUpdates(updatesRes.data.updates || []);
+    } catch (error) {
+      toast.error('Failed to load PWA analytics');
+    } finally {
+      setLoadingPwaAnalytics(false);
+    }
+  };
+  
+  const pushUpdateToAll = async () => {
+    if (!updateMessage.trim()) {
+      toast.error('Please enter an update message');
+      return;
+    }
+    setPushingUpdate(true);
+    try {
+      const response = await axios.post(`${API}/admin/pwa/push-update`, {
+        message: updateMessage,
+        title: 'FreeStays Update Available'
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success(response.data.message || 'Update notification sent');
+      loadPwaAnalytics(); // Refresh data
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to push update'));
+    } finally {
+      setPushingUpdate(false);
+    }
+  };
+  
+  // Email Forwarding functions
+  const loadEmailForwardingData = async () => {
+    setLoadingEmailForwarding(true);
+    try {
+      const headers = { Authorization: `Bearer ${adminToken}` };
+      const [statusRes, historyRes] = await Promise.all([
+        axios.get(`${API}/admin/email-forwarding/status`, { headers }),
+        axios.get(`${API}/admin/email-forwarding/history?limit=20`, { headers })
+      ]);
+      setEmailForwardingStatus(statusRes.data);
+      setForwardedVouchers(historyRes.data.vouchers || []);
+    } catch (error) {
+      toast.error('Failed to load email forwarding data');
+    } finally {
+      setLoadingEmailForwarding(false);
+    }
+  };
+  
+  const triggerEmailForwarding = async () => {
+    setTriggeringForwarding(true);
+    try {
+      await axios.post(`${API}/admin/email-forwarding/trigger`, {}, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Email forwarding check started');
+      // Refresh after a few seconds
+      setTimeout(() => loadEmailForwardingData(), 5000);
+    } catch (error) {
+      toast.error('Failed to trigger email forwarding');
+    } finally {
+      setTriggeringForwarding(false);
+    }
+  };
+  
+  // Referral Tiers functions
+  const loadReferralTiers = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/referral-tiers`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      if (response.data.tiers && response.data.tiers.length > 0) {
+        setReferralTiers(response.data.tiers);
+      }
+    } catch (error) {
+      // Use default tiers if not found
+      console.log('Using default referral tiers');
+    }
+  };
+  
+  const updateReferralTier = (index, field, value) => {
+    const newTiers = [...referralTiers];
+    newTiers[index] = { ...newTiers[index], [field]: parseInt(value) || 0 };
+    setReferralTiers(newTiers);
+  };
+  
+  const saveReferralTiers = async () => {
+    setSavingTiers(true);
+    try {
+      await axios.post(`${API}/admin/referral-tiers`, { tiers: referralTiers }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Referral tiers saved successfully');
+    } catch (error) {
+      toast.error('Failed to save referral tiers');
+    } finally {
+      setSavingTiers(false);
+    }
+  };
+
+  // Check-in Reminders functions
+  const loadCheckinRemindersData = async () => {
+    setLoadingCheckinReminders(true);
+    try {
+      const headers = { Authorization: `Bearer ${adminToken}` };
+      const [statusRes, upcomingRes] = await Promise.all([
+        axios.get(`${API}/admin/checkin-reminders/status`, { headers }),
+        axios.get(`${API}/admin/checkin-reminders/upcoming?days=7`, { headers })
+      ]);
+      setCheckinReminderStatus(statusRes.data);
+      setUpcomingCheckins(upcomingRes.data.bookings || []);
+    } catch (error) {
+      toast.error('Failed to load check-in reminders data');
+    } finally {
+      setLoadingCheckinReminders(false);
+    }
+  };
+  
+  const triggerCheckinReminders = async () => {
+    setTriggeringReminders(true);
+    try {
+      await axios.post(`${API}/admin/checkin-reminders/trigger`, {}, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Check-in reminder check started');
+      setTimeout(() => loadCheckinRemindersData(), 5000);
+    } catch (error) {
+      toast.error('Failed to trigger check-in reminders');
+    } finally {
+      setTriggeringReminders(false);
+    }
+  };
+
+  // Guest Feedback functions
+  const loadFeedbackData = async () => {
+    setLoadingFeedback(true);
+    try {
+      const headers = { Authorization: `Bearer ${adminToken}` };
+      const [feedbackRes, statsRes] = await Promise.all([
+        axios.get(`${API}/admin/feedback${feedbackFilter !== 'all' ? `?status=${feedbackFilter}` : ''}`, { headers }),
+        axios.get(`${API}/admin/feedback/stats`, { headers })
+      ]);
+      setFeedbackList(feedbackRes.data.feedback || []);
+      setFeedbackStats(statsRes.data);
+    } catch (error) {
+      toast.error('Failed to load feedback data');
+    } finally {
+      setLoadingFeedback(false);
+    }
+  };
+
+  const updateFeedbackStatus = async (feedbackId, status, makePublic = false) => {
+    setUpdatingFeedbackStatus(feedbackId);
+    try {
+      await axios.put(
+        `${API}/admin/feedback/${feedbackId}/status?status=${status}&make_public=${makePublic}`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      toast.success(`Feedback ${status}${makePublic ? ' and published' : ''}`);
+      loadFeedbackData();
+    } catch (error) {
+      toast.error('Failed to update feedback status');
+    } finally {
+      setUpdatingFeedbackStatus(null);
+    }
+  };
+
+  const triggerFeedbackRequests = async () => {
+    try {
+      await axios.get(`${API}/admin/feedback/trigger-test`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Feedback request check triggered');
+    } catch (error) {
+      toast.error('Failed to trigger feedback requests');
+    }
+  };
+
+  // Newsletter functions
+  const loadNewsletterData = async () => {
+    setLoadingNewsletter(true);
+    try {
+      const headers = { Authorization: `Bearer ${adminToken}` };
+      const [subscribersRes, logsRes] = await Promise.all([
+        axios.get(`${API}/admin/newsletter/subscribers`, { headers }),
+        axios.get(`${API}/admin/newsletter/logs`, { headers })
+      ]);
+      setNewsletterSubscribers(subscribersRes.data.subscribers || []);
+      setSubscribedUsers(subscribersRes.data.subscribed_users || []);
+      setNewsletterLogs(logsRes.data.logs || []);
+    } catch (error) {
+      toast.error('Failed to load newsletter data');
+    } finally {
+      setLoadingNewsletter(false);
+    }
+  };
+
+  const toggleUserNewsletterSubscription = async (userId, subscribed) => {
+    try {
+      await axios.put(`${API}/admin/users/${userId}/newsletter?subscribed=${subscribed}`, {}, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success(`User ${subscribed ? 'subscribed to' : 'unsubscribed from'} newsletter`);
+      loadNewsletterData();
+      loadData();
+    } catch (error) {
+      toast.error('Failed to update user subscription');
+    }
+  };
+
+  const handleNewsletterImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setUploadingNewsletterImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/admin/newsletter/upload-image`, formData, {
+        headers: { 
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      setNewsletterImageUrl(res.data.image_url);
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingNewsletterImage(false);
+    }
+  };
+
+  const sendTestNewsletter = async () => {
+    if (!newsletterSubject || !newsletterContent) {
+      toast.error('Please fill in subject and content');
+      return;
+    }
+    
+    setSendingNewsletter(true);
+    try {
+      await axios.post(`${API}/admin/newsletter/test`, {
+        subject: newsletterSubject,
+        content: newsletterContent,
+        image_url: newsletterImageUrl,
+        include_last_minute: includeLastMinute
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Test newsletter sent to info@freestays.eu');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to send test newsletter'));
+    } finally {
+      setSendingNewsletter(false);
+    }
+  };
+
+  const sendNewsletter = async () => {
+    if (!newsletterSubject || !newsletterContent) {
+      toast.error('Please fill in subject and content');
+      return;
+    }
+    
+    const confirmed = window.confirm(`Send newsletter to all subscribers? This cannot be undone.`);
+    if (!confirmed) return;
+    
+    setSendingNewsletter(true);
+    try {
+      const res = await axios.post(`${API}/admin/newsletter/send`, {
+        subject: newsletterSubject,
+        content: newsletterContent,
+        image_url: newsletterImageUrl,
+        include_last_minute: includeLastMinute,
+        send_to_all: true
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success(`Newsletter sent! ${res.data.sent_count} delivered, ${res.data.failed_count} failed`);
+      loadNewsletterData();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to send newsletter'));
+    } finally {
+      setSendingNewsletter(false);
+    }
+  };
+
+  // Last Minute b2c=1 functions (ISOLATED from b2c=0)
+  const loadStoredLastMinute = async () => {
+    try {
+      const res = await axios.get(`${API}/admin/lastminute/stored`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      setLastMinuteStored(res.data.offers || []);
+    } catch (error) {
+      console.error('Failed to load stored last minute offers');
+    }
+  };
+
+  // Destinations functions
+  const loadDestinations = async () => {
+    setLoadingDestinations(true);
+    try {
+      const res = await axios.get(`${API}/admin/destinations`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      setDestinations(res.data.destinations || []);
+      setDestinationsCount(res.data.display_count || 4);
+    } catch (error) {
+      toast.error('Failed to load destinations');
+    } finally {
+      setLoadingDestinations(false);
+    }
+  };
+
+  const saveDestinations = async () => {
+    setSavingDestinations(true);
+    try {
+      await axios.put(`${API}/admin/destinations`, {
+        destinations: destinations,
+        display_count: destinationsCount
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success(t('admin.destinationsSaved', 'Destinations saved successfully'));
+    } catch (error) {
+      toast.error('Failed to save destinations');
+    } finally {
+      setSavingDestinations(false);
+    }
+  };
+
+  const addDestination = () => {
+    if (!newDestination.name || !newDestination.country || !newDestination.destination_id) {
+      toast.error(t('admin.fillRequiredFields', 'Please fill in name, country, and destination ID'));
+      return;
+    }
+    setDestinations([...destinations, { ...newDestination }]);
+    setNewDestination({ name: '', country: '', image: '', hotels: '', destination_id: '' });
+    toast.success(t('admin.destinationAdded', 'Destination added'));
+  };
+
+  const removeDestination = (index) => {
+    const newDest = [...destinations];
+    newDest.splice(index, 1);
+    setDestinations(newDest);
+  };
+
+  const updateDestination = (index, field, value) => {
+    const newDest = [...destinations];
+    newDest[index] = { ...newDest[index], [field]: value };
+    setDestinations(newDest);
+  };
+
+  const handleDestImageUpload = async (e, index = null) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setUploadingDestImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${API}/admin/destinations/upload-image`, formData, {
+        headers: { 
+          Authorization: `Bearer ${adminToken}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      const imageUrl = `${API}${res.data.image_url}`;
+      if (index !== null) {
+        updateDestination(index, 'image', imageUrl);
+      } else {
+        setNewDestination({ ...newDestination, image: imageUrl });
+      }
+      toast.success(t('admin.imageUploaded', 'Image uploaded successfully'));
+    } catch (error) {
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingDestImage(false);
+    }
+  };
+
+  const fetchLastMinuteOffers = async () => {
+    // Validate dates are selected
+    if (!lastMinuteCheckIn || !lastMinuteCheckOut) {
+      safeToast.error('Please select check-in and check-out dates first');
+      return;
+    }
+    
+    setFetchingLastMinute(true);
+    setLastMinuteDestination(''); // Reset city filter
+    setLastMinuteFetchDone(false);
+    setLastMinuteFetchInfo(null);
+    try {
+      const res = await axios.post(`${API}/admin/lastminute/fetch`, {
+        check_in: lastMinuteCheckIn,
+        check_out: lastMinuteCheckOut
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      setLastMinuteFetched(res.data.hotels || []);
+      setLastMinuteFetchInfo({
+        total: res.data.total || 0,
+        destinations_checked: res.data.destinations_checked || 0,
+        cities_found: res.data.cities || {},
+        check_in: lastMinuteCheckIn,
+        check_out: lastMinuteCheckOut
+      });
+      setLastMinuteFetchDone(true);
+      if (res.data.total > 0) {
+        safeToast.success(`Downloaded ${res.data.total} b2c=1 offers from ${res.data.destinations_checked} worldwide destinations`);
+      } else {
+        safeToast.info(`No b2c=1 offers found for ${lastMinuteCheckIn} to ${lastMinuteCheckOut} (checked ${res.data.destinations_checked} destinations)`);
+      }
+    } catch (error) {
+      const errorMessage = getErrorMessage(error, 'Failed to download b2c=1 offers');
+      safeToast.error(errorMessage);
+      setLastMinuteFetchDone(true);
+      setLastMinuteFetchInfo({
+        total: 0,
+        destinations_checked: 0,
+        cities_found: {},
+        check_in: lastMinuteCheckIn,
+        check_out: lastMinuteCheckOut,
+        error: true
+      });
+    } finally {
+      setFetchingLastMinute(false);
+    }
+  };
+
+  const saveLastMinuteOffers = async () => {
+    // Filter by city if selected
+    const hotelsToSave = lastMinuteDestination 
+      ? lastMinuteFetched.filter(h => h.city === lastMinuteDestination)
+      : lastMinuteFetched;
+    
+    if (hotelsToSave.length === 0) {
+      toast.error('No offers to save');
+      return;
+    }
+    
+    setSavingLastMinute(true);
+    try {
+      await axios.post(`${API}/admin/lastminute/save`, {
+        hotels: hotelsToSave,
+        check_in: lastMinuteCheckIn || format(addDays(new Date(), 1), 'yyyy-MM-dd'),
+        check_out: lastMinuteCheckOut || format(addDays(new Date(), 3), 'yyyy-MM-dd')
+      }, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success(`Saved ${hotelsToSave.length} offers to frontend`);
+      loadStoredLastMinute();
+      setLastMinuteFetched([]);
+      setLastMinuteDestination('');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to save offers'));
+    } finally {
+      setSavingLastMinute(false);
+    }
+  };
+
+  const clearLastMinuteOffers = async () => {
+    if (!window.confirm('Clear all stored Last Minute offers?')) return;
+    
+    try {
+      await axios.delete(`${API}/admin/lastminute/clear`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Cleared all Last Minute offers');
+      setLastMinuteStored([]);
+    } catch (error) {
+      toast.error('Failed to clear offers');
+    }
+  };
+
+  const toggleLastMinuteOffer = async (hotelId, isActive) => {
+    try {
+      await axios.put(`${API}/admin/lastminute/toggle/${hotelId}?is_active=${isActive}`, {}, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      loadStoredLastMinute();
+    } catch (error) {
+      toast.error('Failed to toggle offer');
+    }
+  };
 
   const updateTestimonialStatus = async (testimonialId, status) => {
     try {
@@ -6912,7 +8138,7 @@ const AdminDashboardPage = () => {
       toast.success(`Testimonial ${status}`);
       loadData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to update testimonial');
+      toast.error(getErrorMessage(error, 'Failed to update testimonial'));
     }
   };
 
@@ -6927,7 +8153,7 @@ const AdminDashboardPage = () => {
       toast.success(response.data.message);
       loadData(); // Refresh data
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to generate codes');
+      toast.error(getErrorMessage(error, 'Failed to generate codes'));
     }
   };
 
@@ -6939,7 +8165,7 @@ const AdminDashboardPage = () => {
       });
       setValidationResult(response.data);
     } catch (error) {
-      setValidationResult({ valid: false, message: error.response?.data?.detail || 'Validation failed' });
+      setValidationResult({ valid: false, message: getErrorMessage(error, 'Validation failed') });
     }
   };
 
@@ -6952,7 +8178,7 @@ const AdminDashboardPage = () => {
       toast.success('Pass code deleted');
       loadData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Failed to delete code');
+      toast.error(getErrorMessage(error, 'Failed to delete code'));
     }
   };
 
@@ -7003,6 +8229,134 @@ const AdminDashboardPage = () => {
     }
   };
 
+  const runBatchSync = async (limit = 10) => {
+    setSyncingDb(true);
+    setSyncResults(null);
+    try {
+      const response = await axios.post(
+        `${API}/admin/db-sync/batch?limit=${limit}`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      setSyncResults(response.data);
+      toast.success(`Synced ${response.data.synced} hotels`);
+      loadData();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Sync failed'));
+    } finally {
+      setSyncingDb(false);
+    }
+  };
+
+  const syncSingleHotel = async (hotelId) => {
+    try {
+      const response = await axios.post(
+        `${API}/admin/db-sync/sync-hotel/${hotelId}`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      toast.success(response.data.message);
+      loadData();
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Sync failed'));
+    }
+  };
+
+  const updateAutoSyncSettings = async (key, value) => {
+    try {
+      await axios.put(
+        `${API}/admin/db-sync/auto-sync-settings`,
+        { [key]: value },
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      toast.success('Auto-sync settings updated');
+      // Refresh auto-sync settings
+      const res = await axios.get(`${API}/admin/db-sync/auto-sync-settings`, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      setAutoSyncSettings(res.data);
+    } catch (error) {
+      toast.error('Failed to update auto-sync settings');
+    }
+  };
+
+  const triggerAutoSync = async () => {
+    setTriggeringAutoSync(true);
+    try {
+      await axios.post(
+        `${API}/admin/db-sync/trigger-auto-sync`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      toast.success('Auto-sync job triggered! Check back in a few minutes.');
+    } catch (error) {
+      toast.error(getErrorMessage(error, 'Failed to trigger auto-sync'));
+    } finally {
+      setTriggeringAutoSync(false);
+    }
+  };
+
+  const clearCache = async () => {
+    setClearingCache(true);
+    try {
+      await axios.post(`${API}/admin/cache/clear`, {}, {
+        headers: { Authorization: `Bearer ${adminToken}` }
+      });
+      toast.success('Search cache cleared successfully');
+      loadData();
+    } catch (error) {
+      toast.error('Failed to clear cache');
+    } finally {
+      setClearingCache(false);
+    }
+  };
+
+  const testSunhotelsConnection = async () => {
+    setTestingSunhotels(true);
+    setSunhotelsTestResult(null);
+    try {
+      const response = await axios.post(
+        `${API}/admin/db-sync/test-sunhotels`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      setSunhotelsTestResult(response.data);
+      if (response.data.success) {
+        toast.success('Sunhotels API connection successful');
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      setSunhotelsTestResult({ success: false, message: error.response?.data?.detail || 'Connection test failed' });
+      toast.error('Connection test failed');
+    } finally {
+      setTestingSunhotels(false);
+    }
+  };
+
+  const testMysqlConnection = async () => {
+    setTestingMysql(true);
+    setMysqlTestResult(null);
+    try {
+      const response = await axios.post(
+        `${API}/admin/db-sync/test-mysql`,
+        {},
+        { headers: { Authorization: `Bearer ${adminToken}` } }
+      );
+      setMysqlTestResult(response.data);
+      if (response.data.success) {
+        toast.success('MySQL connection successful');
+      } else {
+        toast.error(response.data.message);
+      }
+    } catch (error) {
+      setMysqlTestResult({ success: false, message: error.response?.data?.detail || 'Connection test failed' });
+      toast.error('Connection test failed');
+    } finally {
+      setTestingMysql(false);
+    }
+  };
+
   if (!settings) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -7037,6 +8391,11 @@ const AdminDashboardPage = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Breadcrumbs */}
+        <Breadcrumbs items={[
+          { label: 'Admin Dashboard' }
+        ]} />
+        
         {/* Stats Overview */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -7076,14 +8435,21 @@ const AdminDashboardPage = () => {
           <TabsList className="w-full flex flex-wrap gap-1">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="destinations" onClick={() => loadDestinations()}>{t('admin.destinations', 'Destinations')}</TabsTrigger>
             <TabsTrigger value="comparison">Price Compare</TabsTrigger>
-            <TabsTrigger value="lastminute">Last Minute</TabsTrigger>
+            <TabsTrigger value="lastminute" onClick={() => loadStoredLastMinute()}>Last Minute</TabsTrigger>
             <TabsTrigger value="passcodes">Pass Codes</TabsTrigger>
             <TabsTrigger value="referrals">Referrals</TabsTrigger>
+            <TabsTrigger value="referral-tiers" onClick={() => loadReferralTiers()}>Referral Tiers</TabsTrigger>
             <TabsTrigger value="testimonials">Testimonials</TabsTrigger>
+            <TabsTrigger value="feedback" onClick={() => loadFeedbackData()}>Surveys & Feedback</TabsTrigger>
+            <TabsTrigger value="newsletter" onClick={() => loadNewsletterData()}>Newsletter</TabsTrigger>
             <TabsTrigger value="contact">Contact Page</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="email-forwarding" onClick={() => loadEmailForwardingData()}>Email Forwarding</TabsTrigger>
+            <TabsTrigger value="checkin-reminders" onClick={() => loadCheckinRemindersData()}>Check-in Reminders</TabsTrigger>
+            <TabsTrigger value="pwa" onClick={() => loadPwaAnalytics()}>PWA Analytics</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
@@ -7132,6 +8498,519 @@ const AdminDashboardPage = () => {
                     <span className="font-medium">{settings.sunhotels_password_masked}</span>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Search Cache Performance Widget */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-yellow-500" />
+                      Search Cache Performance
+                    </CardTitle>
+                    <CardDescription>Autocomplete search optimization stats</CardDescription>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={clearCache}
+                    disabled={clearingCache}
+                  >
+                    {clearingCache ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Trash2 className="w-4 h-4 mr-2" />
+                    )}
+                    Clear Cache
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {cacheStats ? (
+                  <div className="space-y-4">
+                    {/* Hit Rate Gauge */}
+                    <div className="flex items-center justify-center">
+                      <div className="relative w-32 h-32">
+                        <svg className="w-32 h-32 transform -rotate-90">
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="currentColor"
+                            strokeWidth="12"
+                            fill="none"
+                            className="text-secondary"
+                          />
+                          <circle
+                            cx="64"
+                            cy="64"
+                            r="56"
+                            stroke="currentColor"
+                            strokeWidth="12"
+                            fill="none"
+                            strokeDasharray={`${parseFloat(cacheStats.hit_rate) * 3.51} 351`}
+                            className="text-green-500"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-bold">{cacheStats.hit_rate}</span>
+                          <span className="text-xs text-muted-foreground">Hit Rate</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{cacheStats.hits}</p>
+                        <p className="text-xs text-muted-foreground">Cache Hits</p>
+                      </div>
+                      <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{cacheStats.misses}</p>
+                        <p className="text-xs text-muted-foreground">Cache Misses</p>
+                      </div>
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{cacheStats.size}</p>
+                        <p className="text-xs text-muted-foreground">Cached Items</p>
+                      </div>
+                      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{cacheStats.max_size}</p>
+                        <p className="text-xs text-muted-foreground">Max Capacity</p>
+                      </div>
+                    </div>
+
+                    {/* Info Bar */}
+                    <div className="flex items-center justify-between text-sm text-muted-foreground bg-secondary/30 rounded-lg p-3">
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        TTL: {Math.floor(cacheStats.ttl_seconds / 60)} minutes
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Database className="w-4 h-4" />
+                        {((cacheStats.size / cacheStats.max_size) * 100).toFixed(0)}% used
+                      </span>
+                    </div>
+
+                    {/* Performance Tip */}
+                    {parseFloat(cacheStats.hit_rate) > 50 && (
+                      <div className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-green-700 dark:text-green-300">Cache is performing well!</p>
+                          <p className="text-xs text-green-600 dark:text-green-400">Most searches are being served from cache (40x faster)</p>
+                        </div>
+                      </div>
+                    )}
+                    {parseFloat(cacheStats.hit_rate) <= 50 && cacheStats.hits + cacheStats.misses > 10 && (
+                      <div className="flex items-start gap-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-300">Cache warming up</p>
+                          <p className="text-xs text-yellow-600 dark:text-yellow-400">Hit rate will improve as users perform more searches</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Cache statistics unavailable</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Database Sync Widget */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5 text-blue-500" />
+                      Hotel Images Database Sync
+                    </CardTitle>
+                    <CardDescription>Sync missing hotel images from Sunhotels API to local database</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setShowSyncSettings(!showSyncSettings)}
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      {showSyncSettings ? 'Hide Settings' : 'Settings'}
+                    </Button>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => runBatchSync(10)}
+                      disabled={syncingDb}
+                    >
+                      {syncingDb ? (
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      ) : (
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                      )}
+                      Sync 10 Hotels
+                    </Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Connection Test Section - Always Visible */}
+                {showSyncSettings && (
+                  <div className="p-4 bg-secondary/30 rounded-lg space-y-4">
+                    <p className="font-semibold text-sm">Connection Tests</p>
+                    
+                    {/* Sunhotels API Test */}
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Globe className="w-5 h-5 text-blue-500" />
+                        <div>
+                          <p className="font-medium text-sm">Sunhotels API</p>
+                          <p className="text-xs text-muted-foreground">xml.sunhotels.net/15</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {sunhotelsTestResult && (
+                          <Badge variant={sunhotelsTestResult.success ? "default" : "destructive"} className="text-xs">
+                            {sunhotelsTestResult.success ? "Connected" : "Failed"}
+                          </Badge>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={testSunhotelsConnection}
+                          disabled={testingSunhotels}
+                        >
+                          {testingSunhotels ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4 mr-1" />
+                              Test
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* Sunhotels Test Result Details */}
+                    {sunhotelsTestResult?.details && (
+                      <div className="ml-8 p-2 bg-secondary/50 rounded text-xs space-y-1">
+                        <p><span className="text-muted-foreground">Endpoint:</span> {sunhotelsTestResult.details.api_endpoint}</p>
+                        <p><span className="text-muted-foreground">Username:</span> {sunhotelsTestResult.details.username}</p>
+                        {sunhotelsTestResult.details.test_hotel && (
+                          <p><span className="text-muted-foreground">Test Hotel:</span> {sunhotelsTestResult.details.test_hotel} ({sunhotelsTestResult.details.images_found} images)</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* MySQL Database Test */}
+                    <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <Database className="w-5 h-5 text-green-500" />
+                        <div>
+                          <p className="font-medium text-sm">MySQL Database</p>
+                          <p className="text-xs text-muted-foreground">Static hotel data</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {mysqlTestResult && (
+                          <Badge variant={mysqlTestResult.success ? "default" : "destructive"} className="text-xs">
+                            {mysqlTestResult.success ? "Connected" : mysqlTestResult.details?.configured === false ? "Not Configured" : "Failed"}
+                          </Badge>
+                        )}
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={testMysqlConnection}
+                          disabled={testingMysql}
+                        >
+                          {testingMysql ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Zap className="w-4 h-4 mr-1" />
+                              Test
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {/* MySQL Test Result Details */}
+                    {mysqlTestResult?.details && mysqlTestResult.success && (
+                      <div className="ml-8 p-2 bg-secondary/50 rounded text-xs space-y-1">
+                        <p><span className="text-muted-foreground">Host:</span> {mysqlTestResult.details.host}</p>
+                        <p><span className="text-muted-foreground">Database:</span> {mysqlTestResult.details.database}</p>
+                        <p><span className="text-muted-foreground">Hotels in Lookup:</span> {mysqlTestResult.details.hotels_in_lookup?.toLocaleString()}</p>
+                        <p><span className="text-muted-foreground">Hotels with Images:</span> {mysqlTestResult.details.hotels_with_images?.toLocaleString()}</p>
+                      </div>
+                    )}
+                    
+                    {/* Configure MySQL Link */}
+                    {mysqlTestResult?.details?.configured === false && (
+                      <div className="ml-8 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded text-xs">
+                        <p className="text-yellow-700 dark:text-yellow-400">
+                          MySQL database not configured. Go to <strong>Settings</strong> tab → <strong>Static Database Connection</strong> to configure.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {dbSyncStatus && !dbSyncStatus.error ? (
+                  <div className="space-y-4">
+                    {/* Coverage Progress */}
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span className="text-muted-foreground">Image Coverage</span>
+                        <span className="font-semibold">{dbSyncStatus.coverage_percent}%</span>
+                      </div>
+                      <div className="w-full h-3 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500"
+                          style={{ width: `${dbSyncStatus.coverage_percent}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{dbSyncStatus.total_hotels_in_lookup?.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Total Hotels</p>
+                      </div>
+                      <div className="p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{dbSyncStatus.lookup_hotels_with_images?.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">With Images</p>
+                      </div>
+                      <div className="p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{dbSyncStatus.lookup_hotels_missing_images?.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">Missing Images</p>
+                      </div>
+                      <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{dbSyncStatus.hotels_with_images_in_bravo?.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground">In Bravo Table</p>
+                      </div>
+                    </div>
+
+                    {/* Batch Sync Options */}
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => runBatchSync(5)} disabled={syncingDb}>
+                        Sync 5
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => runBatchSync(20)} disabled={syncingDb}>
+                        Sync 20
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => runBatchSync(50)} disabled={syncingDb}>
+                        Sync 50
+                      </Button>
+                    </div>
+
+                    {/* Sync Results */}
+                    {syncResults && (
+                      <div className="p-3 bg-secondary/30 rounded-lg">
+                        <p className="text-sm font-semibold mb-2">Last Sync Results</p>
+                        <div className="flex flex-wrap gap-3 text-sm mb-2">
+                          <span className="text-green-600 dark:text-green-400">✓ {syncResults.synced} with images</span>
+                          {syncResults.no_images > 0 && (
+                            <span className="text-yellow-600 dark:text-yellow-400">○ {syncResults.no_images} no images in API</span>
+                          )}
+                          {syncResults.failed > 0 && (
+                            <span className="text-red-600 dark:text-red-400">✗ {syncResults.failed} errors</span>
+                          )}
+                        </div>
+                        {syncResults.message && (
+                          <p className="text-xs text-muted-foreground mb-2">{syncResults.message}</p>
+                        )}
+                        {syncResults.results && syncResults.results.length > 0 && (
+                          <ScrollArea className="h-32 mt-2">
+                            <div className="space-y-1 text-xs">
+                              {syncResults.results.map((r, i) => (
+                                <div key={i} className="flex items-center justify-between py-1 border-b border-border/30">
+                                  <span className="truncate max-w-[200px]">{r.name}</span>
+                                  <Badge 
+                                    variant={r.status === 'synced' ? 'default' : r.status === 'no_images_in_api' ? 'outline' : 'secondary'} 
+                                    className={`text-xs ${r.status === 'no_images_in_api' ? 'text-yellow-600 border-yellow-400' : ''}`}
+                                  >
+                                    {r.status === 'synced' ? `${r.images} imgs` : r.status === 'no_images_in_api' ? 'no images' : r.status}
+                                  </Badge>
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Sample Missing Hotels */}
+                    {dbSyncStatus.sample_missing && dbSyncStatus.sample_missing.length > 0 && (
+                      <div>
+                        <p className="text-sm font-semibold mb-2 text-muted-foreground">Hotels Missing Images (sample)</p>
+                        <ScrollArea className="h-40">
+                          <div className="space-y-1">
+                            {dbSyncStatus.sample_missing.map((hotel, i) => (
+                              <div key={i} className="flex items-center justify-between py-2 px-3 bg-secondary/20 rounded-lg hover:bg-secondary/40 transition-colors">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{hotel.name}</p>
+                                  <p className="text-xs text-muted-foreground">{hotel.country} • ID: {hotel.hotel_id}</p>
+                                </div>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => syncSingleHotel(hotel.hotel_id)}
+                                  className="h-7 px-2"
+                                >
+                                  <RefreshCw className="w-3 h-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      </div>
+                    )}
+                  </div>
+                ) : dbSyncStatus?.error ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <AlertCircle className="w-12 h-12 mx-auto mb-3 opacity-50 text-red-500" />
+                    <p className="text-red-500">{dbSyncStatus.error}</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Database className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>Database sync status unavailable</p>
+                    <p className="text-xs mt-1">Configure static database connection in Settings</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Auto-Sync Settings Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-green-500" />
+                      Scheduled Auto-Sync
+                    </CardTitle>
+                    <CardDescription>Automatically sync hotel images daily at 3:00 AM UTC</CardDescription>
+                  </div>
+                  {autoSyncSettings && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">
+                        {autoSyncSettings.enabled ? 'Enabled' : 'Disabled'}
+                      </span>
+                      <Switch
+                        checked={autoSyncSettings.enabled}
+                        onCheckedChange={(checked) => updateAutoSyncSettings('enabled', checked)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent>
+                {autoSyncSettings ? (
+                  <div className="space-y-4">
+                    {/* Batch Size Setting */}
+                    <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                      <div>
+                        <p className="font-medium">Batch Size</p>
+                        <p className="text-xs text-muted-foreground">Hotels to sync per run (10-200)</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          min="10"
+                          max="200"
+                          value={autoSyncSettings.batch_size}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            if (val >= 10 && val <= 200) {
+                              updateAutoSyncSettings('batch_size', val);
+                            }
+                          }}
+                          className="w-20 h-8"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Last Run Info */}
+                    {autoSyncSettings.last_run && (
+                      <div className="p-3 bg-secondary/30 rounded-lg">
+                        <p className="text-sm font-medium mb-2">Last Auto-Sync</p>
+                        <p className="text-xs text-muted-foreground mb-2">
+                          {new Date(autoSyncSettings.last_run).toLocaleString()}
+                        </p>
+                        {autoSyncSettings.last_result && (
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap gap-3 text-sm">
+                              <span className="text-green-600 dark:text-green-400">
+                                ✓ {autoSyncSettings.last_result.synced} with images
+                              </span>
+                              {autoSyncSettings.last_result.no_images > 0 && (
+                                <span className="text-yellow-600 dark:text-yellow-400">
+                                  ○ {autoSyncSettings.last_result.no_images} no images in API
+                                </span>
+                              )}
+                              {autoSyncSettings.last_result.failed > 0 && (
+                                <span className="text-red-600 dark:text-red-400">
+                                  ✗ {autoSyncSettings.last_result.failed} errors
+                                </span>
+                              )}
+                            </div>
+                            {autoSyncSettings.last_result.message && (
+                              <p className="text-xs text-muted-foreground">
+                                {autoSyncSettings.last_result.message}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Manual Trigger Button */}
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={triggerAutoSync}
+                        disabled={triggeringAutoSync || !autoSyncSettings.enabled}
+                      >
+                        {triggeringAutoSync ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Play className="w-4 h-4 mr-2" />
+                        )}
+                        Run Now
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadData}
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Refresh Status
+                      </Button>
+                    </div>
+
+                    {/* Schedule Info */}
+                    <div className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      Next run: Daily at 3:00 AM UTC
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Loading auto-sync settings...</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -7574,7 +9453,7 @@ const AdminDashboardPage = () => {
                             loadData();
                           } catch (error) {
                             toast.dismiss();
-                            toast.error(error.response?.data?.detail || 'Failed to upload logo');
+                            toast.error(getErrorMessage(error, 'Failed to upload logo'));
                           }
                         }}
                       />
@@ -7636,7 +9515,7 @@ const AdminDashboardPage = () => {
                           });
                           toast.success('Test email sent successfully!');
                         } catch (error) {
-                          toast.error(error.response?.data?.detail || 'Failed to send test email');
+                          toast.error(getErrorMessage(error, 'Failed to send test email'));
                         }
                       }}
                       data-testid="send-test-email-btn"
@@ -7733,7 +9612,7 @@ const AdminDashboardPage = () => {
                                         });
                                         toast.success('Confirmation email resent!');
                                       } catch (error) {
-                                        toast.error(error.response?.data?.detail || 'Failed to send email');
+                                        toast.error(getErrorMessage(error, 'Failed to send email'));
                                       }
                                     }}
                                     title="Resend confirmation email"
@@ -7754,7 +9633,7 @@ const AdminDashboardPage = () => {
                                           toast.success('Travel voucher sent to customer!');
                                           loadData();
                                         } catch (error) {
-                                          toast.error(error.response?.data?.detail || 'Failed to send voucher');
+                                          toast.error(getErrorMessage(error, 'Failed to send voucher'));
                                         }
                                       }}
                                       title={booking.voucher_sent ? "Voucher already sent - click to resend" : "Send travel voucher to customer"}
@@ -7804,13 +9683,233 @@ const AdminDashboardPage = () => {
           {/* Users Tab */}
           {/* Last Minute Configuration Tab */}
           <TabsContent value="lastminute" className="space-y-6">
-            <Card>
+            {/* B2C=1 Fetch Section */}
+            <Card className="border-2 border-red-200 bg-red-50/30 dark:bg-red-950/10">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="w-5 h-5 text-red-500" />
-                  Last Minute Offers Configuration
+                  Download B2C=1 Last Minute Offers
                 </CardTitle>
-                <CardDescription>Configure how last minute deals are displayed on the homepage</CardDescription>
+                <CardDescription>
+                  Download available last minute deals from Sunhotels API (b2c=1) for your selected dates. This is <strong>completely isolated</strong> from normal search (b2c=0).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Date Selection - REQUIRED before fetch */}
+                <div className="flex flex-wrap items-end gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border">
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-sm font-medium">Check-in Date *</Label>
+                    <Input
+                      type="date"
+                      value={lastMinuteCheckIn}
+                      onChange={(e) => setLastMinuteCheckIn(e.target.value)}
+                      className="w-40"
+                      min={format(new Date(), 'yyyy-MM-dd')}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <Label className="text-sm font-medium">Check-out Date *</Label>
+                    <Input
+                      type="date"
+                      value={lastMinuteCheckOut}
+                      onChange={(e) => setLastMinuteCheckOut(e.target.value)}
+                      className="w-40"
+                      min={lastMinuteCheckIn || format(new Date(), 'yyyy-MM-dd')}
+                    />
+                  </div>
+                  <Button 
+                    onClick={fetchLastMinuteOffers} 
+                    disabled={fetchingLastMinute || !lastMinuteCheckIn || !lastMinuteCheckOut} 
+                    size="lg" 
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {fetchingLastMinute ? (
+                      <>
+                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                        Downloading from 67 destinations...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-5 h-5 mr-2" />
+                        Download B2C=1 Offers
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">
+                  Select dates and click download. This will fetch last minute offers from <strong>67 worldwide destinations</strong> (Europe, Asia, Americas, Africa, Oceania) using the b2c=1 API.
+                </p>
+
+                {/* Fetched Results - Show after fetch is done */}
+                {lastMinuteFetchDone && (
+                  <div className="mt-6 space-y-4 border-t pt-4">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                      <h4 className="font-semibold flex items-center gap-2">
+                        {lastMinuteFetched.length > 0 ? (
+                          <>
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            Found {lastMinuteFetched.length} B2C=1 Offers for {lastMinuteFetchInfo?.check_in} to {lastMinuteFetchInfo?.check_out}
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="w-5 h-5 text-orange-500" />
+                            No B2C=1 Offers Found for {lastMinuteFetchInfo?.check_in} to {lastMinuteFetchInfo?.check_out}
+                          </>
+                        )}
+                      </h4>
+                      {lastMinuteFetched.length > 0 && (
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Label className="text-sm whitespace-nowrap">Filter by City:</Label>
+                            <select
+                              value={lastMinuteDestination}
+                              onChange={(e) => setLastMinuteDestination(e.target.value)}
+                              className="h-9 px-3 border rounded-md bg-background text-sm min-w-[180px]"
+                            >
+                              <option value="">All Cities ({lastMinuteFetched.length})</option>
+                              {[...new Set(lastMinuteFetched.map(h => h.city))].filter(Boolean).sort().map(city => (
+                                <option key={city} value={city}>{city} ({lastMinuteFetched.filter(h => h.city === city).length})</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Summary Info */}
+                    <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-sm">
+                      <p>Checked <strong>{lastMinuteFetchInfo?.destinations_checked || 0}</strong> destinations worldwide</p>
+                      {lastMinuteFetchInfo?.cities_found && typeof lastMinuteFetchInfo.cities_found === 'object' && !Array.isArray(lastMinuteFetchInfo.cities_found) && Object.keys(lastMinuteFetchInfo.cities_found).length > 0 && (
+                        <p className="mt-1">Cities with offers: {Object.keys(lastMinuteFetchInfo.cities_found).join(', ')}</p>
+                      )}
+                      {lastMinuteFetched.length === 0 && (
+                        <p className="mt-2 text-orange-600 dark:text-orange-400">
+                          No last minute (b2c=1) availability for these dates. Try different dates or check back later - last minute deals update frequently.
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Hotel Grid */}
+                    {lastMinuteFetched.length > 0 && (
+                      <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[400px] overflow-y-auto p-2">
+                          {lastMinuteFetched
+                            .filter(h => !lastMinuteDestination || h.city === lastMinuteDestination)
+                            .map(hotel => (
+                            <Card key={hotel.hotel_id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                              <img 
+                                src={hotel.image_url || 'https://via.placeholder.com/200x100?text=No+Image'} 
+                                alt={hotel.name}
+                                className="w-full h-20 object-cover"
+                              />
+                              <div className="p-2">
+                                <p className="font-medium text-xs truncate" title={hotel.name}>{hotel.name}</p>
+                                <p className="text-xs text-muted-foreground">{hotel.city}, {hotel.country}</p>
+                                <div className="flex justify-between items-center mt-1">
+                                  <p className="text-sm font-bold text-green-600">€{hotel.min_price}</p>
+                                  {hotel.star_rating && <Badge variant="outline" className="text-xs">{hotel.star_rating}★</Badge>}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                        
+                        {lastMinuteFetched.filter(h => !lastMinuteDestination || h.city === lastMinuteDestination).length === 0 && (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <p>No offers match the current filter</p>
+                          </div>
+                        )}
+                        
+                        <div className="flex gap-3 pt-4 border-t">
+                          <Button onClick={saveLastMinuteOffers} disabled={savingLastMinute} className="bg-green-600 hover:bg-green-700">
+                            {savingLastMinute ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                            Save {lastMinuteDestination ? lastMinuteFetched.filter(h => h.city === lastMinuteDestination).length : lastMinuteFetched.length} Offers to Frontend
+                          </Button>
+                          <Button variant="outline" onClick={() => { setLastMinuteFetched([]); setLastMinuteFetchDone(false); setLastMinuteFetchInfo(null); }}>
+                            Clear Results
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Currently Stored Offers */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Database className="w-5 h-5" />
+                      Stored Last Minute Offers (Showing on Frontend)
+                    </CardTitle>
+                    <CardDescription>These offers are currently displayed in the Last Minute section on the homepage</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={loadStoredLastMinute}>
+                      <RefreshCw className="w-4 h-4 mr-1" />
+                      Refresh
+                    </Button>
+                    {lastMinuteStored.length > 0 && (
+                      <Button variant="destructive" size="sm" onClick={clearLastMinuteOffers}>
+                        <Trash2 className="w-4 h-4 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {lastMinuteStored.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No Last Minute offers stored</p>
+                    <p className="text-sm mt-1">Download b2c=1 offers above and save them to display on frontend</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {lastMinuteStored.map(offer => (
+                      <div key={offer.hotel_id} className={`flex items-center gap-4 p-3 border rounded-lg ${offer.is_active ? 'bg-green-50 dark:bg-green-950/20' : 'bg-gray-100 dark:bg-gray-800 opacity-60'}`}>
+                        <img 
+                          src={offer.image_url || 'https://via.placeholder.com/80x60'} 
+                          alt={offer.name}
+                          className="w-20 h-14 object-cover rounded"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{offer.name}</p>
+                          <p className="text-sm text-muted-foreground">{offer.city}, {offer.country}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-green-600">€{offer.min_price}</p>
+                          <Badge variant={offer.is_active ? 'default' : 'secondary'}>
+                            {offer.is_active ? 'Active' : 'Hidden'}
+                          </Badge>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant={offer.is_active ? 'destructive' : 'default'}
+                          onClick={() => toggleLastMinuteOffer(offer.hotel_id, !offer.is_active)}
+                        >
+                          {offer.is_active ? 'Hide' : 'Show'}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Display Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Display Settings
+                </CardTitle>
+                <CardDescription>Configure how last minute deals appear on the homepage</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
@@ -7833,11 +9932,8 @@ const AdminDashboardPage = () => {
                       value={settings.last_minute_badge_text || ''}
                       onChange={(e) => updateSetting('last_minute_badge_text', e.target.value)}
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Text shown on the badge</p>
                   </div>
                 </div>
-
-                <Separator />
 
                 <div>
                   <Label>Section Title</Label>
@@ -7845,80 +9941,198 @@ const AdminDashboardPage = () => {
                     placeholder="Last Minute Offers"
                     value={settings.last_minute_title || ''}
                     onChange={(e) => updateSetting('last_minute_title', e.target.value)}
-                    data-testid="lastminute-title-input"
                   />
                 </div>
 
                 <div>
-                  <Label>Section Subtitle/Description</Label>
+                  <Label>Section Subtitle</Label>
                   <Input 
                     placeholder="Book now and save up to 30% on selected hotels"
                     value={settings.last_minute_subtitle || ''}
                     onChange={(e) => updateSetting('last_minute_subtitle', e.target.value)}
                   />
-                  <p className="text-xs text-muted-foreground mt-1">Describes when/where the offers are valid</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Info Box */}
+            <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                  <div>
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100">How B2C=1 Works</h4>
+                    <ul className="text-sm text-blue-700 dark:text-blue-200 mt-2 space-y-1">
+                      <li>• <strong>b2c=1</strong> is Sunhotels' dedicated Last Minute API - completely separate from normal search (b2c=0)</li>
+                      <li>• Select check-in and check-out dates, then click "Download B2C=1 Offers"</li>
+                      <li>• Fetches from <strong>67 worldwide destinations</strong> (Europe, Asia, Americas, Africa, Oceania)</li>
+                      <li>• Filter results by city, then save selected offers to frontend</li>
+                      <li>• Stored offers are shown in the "Last Minute" section on the homepage</li>
+                      <li>• If no offers are stored, visitors will see a "subscribe to newsletter" message</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Destinations Tab */}
+          <TabsContent value="destinations" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  {t('admin.popularDestinations', 'Popular Destinations')}
+                </CardTitle>
+                <CardDescription>
+                  {t('admin.destinationsDesc', 'Configure the featured destinations shown on the homepage. Add cities with images and Sunhotels destination IDs.')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Display Count Setting */}
+                <div className="flex items-center gap-4 p-4 bg-secondary/30 rounded-lg">
+                  <Label className="font-medium">{t('admin.displayCount', 'Number of destinations to display:')}</Label>
+                  <Select value={String(destinationsCount)} onValueChange={(v) => setDestinationsCount(parseInt(v))}>
+                    <SelectTrigger className="w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[2, 3, 4, 5, 6, 8].map(n => (
+                        <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <Separator />
+                {/* Existing Destinations */}
+                {loadingDestinations ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{t('admin.currentDestinations', 'Current Destinations')} ({destinations.length})</h3>
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <GripVertical className="w-3 h-3" /> {t('admin.dragToReorder', 'Drag to reorder')}
+                      </span>
+                    </div>
+                    <DndContext 
+                      sensors={dndSensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={(event) => {
+                        const { active, over } = event;
+                        if (active.id !== over?.id) {
+                          const oldIndex = destinations.findIndex((_, i) => `dest-${i}` === active.id);
+                          const newIndex = destinations.findIndex((_, i) => `dest-${i}` === over?.id);
+                          setDestinations(arrayMove(destinations, oldIndex, newIndex));
+                        }
+                      }}
+                    >
+                      <SortableContext items={destinations.map((_, i) => `dest-${i}`)} strategy={verticalListSortingStrategy}>
+                        {destinations.map((dest, index) => (
+                          <SortableDestinationItem
+                            key={`dest-${index}`}
+                            id={`dest-${index}`}
+                            dest={dest}
+                            index={index}
+                            updateDestination={updateDestination}
+                            removeDestination={removeDestination}
+                            handleDestImageUpload={handleDestImageUpload}
+                            uploadingDestImage={uploadingDestImage}
+                            t={t}
+                          />
+                        ))}
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                )}
 
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CalendarIcon className="w-5 h-5 text-amber-600" />
-                    <span className="font-semibold text-amber-800">Custom Dates (Optional)</span>
-                  </div>
-                  <p className="text-sm text-amber-700 mb-4">Leave empty to automatically use tomorrow's date. Set custom dates for specific promotions.</p>
-                  
-                  <div className="grid grid-cols-2 gap-4">
+                {/* Add New Destination */}
+                <div className="border-t pt-6">
+                  <h3 className="font-semibold mb-4">{t('admin.addNewDestination', 'Add New Destination')}</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
                     <div>
-                      <Label>Check-in Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal" data-testid="lastminute-checkin-input">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {settings.last_minute_check_in ? format(new Date(settings.last_minute_check_in), 'PPP') : 'Pick a date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={settings.last_minute_check_in ? new Date(settings.last_minute_check_in) : undefined}
-                            onSelect={(date) => updateSetting('last_minute_check_in', date ? format(date, 'yyyy-MM-dd') : '')}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <Label className="text-xs text-muted-foreground">{t('admin.cityName', 'City Name')}</Label>
+                      <Input 
+                        value={newDestination.name} 
+                        onChange={(e) => setNewDestination({...newDestination, name: e.target.value})}
+                        placeholder="e.g. Paris"
+                      />
                     </div>
                     <div>
-                      <Label>Check-out Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" className="w-full justify-start text-left font-normal" data-testid="lastminute-checkout-input">
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {settings.last_minute_check_out ? format(new Date(settings.last_minute_check_out), 'PPP') : 'Pick a date'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={settings.last_minute_check_out ? new Date(settings.last_minute_check_out) : undefined}
-                            onSelect={(date) => updateSetting('last_minute_check_out', date ? format(date, 'yyyy-MM-dd') : '')}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <Label className="text-xs text-muted-foreground">{t('admin.country', 'Country')}</Label>
+                      <Input 
+                        value={newDestination.country} 
+                        onChange={(e) => setNewDestination({...newDestination, country: e.target.value})}
+                        placeholder="e.g. France"
+                      />
                     </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('admin.destinationId', 'Destination ID')}</Label>
+                      <Input 
+                        value={newDestination.destination_id} 
+                        onChange={(e) => setNewDestination({...newDestination, destination_id: e.target.value})}
+                        placeholder="Sunhotels ID"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('admin.hotelCount', 'Hotel Count')}</Label>
+                      <Input 
+                        value={newDestination.hotels} 
+                        onChange={(e) => setNewDestination({...newDestination, hotels: e.target.value})}
+                        placeholder="e.g. 1,500+"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">{t('admin.imageUrl', 'Image URL')}</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          value={newDestination.image} 
+                          onChange={(e) => setNewDestination({...newDestination, image: e.target.value})}
+                          placeholder="URL or upload"
+                          className="flex-1"
+                        />
+                        <label className="cursor-pointer">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            className="hidden" 
+                            onChange={(e) => handleDestImageUpload(e, null)}
+                          />
+                          <Button type="button" size="sm" variant="outline" disabled={uploadingDestImage}>
+                            {uploadingDestImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                          </Button>
+                        </label>
+                      </div>
+                    </div>
+                    <Button onClick={addDestination} className="h-10">
+                      <Plus className="w-4 h-4 mr-2" />
+                      {t('admin.add', 'Add')}
+                    </Button>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="mt-3"
-                    onClick={() => {
-                      updateSetting('last_minute_check_in', '');
-                      updateSetting('last_minute_check_out', '');
-                    }}
-                  >
-                    Clear Dates (Use Auto)
+                </div>
+
+                {/* Save Button */}
+                <div className="flex justify-end gap-4 pt-4 border-t">
+                  <Button variant="outline" onClick={loadDestinations}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    {t('common.reload', 'Reload')}
                   </Button>
+                  <Button onClick={saveDestinations} disabled={savingDestinations}>
+                    {savingDestinations ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+                    {t('admin.saveDestinations', 'Save Destinations')}
+                  </Button>
+                </div>
+
+                {/* Info Box */}
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="font-medium text-blue-800 dark:text-blue-300 mb-2">{t('admin.howToFindDestId', 'How to find Destination IDs')}</h4>
+                  <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1 list-disc pl-4">
+                    <li>{t('admin.destIdTip1', 'Search for a city on the search page')}</li>
+                    <li>{t('admin.destIdTip2', 'The destination ID appears in the URL after clicking a city suggestion')}</li>
+                    <li>{t('admin.destIdTip3', 'Example: /search?destination=Barcelona&destinationId=17429 → ID is 17429')}</li>
+                  </ul>
                 </div>
               </CardContent>
             </Card>
@@ -8490,7 +10704,7 @@ const AdminDashboardPage = () => {
                               toast.success(`Imported ${response.data.imported} codes successfully`);
                               loadData();
                             } catch (error) {
-                              toast.error(error.response?.data?.detail || 'Import failed');
+                              toast.error(getErrorMessage(error, 'Import failed'));
                             }
                           };
                           reader.readAsText(file);
@@ -8712,6 +10926,47 @@ const AdminDashboardPage = () => {
                         Clear
                       </Button>
                     )}
+                    {passCodes.length > 0 && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          // Generate CSV from current filtered results
+                          const headers = ['Code', 'Type', 'Status', 'Source', 'User Name', 'Email', 'Created/Purchased', 'Expires', 'Price'];
+                          const csvRows = [headers.join(',')];
+                          
+                          passCodes.forEach(code => {
+                            const row = [
+                              code.code,
+                              code.pass_type === 'annual' ? 'Annual' : 'One-Time',
+                              code.status,
+                              code.source === 'purchase' ? 'Purchased' : 'Admin Generated',
+                              code.user_name || '-',
+                              code.purchased_by || code.used_by || '-',
+                              code.created_at ? new Date(code.created_at).toLocaleDateString() : '-',
+                              code.expires_at ? new Date(code.expires_at).toLocaleDateString() : (code.pass_type === 'one_time' ? 'Single use' : '-'),
+                              code.price || (code.pass_type === 'annual' ? '129' : '35')
+                            ];
+                            csvRows.push(row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','));
+                          });
+                          
+                          const csvContent = csvRows.join('\n');
+                          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.setAttribute('href', url);
+                          link.setAttribute('download', `pass_codes_${passCodeSearch ? 'filtered_' + passCodeSearch : 'all'}_${new Date().toISOString().split('T')[0]}.csv`);
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                          toast.success(`Exported ${passCodes.length} pass codes to CSV`);
+                        }}
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Export {passCodeSearch ? 'Filtered' : 'All'} ({passCodes.length})
+                      </Button>
+                    )}
                   </div>
                 </div>
               </CardHeader>
@@ -8799,6 +11054,248 @@ const AdminDashboardPage = () => {
                 </ScrollArea>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Newsletter Tab */}
+          <TabsContent value="newsletter">
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Mail className="w-5 h-5 text-primary" />
+                    <span className="text-2xl font-bold">{newsletterSubscribers.length}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Newsletter Subscribers</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <User className="w-5 h-5 text-accent" />
+                    <span className="text-2xl font-bold">{subscribedUsers.length}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">User Subscribers</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Send className="w-5 h-5 text-green-500" />
+                    <span className="text-2xl font-bold">{newsletterLogs.length}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Campaigns Sent</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <CheckCircle className="w-5 h-5 text-blue-500" />
+                    <span className="text-2xl font-bold">
+                      {newsletterLogs.reduce((sum, log) => sum + (log.sent_count || 0), 0)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Total Emails Sent</p>
+                </Card>
+              </div>
+
+              {/* Compose Newsletter */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Edit className="w-5 h-5" />
+                    Compose Newsletter
+                  </CardTitle>
+                  <CardDescription>Create and send newsletters to your subscribers</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Subject</Label>
+                    <Input
+                      value={newsletterSubject}
+                      onChange={(e) => setNewsletterSubject(e.target.value)}
+                      placeholder="Newsletter subject line..."
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Content</Label>
+                    <Textarea
+                      value={newsletterContent}
+                      onChange={(e) => setNewsletterContent(e.target.value)}
+                      placeholder="Write your newsletter content here... HTML is supported."
+                      className="min-h-[200px]"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Newsletter Image (optional)</Label>
+                    <div className="flex items-center gap-4">
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleNewsletterImageUpload}
+                        disabled={uploadingNewsletterImage}
+                      />
+                      {uploadingNewsletterImage && <Loader2 className="w-5 h-5 animate-spin" />}
+                    </div>
+                    {newsletterImageUrl && (
+                      <div className="mt-2">
+                        <img src={newsletterImageUrl} alt="Newsletter" className="max-w-xs rounded-lg" />
+                        <Button variant="ghost" size="sm" onClick={() => setNewsletterImageUrl('')} className="mt-1">
+                          <X className="w-4 h-4 mr-1" /> Remove
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="includeLastMinute"
+                      checked={includeLastMinute}
+                      onChange={(e) => setIncludeLastMinute(e.target.checked)}
+                      className="rounded"
+                    />
+                    <Label htmlFor="includeLastMinute">Include Last Minute deals in newsletter</Label>
+                  </div>
+                  
+                  <div className="flex gap-3 pt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={sendTestNewsletter}
+                      disabled={sendingNewsletter || !newsletterSubject || !newsletterContent}
+                    >
+                      {sendingNewsletter ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                      Send Test to info@freestays.eu
+                    </Button>
+                    <Button 
+                      onClick={sendNewsletter}
+                      disabled={sendingNewsletter || !newsletterSubject || !newsletterContent}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {sendingNewsletter ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+                      Send to All Subscribers
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Subscribers List */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Newsletter Subscribers</CardTitle>
+                      <CardDescription>Manage your newsletter mailing list</CardDescription>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={loadNewsletterData} disabled={loadingNewsletter}>
+                      {loadingNewsletter ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-2">
+                      {newsletterSubscribers.length === 0 && subscribedUsers.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-8">No subscribers yet</p>
+                      ) : (
+                        <>
+                          {newsletterSubscribers.map((sub, idx) => (
+                            <div key={idx} className="flex items-center justify-between p-3 bg-secondary/30 rounded-lg">
+                              <div>
+                                <p className="font-medium">{sub.email}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  Subscribed: {sub.subscribed_at ? format(new Date(sub.subscribed_at), 'MMM d, yyyy') : 'N/A'}
+                                </p>
+                              </div>
+                              <Badge variant={sub.is_active ? 'default' : 'secondary'}>
+                                {sub.is_active ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </div>
+                          ))}
+                          {subscribedUsers.map((user, idx) => (
+                            <div key={`user-${idx}`} className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                              <div>
+                                <p className="font-medium">{user.email}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {user.first_name} {user.last_name} (Registered User)
+                                </p>
+                              </div>
+                              <Badge className="bg-blue-100 text-blue-700">User</Badge>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* User Newsletter Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Newsletter Subscriptions</CardTitle>
+                  <CardDescription>Toggle newsletter subscription for registered users</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[300px]">
+                    <div className="space-y-2">
+                      {users?.filter(u => u.email).map(user => (
+                        <div key={user.user_id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <p className="font-medium">{user.email}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {user.first_name} {user.last_name}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Badge variant={user.newsletter_subscribed ? 'default' : 'outline'}>
+                              {user.newsletter_subscribed ? 'Subscribed' : 'Not Subscribed'}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              variant={user.newsletter_subscribed ? 'destructive' : 'default'}
+                              onClick={() => toggleUserNewsletterSubscription(user.user_id, !user.newsletter_subscribed)}
+                            >
+                              {user.newsletter_subscribed ? 'Unsubscribe' : 'Subscribe'}
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+
+              {/* Newsletter History */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Send History</CardTitle>
+                  <CardDescription>Recent newsletter campaigns</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {newsletterLogs.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">No newsletters sent yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {newsletterLogs.map((log, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-4 bg-secondary/30 rounded-lg">
+                          <div>
+                            <p className="font-medium">{log.subject}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {log.sent_at ? format(new Date(log.sent_at), 'MMM d, yyyy HH:mm') : 'N/A'}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm">
+                              <span className="text-green-600 font-medium">{log.sent_count}</span> delivered
+                            </p>
+                            {log.failed_count > 0 && (
+                              <p className="text-xs text-red-500">{log.failed_count} failed</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Contact Page Settings Tab */}
@@ -9161,7 +11658,7 @@ const AdminDashboardPage = () => {
                       setShowEditUserDialog(false);
                       loadData();
                     } catch (error) {
-                      toast.error(error.response?.data?.detail || 'Failed to update user');
+                      toast.error(getErrorMessage(error, 'Failed to update user'));
                     }
                   }}>Save Changes</Button>
                 </DialogFooter>
@@ -9191,7 +11688,7 @@ const AdminDashboardPage = () => {
                         setShowDeleteUserDialog(false);
                         loadData();
                       } catch (error) {
-                        toast.error(error.response?.data?.detail || 'Failed to delete user');
+                        toast.error(getErrorMessage(error, 'Failed to delete user'));
                       }
                     }}
                   >
@@ -9263,6 +11760,361 @@ const AdminDashboardPage = () => {
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Surveys & Feedback Tab */}
+          <TabsContent value="feedback">
+            <div className="space-y-6">
+              {/* Feedback Stats Overview */}
+              {feedbackStats && (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <MessageSquare className="w-5 h-5 text-primary" />
+                      <span className="text-2xl font-bold">{feedbackStats.counts?.total || 0}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Total Feedback</p>
+                  </Card>
+                  <Card className="p-4 border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <Clock className="w-5 h-5 text-yellow-500" />
+                      <span className="text-2xl font-bold">{feedbackStats.counts?.pending || 0}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Pending Review</p>
+                  </Card>
+                  <Card className="p-4 border-green-200 bg-green-50/50 dark:bg-green-950/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span className="text-2xl font-bold">{feedbackStats.counts?.approved || 0}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Approved</p>
+                  </Card>
+                  <Card className="p-4 border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
+                    <div className="flex items-center justify-between mb-2">
+                      <Globe className="w-5 h-5 text-blue-500" />
+                      <span className="text-2xl font-bold">{feedbackStats.counts?.public_reviews || 0}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Published</p>
+                  </Card>
+                  <Card className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <Star className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                      <span className="text-2xl font-bold">{feedbackStats.average_ratings?.overall || '-'}</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">Avg Rating</p>
+                  </Card>
+                </div>
+              )}
+
+              {/* Analytics Charts */}
+              {feedbackStats && (
+                <div className="grid md:grid-cols-2 gap-6">
+                  {/* Rating Distribution */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5" />
+                        Rating Distribution
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {[5, 4, 3, 2, 1].map(rating => {
+                          const count = feedbackStats.rating_distribution?.[rating] || 0;
+                          const total = Object.values(feedbackStats.rating_distribution || {}).reduce((a, b) => a + b, 0);
+                          const percent = total > 0 ? (count / total * 100) : 0;
+                          return (
+                            <div key={rating} className="flex items-center gap-3">
+                              <div className="flex items-center gap-1 w-12">
+                                <span className="font-medium">{rating}</span>
+                                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                              </div>
+                              <div className="flex-1 h-6 bg-secondary rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-yellow-400 transition-all"
+                                  style={{ width: `${percent}%` }}
+                                />
+                              </div>
+                              <span className="text-sm text-muted-foreground w-12">{count}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Response Stats */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5" />
+                        Response Metrics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
+                        <span>Feedback Requests Sent</span>
+                        <span className="font-bold">{feedbackStats.response_stats?.requests_sent || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
+                        <span>Responses Received</span>
+                        <span className="font-bold">{feedbackStats.response_stats?.responses_received || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-green-100 dark:bg-green-950/30 rounded-lg">
+                        <span className="font-medium">Response Rate</span>
+                        <span className="font-bold text-green-600">{feedbackStats.response_stats?.response_rate || 0}%</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-blue-100 dark:bg-blue-950/30 rounded-lg">
+                        <span className="font-medium">Would Recommend</span>
+                        <span className="font-bold text-blue-600">{feedbackStats.recommend_rate || 0}%</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
+                        <span>Reviews (Last 30 Days)</span>
+                        <span className="font-bold">{feedbackStats.recent_30_days || 0}</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* Detailed Ratings Breakdown */}
+              {feedbackStats?.average_ratings && Object.keys(feedbackStats.average_ratings).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Category Ratings</CardTitle>
+                    <CardDescription>Average scores by category</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
+                      {Object.entries(feedbackStats.average_ratings).map(([key, value]) => (
+                        <div key={key} className="text-center p-4 bg-secondary/30 rounded-xl">
+                          <div className="flex items-center justify-center gap-1 mb-2">
+                            <span className="text-2xl font-bold">{value}</span>
+                            <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                          </div>
+                          <p className="text-sm text-muted-foreground capitalize">{key}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Travel Type Breakdown */}
+              {feedbackStats?.travel_breakdown?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Traveler Types</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-3">
+                      {feedbackStats.travel_breakdown.map(item => (
+                        <Badge key={item.type} variant="secondary" className="px-4 py-2 text-sm">
+                          <span className="capitalize">{item.type}</span>
+                          <span className="ml-2 text-muted-foreground">({item.count})</span>
+                          <span className="ml-2 flex items-center">
+                            {item.avg_rating} <Star className="w-3 h-3 ml-0.5 fill-yellow-400 text-yellow-400" />
+                          </span>
+                        </Badge>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Feedback List */}
+              <Card>
+                <CardHeader>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle>Guest Feedback</CardTitle>
+                      <CardDescription>Review and manage guest submissions</CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={feedbackFilter}
+                        onChange={(e) => {
+                          setFeedbackFilter(e.target.value);
+                          setTimeout(() => loadFeedbackData(), 100);
+                        }}
+                        className="h-9 px-3 border rounded-md bg-background"
+                      >
+                        <option value="all">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                      </select>
+                      <Button variant="outline" size="sm" onClick={loadFeedbackData} disabled={loadingFeedback}>
+                        {loadingFeedback ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={triggerFeedbackRequests}>
+                        <Mail className="w-4 h-4 mr-1" />
+                        Send Requests
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {feedbackList.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No feedback submissions yet</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Feedback requests are sent automatically 3 days after checkout
+                      </p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[500px]">
+                      <div className="space-y-4">
+                        {feedbackList.map(feedback => (
+                          <Card key={feedback.feedback_id} className={`p-4 ${
+                            feedback.status === 'approved' ? 'border-green-200 bg-green-50/50 dark:bg-green-950/20' : 
+                            feedback.status === 'rejected' ? 'border-red-200 bg-red-50/50 dark:bg-red-950/20' : 
+                            'border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20'
+                          }`}>
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                {/* Header with rating and status */}
+                                <div className="flex items-center gap-3 mb-2">
+                                  <div className="flex gap-0.5">
+                                    {Array.from({ length: 5 }).map((_, i) => (
+                                      <Star key={i} className={`w-4 h-4 ${i < feedback.overall_rating ? 'fill-yellow-400 text-yellow-400' : 'fill-gray-200 text-gray-200'}`} />
+                                    ))}
+                                  </div>
+                                  <Badge className={
+                                    feedback.status === 'approved' ? 'bg-green-100 text-green-700' : 
+                                    feedback.status === 'rejected' ? 'bg-red-100 text-red-700' : 
+                                    'bg-yellow-100 text-yellow-700'
+                                  }>
+                                    {feedback.status}
+                                  </Badge>
+                                  {feedback.is_public && (
+                                    <Badge className="bg-blue-100 text-blue-700">
+                                      <Globe className="w-3 h-3 mr-1" />
+                                      Published
+                                    </Badge>
+                                  )}
+                                  {feedback.would_recommend && (
+                                    <Badge variant="outline" className="text-green-600">
+                                      <ThumbsUp className="w-3 h-3 mr-1" />
+                                      Recommends
+                                    </Badge>
+                                  )}
+                                </div>
+                                
+                                {/* Title and content */}
+                                <h4 className="font-semibold">{feedback.title}</h4>
+                                <p className="text-sm text-muted-foreground mt-1">"{feedback.review_text}"</p>
+                                
+                                {/* Category ratings */}
+                                <div className="flex flex-wrap gap-2 mt-3">
+                                  {feedback.cleanliness_rating && (
+                                    <span className="text-xs bg-secondary px-2 py-1 rounded">
+                                      Cleanliness: {feedback.cleanliness_rating}/5
+                                    </span>
+                                  )}
+                                  {feedback.service_rating && (
+                                    <span className="text-xs bg-secondary px-2 py-1 rounded">
+                                      Service: {feedback.service_rating}/5
+                                    </span>
+                                  )}
+                                  {feedback.value_rating && (
+                                    <span className="text-xs bg-secondary px-2 py-1 rounded">
+                                      Value: {feedback.value_rating}/5
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                {/* Meta info */}
+                                <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                                  <span>Hotel: {feedback.hotel_name || 'N/A'}</span>
+                                  {feedback.travel_type && (
+                                    <span className="capitalize">Type: {feedback.travel_type}</span>
+                                  )}
+                                  <span>{feedback.submitted_at ? format(new Date(feedback.submitted_at), 'MMM d, yyyy HH:mm') : ''}</span>
+                                </div>
+                              </div>
+                              
+                              {/* Actions */}
+                              <div className="flex flex-col gap-2">
+                                {feedback.status !== 'approved' && (
+                                  <>
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-green-600 hover:bg-green-700" 
+                                      onClick={() => updateFeedbackStatus(feedback.feedback_id, 'approved', false)}
+                                      disabled={updatingFeedbackStatus === feedback.feedback_id}
+                                    >
+                                      {updatingFeedbackStatus === feedback.feedback_id ? (
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Check className="w-4 h-4 mr-1" />
+                                          Approve
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      className="bg-blue-600 hover:bg-blue-700" 
+                                      onClick={() => updateFeedbackStatus(feedback.feedback_id, 'approved', true)}
+                                      disabled={updatingFeedbackStatus === feedback.feedback_id}
+                                    >
+                                      <Globe className="w-4 h-4 mr-1" />
+                                      Publish
+                                    </Button>
+                                  </>
+                                )}
+                                {feedback.status === 'approved' && !feedback.is_public && (
+                                  <Button 
+                                    size="sm" 
+                                    className="bg-blue-600 hover:bg-blue-700" 
+                                    onClick={() => updateFeedbackStatus(feedback.feedback_id, 'approved', true)}
+                                    disabled={updatingFeedbackStatus === feedback.feedback_id}
+                                  >
+                                    <Globe className="w-4 h-4 mr-1" />
+                                    Publish
+                                  </Button>
+                                )}
+                                {feedback.status !== 'rejected' && (
+                                  <Button 
+                                    size="sm" 
+                                    variant="destructive" 
+                                    onClick={() => updateFeedbackStatus(feedback.feedback_id, 'rejected', false)}
+                                    disabled={updatingFeedbackStatus === feedback.feedback_id}
+                                  >
+                                    <X className="w-4 h-4 mr-1" />
+                                    Reject
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Info Card */}
+              <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-blue-900 dark:text-blue-100">How Feedback Works</h4>
+                      <ul className="text-sm text-blue-700 dark:text-blue-200 mt-2 space-y-1">
+                        <li>• Feedback requests are sent automatically 3 days after checkout (10 AM UTC)</li>
+                        <li>• Guests can rate cleanliness, service, value, location, and amenities</li>
+                        <li>• Approved feedback can be published as public reviews on hotel pages</li>
+                        <li>• Click "Send Requests" to manually trigger the feedback email job</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Referrals Tab */}
@@ -9433,6 +12285,727 @@ const AdminDashboardPage = () => {
               </Card>
             </div>
           </TabsContent>
+
+          {/* Email Forwarding Tab */}
+          <TabsContent value="email-forwarding">
+            <div className="space-y-6">
+              {/* Status Card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Mail className="w-5 h-5" />
+                        Sunhotels Email Forwarding
+                      </CardTitle>
+                      <CardDescription>Automatically forward voucher emails with FreeStays branding</CardDescription>
+                    </div>
+                    <Button 
+                      onClick={triggerEmailForwarding}
+                      disabled={triggeringForwarding}
+                      className="rounded-full"
+                    >
+                      {triggeringForwarding ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking...</>
+                      ) : (
+                        <><RefreshCw className="w-4 h-4 mr-2" /> Check Now</>
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingEmailForwarding ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : emailForwardingStatus ? (
+                    <div className="space-y-6">
+                      {/* Status Overview */}
+                      <div className="grid md:grid-cols-4 gap-4">
+                        <div className="bg-secondary/30 rounded-xl p-4 text-center">
+                          <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${emailForwardingStatus.configured ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                            {emailForwardingStatus.configured ? <CheckCircle className="w-6 h-6" /> : <XCircle className="w-6 h-6" />}
+                          </div>
+                          <p className="font-semibold">{emailForwardingStatus.configured ? 'Configured' : 'Not Configured'}</p>
+                          <p className="text-xs text-muted-foreground">IMAP Status</p>
+                        </div>
+                        <div className="bg-secondary/30 rounded-xl p-4 text-center">
+                          <p className="text-3xl font-bold text-primary">{emailForwardingStatus.total_forwarded || 0}</p>
+                          <p className="text-sm text-muted-foreground">Total Forwarded</p>
+                        </div>
+                        <div className="bg-secondary/30 rounded-xl p-4 text-center">
+                          <p className="text-3xl font-bold text-green-600">{emailForwardingStatus.forwarded_today || 0}</p>
+                          <p className="text-sm text-muted-foreground">Forwarded Today</p>
+                        </div>
+                        <div className="bg-secondary/30 rounded-xl p-4 text-center">
+                          <div className={`w-12 h-12 mx-auto mb-2 rounded-full flex items-center justify-center ${emailForwardingStatus.scheduler_running ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>
+                            {emailForwardingStatus.scheduler_running ? <Activity className="w-6 h-6" /> : <Clock className="w-6 h-6" />}
+                          </div>
+                          <p className="font-semibold">{emailForwardingStatus.scheduler_running ? 'Running' : 'Stopped'}</p>
+                          <p className="text-xs text-muted-foreground">{emailForwardingStatus.next_check}</p>
+                        </div>
+                      </div>
+                      
+                      {/* Configuration Details */}
+                      <div className="bg-muted/30 rounded-xl p-4">
+                        <h4 className="font-semibold mb-2 flex items-center gap-2">
+                          <Settings className="w-4 h-4" /> Configuration
+                        </h4>
+                        <div className="grid md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-muted-foreground">IMAP Server:</span>
+                            <span className="ml-2 font-mono">{emailForwardingStatus.imap_server || 'Not set'}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Email:</span>
+                            <span className="ml-2 font-mono">{emailForwardingStatus.imap_email || 'Not set'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">Click "Check Now" to load status</p>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Forwarded Vouchers History */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Recent Forwarded Vouchers
+                  </CardTitle>
+                  <CardDescription>History of voucher emails forwarded to customers</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {forwardedVouchers.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <Mail className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No forwarded vouchers yet</p>
+                      <p className="text-sm">Vouchers will appear here when emails are forwarded</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[400px]">
+                      <div className="space-y-3">
+                        {forwardedVouchers.map((voucher, index) => (
+                          <Card key={index} className="p-4 hover:shadow-md transition-all">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Badge variant="outline" className="text-primary border-primary">
+                                    {voucher.sunhotels_ref}
+                                  </Badge>
+                                  <span className="text-sm text-muted-foreground">
+                                    {new Date(voucher.forwarded_at).toLocaleString()}
+                                  </span>
+                                </div>
+                                <p className="font-medium">{voucher.voucher_info?.hotel_name || 'Hotel'}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {voucher.voucher_info?.client_name} • {voucher.voucher_info?.check_in} to {voucher.voucher_info?.check_out}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                {voucher.voucher_info?.voucher_link && (
+                                  <Button variant="outline" size="sm" asChild>
+                                    <a href={voucher.voucher_info.voucher_link} target="_blank" rel="noopener noreferrer">
+                                      <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Referral Tiers Management Tab */}
+          <TabsContent value="referral-tiers">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        Referral Reward Tiers
+                      </CardTitle>
+                      <CardDescription>Configure the referral program tiers and their extra discount percentages</CardDescription>
+                    </div>
+                    <Button 
+                      onClick={saveReferralTiers}
+                      disabled={savingTiers}
+                      className="rounded-full"
+                    >
+                      {savingTiers ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                      ) : (
+                        <><Save className="w-4 h-4 mr-2" /> Save Changes</>
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Tier Cards */}
+                    <div className="grid md:grid-cols-5 gap-4">
+                      {referralTiers.map((tier, index) => {
+                        const tierColors = [
+                          { bg: 'bg-slate-100 dark:bg-slate-800', border: 'border-slate-300', icon: '⭐' },
+                          { bg: 'bg-amber-50 dark:bg-amber-900/30', border: 'border-amber-400', icon: '🥉' },
+                          { bg: 'bg-gray-100 dark:bg-gray-800', border: 'border-gray-400', icon: '🥈' },
+                          { bg: 'bg-yellow-50 dark:bg-yellow-900/30', border: 'border-yellow-400', icon: '🥇' },
+                          { bg: 'bg-cyan-50 dark:bg-cyan-900/30', border: 'border-cyan-400', icon: '💎' }
+                        ];
+                        const color = tierColors[index] || tierColors[0];
+                        
+                        return (
+                          <Card key={tier.name} className={`p-4 ${color.bg} border-2 ${color.border}`}>
+                            <div className="text-center mb-4">
+                              <span className="text-3xl">{color.icon}</span>
+                              <h3 className="font-bold text-lg mt-2">{tier.name}</h3>
+                            </div>
+                            
+                            <div className="space-y-3">
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Min Referrals</Label>
+                                <Input 
+                                  type="number"
+                                  value={tier.min}
+                                  onChange={(e) => updateReferralTier(index, 'min', e.target.value)}
+                                  className="h-9 text-center"
+                                  min={0}
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Max Referrals</Label>
+                                <Input 
+                                  type="number"
+                                  value={tier.max}
+                                  onChange={(e) => updateReferralTier(index, 'max', e.target.value)}
+                                  className="h-9 text-center"
+                                  min={tier.min}
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Extra Discount %</Label>
+                                <div className="relative">
+                                  <Input 
+                                    type="number"
+                                    value={tier.extraDiscount}
+                                    onChange={(e) => updateReferralTier(index, 'extraDiscount', e.target.value)}
+                                    className="h-9 text-center pr-8"
+                                    min={0}
+                                    max={100}
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="mt-4 pt-4 border-t border-dashed text-center">
+                              <p className="text-xs text-muted-foreground">Reward:</p>
+                              <p className="font-semibold text-sm text-primary">
+                                €15 {tier.extraDiscount > 0 ? `+ ${tier.extraDiscount}%` : ''}
+                              </p>
+                            </div>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Info Box */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                        <Info className="w-4 h-4" /> How Referral Tiers Work
+                      </h4>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <li>• Each user earns <strong>€15</strong> base reward per successful referral</li>
+                        <li>• <strong>Extra Discount %</strong> is applied to their next booking on top of the base reward</li>
+                        <li>• Gold tier users automatically receive a <strong>FREE Annual Pass</strong></li>
+                        <li>• Diamond tier users get <strong>VIP status</strong> and lifetime benefits</li>
+                      </ul>
+                    </div>
+                    
+                    {/* Preview Section */}
+                    <Card className="p-4 bg-gradient-to-r from-primary/5 to-accent/5">
+                      <h4 className="font-semibold mb-3 flex items-center gap-2">
+                        <Eye className="w-4 h-4" /> Tier Preview (as shown to users)
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {referralTiers.map((tier, index) => (
+                          <Badge 
+                            key={tier.name} 
+                            variant={index === 0 ? "outline" : "default"}
+                            className={index === 3 ? "bg-yellow-500" : index === 4 ? "bg-gradient-to-r from-cyan-500 to-blue-500" : ""}
+                          >
+                            {tier.name}: {tier.min}-{tier.max === 999 ? '∞' : tier.max} refs → +{tier.extraDiscount}%
+                          </Badge>
+                        ))}
+                      </div>
+                    </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Check-in Reminders Tab */}
+          <TabsContent value="checkin-reminders">
+            <div className="space-y-6">
+              {/* Status Card */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Bell className="w-5 h-5 text-green-500" />
+                        Check-in Reminder Emails
+                      </CardTitle>
+                      <CardDescription>Automatic reminder emails sent 3 days before check-in</CardDescription>
+                    </div>
+                    <Button 
+                      onClick={triggerCheckinReminders}
+                      disabled={triggeringReminders}
+                      className="rounded-full"
+                    >
+                      {triggeringReminders ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking...</>
+                      ) : (
+                        <><Send className="w-4 h-4 mr-2" /> Send Now</>
+                      )}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {loadingCheckinReminders ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    </div>
+                  ) : checkinReminderStatus ? (
+                    <div className="grid md:grid-cols-4 gap-4">
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+                          <Mail className="w-6 h-6 text-green-600 dark:text-green-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{checkinReminderStatus.total_sent || 0}</p>
+                        <p className="text-sm text-muted-foreground">Total Sent</p>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+                          <CalendarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{checkinReminderStatus.sent_today || 0}</p>
+                        <p className="text-sm text-muted-foreground">Sent Today</p>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-amber-100 dark:bg-amber-800 flex items-center justify-center">
+                          <Clock className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                        </div>
+                        <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{checkinReminderStatus.pending_3days || 0}</p>
+                        <p className="text-sm text-muted-foreground">Pending (3 days)</p>
+                      </div>
+                      <div className="bg-secondary/50 rounded-xl p-4 text-center">
+                        <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-muted flex items-center justify-center">
+                          <Activity className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <p className="text-sm font-semibold">{checkinReminderStatus.next_check}</p>
+                        <p className="text-xs text-muted-foreground">Next Check</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">Click tab to load status</p>
+                  )}
+                  
+                  {checkinReminderStatus?.last_reminder && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-xl">
+                      <h4 className="font-semibold text-sm mb-2">Last Reminder Sent</h4>
+                      <div className="flex items-center justify-between text-sm">
+                        <div>
+                          <span className="text-muted-foreground">To:</span> {checkinReminderStatus.last_reminder.guest_email}
+                          <span className="text-muted-foreground ml-4">Hotel:</span> {checkinReminderStatus.last_reminder.hotel_name}
+                        </div>
+                        <span className="text-muted-foreground">
+                          {new Date(checkinReminderStatus.last_reminder.checkin_reminder_sent_at).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Upcoming Check-ins */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5" />
+                    Upcoming Check-ins (Next 7 Days)
+                  </CardTitle>
+                  <CardDescription>Guests arriving soon - reminders will be sent 3 days before</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {upcomingCheckins.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <CalendarIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p>No upcoming check-ins in the next 7 days</p>
+                    </div>
+                  ) : (
+                    <ScrollArea className="h-[400px]">
+                      <div className="space-y-3">
+                        {upcomingCheckins.map((booking, index) => {
+                          const checkInDate = new Date(booking.check_in);
+                          const today = new Date();
+                          const daysUntil = Math.ceil((checkInDate - today) / (1000 * 60 * 60 * 24));
+                          
+                          return (
+                            <Card key={index} className={`p-4 ${daysUntil <= 3 ? 'border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10' : ''}`}>
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Badge variant={daysUntil <= 3 ? "default" : "outline"} className={daysUntil <= 3 ? "bg-amber-500" : ""}>
+                                      {daysUntil === 0 ? 'Today' : daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`}
+                                    </Badge>
+                                    {booking.checkin_reminder_sent && (
+                                      <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                                        <CheckCircle className="w-3 h-3 mr-1" /> Reminder Sent
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <p className="font-semibold">{booking.guest_first_name} {booking.guest_last_name}</p>
+                                  <p className="text-sm text-muted-foreground">{booking.hotel_name}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {booking.check_in} → {booking.check_out} • {booking.guest_email}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-lg font-bold text-primary">{new Date(booking.check_in).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                                </div>
+                              </div>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+              
+              {/* Info Box */}
+              <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">How Check-in Reminders Work</h4>
+                      <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <li>• Reminders are sent automatically at <strong>9:00 AM UTC</strong> daily</li>
+                        <li>• Guests receive an email <strong>3 days before</strong> their check-in date</li>
+                        <li>• Email includes booking details, voucher link, and a pre-trip checklist</li>
+                        <li>• Each booking only receives <strong>one reminder</strong> (tracked in database)</li>
+                        <li>• Click "Send Now" to manually check and send pending reminders</li>
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* PWA Analytics Tab */}
+          <TabsContent value="pwa">
+            <div className="space-y-6">
+              {/* PWA Stats Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Download className="w-5 h-5 text-primary" />
+                    <span className="text-2xl font-bold">{pwaAnalytics?.total_installs || 0}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Total Installs</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <User className="w-5 h-5 text-green-500" />
+                    <span className="text-2xl font-bold">{pwaAnalytics?.registered_users || 0}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Registered Users</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Users className="w-5 h-5 text-orange-500" />
+                    <span className="text-2xl font-bold">{pwaAnalytics?.anonymous_users || 0}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Anonymous Users</p>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <Activity className="w-5 h-5 text-blue-500" />
+                    <span className="text-2xl font-bold">{pwaAnalytics?.active_last_7_days || 0}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Active (7 days)</p>
+                </Card>
+              </div>
+
+              {/* Push Update Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="w-5 h-5" />
+                    Push Update to All Devices
+                  </CardTitle>
+                  <CardDescription>
+                    Send update notification to all users who have installed the app. This will prompt them to refresh.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label>Update Message</Label>
+                    <Textarea 
+                      value={updateMessage}
+                      onChange={(e) => setUpdateMessage(e.target.value)}
+                      placeholder="Enter the update message to send to users..."
+                      className="mt-2"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <Button 
+                      onClick={pushUpdateToAll}
+                      disabled={pushingUpdate || !pwaAnalytics?.total_installs}
+                      className="bg-primary"
+                    >
+                      {pushingUpdate ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          Push Update to {pwaAnalytics?.total_installs || 0} Devices
+                        </>
+                      )}
+                    </Button>
+                    <Button variant="outline" onClick={loadPwaAnalytics} disabled={loadingPwaAnalytics}>
+                      {loadingPwaAnalytics ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                      <span className="ml-2">Refresh Data</span>
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Note: Push updates use Service Worker cache invalidation. Users will see a refresh prompt on their next visit.
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Platform & Browser Breakdown */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Platform Breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {pwaAnalytics?.platforms && Object.keys(pwaAnalytics.platforms).length > 0 ? (
+                      <div className="space-y-3">
+                        {Object.entries(pwaAnalytics.platforms).map(([platform, count]) => (
+                          <div key={platform} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Smartphone className="w-4 h-4 text-muted-foreground" />
+                              <span className="capitalize">{platform}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{count}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({pwaAnalytics.total_installs ? Math.round(count / pwaAnalytics.total_installs * 100) : 0}%)
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-4">No data available</p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Browser Breakdown</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {pwaAnalytics?.browsers && Object.keys(pwaAnalytics.browsers).length > 0 ? (
+                      <div className="space-y-3">
+                        {Object.entries(pwaAnalytics.browsers).map(([browser, count]) => (
+                          <div key={browser} className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Globe className="w-4 h-4 text-muted-foreground" />
+                              <span className="capitalize">{browser}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{count}</span>
+                              <span className="text-xs text-muted-foreground">
+                                ({pwaAnalytics.total_installs ? Math.round(count / pwaAnalytics.total_installs * 100) : 0}%)
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-center text-muted-foreground py-4">No data available</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Installs */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <History className="w-5 h-5" />
+                    Recent Installs
+                  </CardTitle>
+                  <CardDescription>
+                    Last 10 app installations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {pwaAnalytics?.recent_installs?.length > 0 ? (
+                    <ScrollArea className="h-[300px]">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Platform</TableHead>
+                            <TableHead>Browser</TableHead>
+                            <TableHead>Installed</TableHead>
+                            <TableHead>Last Active</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {pwaAnalytics.recent_installs.map((install) => (
+                            <TableRow key={install.install_id}>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  {install.is_registered_user ? (
+                                    <Badge className="bg-green-100 text-green-700">Registered</Badge>
+                                  ) : (
+                                    <Badge variant="outline">Anonymous</Badge>
+                                  )}
+                                  {install.user_email && (
+                                    <span className="text-xs text-muted-foreground">{install.user_email}</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <span className="capitalize">{install.platform || 'Unknown'}</span>
+                              </TableCell>
+                              <TableCell>
+                                <span className="capitalize">{install.browser || 'Unknown'}</span>
+                              </TableCell>
+                              <TableCell>
+                                {install.installed_at ? format(new Date(install.installed_at), 'MMM d, HH:mm') : '-'}
+                              </TableCell>
+                              <TableCell>
+                                {install.last_active ? format(new Date(install.last_active), 'MMM d, HH:mm') : '-'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </ScrollArea>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Smartphone className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No app installs yet</p>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        When users install the FreeStays app, they will appear here
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Update History */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <RefreshCw className="w-5 h-5" />
+                    Update Push History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {pwaUpdates?.length > 0 ? (
+                    <ScrollArea className="h-[200px]">
+                      <div className="space-y-3">
+                        {pwaUpdates.map((update) => (
+                          <div key={update.update_id} className="p-3 border rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div>
+                                <p className="font-medium">{update.title || 'Update Notification'}</p>
+                                <p className="text-sm text-muted-foreground">{update.message}</p>
+                              </div>
+                              <Badge variant="outline">{update.target_installs} devices</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              {update.created_at ? format(new Date(update.created_at), 'MMM d, yyyy HH:mm') : '-'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">No updates pushed yet</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Additional Stats */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Activity className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{pwaAnalytics?.active_last_30_days || 0}</p>
+                      <p className="text-sm text-muted-foreground">Active (30 days)</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Bell className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{pwaAnalytics?.push_enabled || 0}</p>
+                      <p className="text-sm text-muted-foreground">Push Enabled</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <TrendingUp className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">
+                        {pwaAnalytics?.total_installs && pwaAnalytics?.active_last_7_days 
+                          ? Math.round(pwaAnalytics.active_last_7_days / pwaAnalytics.total_installs * 100)
+                          : 0}%
+                      </p>
+                      <p className="text-sm text-muted-foreground">Retention Rate</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -9440,6 +13013,73 @@ const AdminDashboardPage = () => {
 };
 
 // ==================== APP ====================
+
+// Email Verification Reminder Banner
+const EmailVerificationReminder = () => {
+  const { user } = useAuth();
+  const [dismissed, setDismissed] = useState(false);
+  const [resending, setResending] = useState(false);
+  
+  // Don't show if no user, already verified, or dismissed this session
+  if (!user || user.email_verified || dismissed) return null;
+  
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const token = localStorage.getItem('freestays_token');
+      await axios.post(`${API}/auth/resend-verification`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (error) {
+      toast.error('Failed to send verification email. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+  
+  return (
+    <div className="bg-amber-50 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800" data-testid="email-verification-banner">
+      <div className="max-w-7xl mx-auto px-4 py-2">
+        <div className="flex items-center justify-between gap-4 text-sm">
+          <div className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
+            <Mail className="w-4 h-4 flex-shrink-0" />
+            <span>
+              Please verify your email address to unlock all features.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-800 text-xs px-3 h-7"
+              onClick={handleResendVerification}
+              disabled={resending}
+            >
+              {resending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Send className="w-3 h-3 mr-1" />}
+              Resend Email
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="w-6 h-6 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-800"
+              onClick={() => setDismissed(true)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Wrapper for ReferFriendPage to pass user from App.js's internal useAuth
+const ReferFriendPageWrapper = () => {
+  const { user } = useAuth();
+  return <ReferFriendPage user={user} />;
+};
+
 function AppRouter() {
   const location = useLocation();
   
@@ -9456,16 +13096,18 @@ function AppRouter() {
       <Route path="/booking/new" element={<BookingPage />} />
       <Route path="/booking/success" element={<BookingSuccessPage />} />
       <Route path="/pass/success" element={<PassSuccessPage />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
+      {/* CheckoutPage removed - dead code, using Stripe Hosted Checkout instead */}
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/how-it-works" element={<HowItWorksPage />} />
       <Route path="/who-we-are" element={<WhoWeArePage />} />
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/refer-a-friend" element={<ReferFriendPage />} />
+      <Route path="/refer-a-friend" element={<ReferFriendPageWrapper />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/survey" element={<SurveyPage />} />
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/admin" element={<AdminLoginPage />} />
       <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
@@ -9478,14 +13120,18 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <div className="App min-h-screen bg-background text-foreground transition-colors duration-300">
-              <Header />
-              <AppRouter />
-              <InstallAppPrompt />
-              <Toaster position="top-center" richColors />
-            </div>
-          </BrowserRouter>
+          <PWAInstallProvider>
+            <BrowserRouter>
+              <div className="App min-h-screen bg-background text-foreground transition-colors duration-300">
+                <Header />
+                <EmailVerificationReminder />
+                <AppRouter />
+                <InstallAppPrompt />
+                <CookieConsent />
+                <Toaster position="top-center" richColors />
+              </div>
+            </BrowserRouter>
+          </PWAInstallProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

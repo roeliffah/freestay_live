@@ -25,14 +25,26 @@ const { RangePicker } = DatePicker;
 
 dayjs.locale('tr');
 
-interface Destination {
-  id: string; // Backend UUID
-  destinationId: string | number; // SunHotels location ID (API döndürüyor)
+// Search result type - can be destination, resort, or hotel
+type SearchResultType = 'destination' | 'resort' | 'hotel';
+
+interface SearchResult {
+  id: string;
+  type: SearchResultType;
   name: string;
-  country?: string;
+  // For destinations
+  destinationId?: string | number;
   countryCode?: string;
   countryName?: string;
   resortCount?: number;
+  // For resorts
+  resortId?: number;
+  destinationName?: string;
+  // For hotels
+  hotelId?: number;
+  city?: string;
+  country?: string;
+  stars?: number;
 }
 
 export function SearchForm() {
@@ -43,37 +55,84 @@ export function SearchForm() {
   
   const [destination, setDestination] = useState('');
   const [selectedDestinationId, setSelectedDestinationId] = useState<number | null>(null);
+  const [selectedResortId, setSelectedResortId] = useState<number | null>(null);
+  const [selectedHotelId, setSelectedHotelId] = useState<number | null>(null);
+  const [selectedType, setSelectedType] = useState<SearchResultType | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [rooms, setRooms] = useState([{ adults: 2, children: 0 }]);
   const [showGuestDialog, setShowGuestDialog] = useState(false);
-  const [showDestinations, setShowDestinations] = useState(false);
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [loadingDestinations, setLoadingDestinations] = useState(false);
+  const [showResults, setShowResults] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [loadingSearch, setLoadingSearch] = useState(false);
 
   useEffect(() => {
     if (!destination || destination.length < 2) {
-      setDestinations([]);
+      setSearchResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
-      setLoadingDestinations(true);
+      setLoadingSearch(true);
       try {
-        const response: any = await sunhotelsAPI.searchDestinations(destination);
-        let results: Destination[] = [];
-        if (Array.isArray(response)) {
-          results = response;
-        } else if (response?.data && Array.isArray(response.data)) {
-          results = response.data;
-        } else if (response?.destinations && Array.isArray(response.destinations)) {
-          results = response.destinations;
-        }
-        setDestinations(results);
+        // Paralel olarak destination, resort ve hotel ara
+        const [destResponse, resortResponse, hotelResponse] = await Promise.all([
+          sunhotelsAPI.searchDestinations(destination).catch(() => []),
+          sunhotelsAPI.searchResorts(destination).catch(() => []),
+          sunhotelsAPI.searchHotels(destination).catch(() => []),
+        ]);
+
+        const results: SearchResult[] = [];
+
+        // Destinasyonları ekle
+        const destData = destResponse as any;
+        const destinations = Array.isArray(destResponse) ? destResponse : destData?.data || destData?.destinations || [];
+        destinations.slice(0, 5).forEach((dest: any) => {
+          results.push({
+            id: `dest-${dest.id || dest.destinationId}`,
+            type: 'destination',
+            name: dest.name,
+            destinationId: dest.destinationId || dest.id,
+            countryCode: dest.countryCode,
+            countryName: dest.countryName || dest.country,
+            resortCount: dest.resortCount,
+          });
+        });
+
+        // Resortları ekle
+        const resortData = resortResponse as any;
+        const resorts = Array.isArray(resortResponse) ? resortResponse : resortData?.data || [];
+        resorts.slice(0, 5).forEach((resort: any) => {
+          results.push({
+            id: `resort-${resort.id || resort.resortId}`,
+            type: 'resort',
+            name: resort.name,
+            resortId: resort.resortId || resort.id,
+            destinationName: resort.destinationName,
+            countryName: resort.countryName || resort.country,
+          });
+        });
+
+        // Otelleri ekle
+        const hotelData = hotelResponse as any;
+        const hotels = Array.isArray(hotelResponse) ? hotelResponse : hotelData?.data || [];
+        hotels.slice(0, 5).forEach((hotel: any) => {
+          results.push({
+            id: `hotel-${hotel.id || hotel.hotelId}`,
+            type: 'hotel',
+            name: hotel.name,
+            hotelId: hotel.hotelId || hotel.id,
+            city: hotel.city,
+            country: hotel.country,
+            stars: hotel.category || hotel.stars,
+          });
+        });
+
+        setSearchResults(results);
       } catch (error) {
-        console.error('❌ Destinasyon arama hatası:', error);
-        setDestinations([]);
+        console.error('❌ Arama hatası:', error);
+        setSearchResults([]);
       } finally {
-        setLoadingDestinations(false);
+        setLoadingSearch(false);
       }
     }, 300);
 
@@ -88,14 +147,23 @@ export function SearchForm() {
     });
 
     if (dateRange && dateRange[0] && dateRange[1]) {
-      searchUrl.append('checkInDate', dateRange[0].format('YYYY-MM-DD'));
-      searchUrl.append('checkOutDate', dateRange[1].format('YYYY-MM-DD'));
+      // Tutarlılık için checkIn/checkOut kullan (hotel detay sayfasıyla uyumlu)
+      searchUrl.append('checkIn', dateRange[0].format('YYYY-MM-DD'));
+      searchUrl.append('checkOut', dateRange[1].format('YYYY-MM-DD'));
       searchUrl.append('mode', 'realtime');
     } else {
       searchUrl.append('mode', 'static');
     }
 
-    if (selectedDestinationId) {
+    // Seçilen tipe göre uygun parametre ekle
+    if (selectedType === 'hotel' && selectedHotelId) {
+      searchUrl.append('hotelId', selectedHotelId.toString());
+    } else if (selectedType === 'resort' && selectedResortId) {
+      searchUrl.append('resortId', selectedResortId.toString());
+      if (selectedDestinationId) {
+        searchUrl.append('destinationId', selectedDestinationId.toString());
+      }
+    } else if (selectedDestinationId) {
       searchUrl.append('destinationId', selectedDestinationId.toString());
     }
 
@@ -132,7 +200,7 @@ export function SearchForm() {
     <div className="w-full">
       <Card className="p-6 shadow-xl bg-background/95 backdrop-blur">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Destination */}
+          {/* Destination / Hotel / Resort */}
           <div className="relative">
             <label className="text-sm font-medium mb-2 block">{t('where')}</label>
             <div className="relative">
@@ -140,39 +208,126 @@ export function SearchForm() {
               <Input
                 placeholder={t('wherePlaceholder')}
                 value={destination}
-                onChange={(e) => setDestination(e.target.value)}
-                onFocus={() => setShowDestinations(true)}
-                onBlur={() => setTimeout(() => setShowDestinations(false), 200)}
+                onChange={(e) => {
+                  setDestination(e.target.value);
+                  // Reset selections when typing
+                  setSelectedDestinationId(null);
+                  setSelectedResortId(null);
+                  setSelectedHotelId(null);
+                  setSelectedType(null);
+                }}
+                onFocus={() => setShowResults(true)}
+                onBlur={() => setTimeout(() => setShowResults(false), 200)}
                 className="pl-10"
               />
               
-              {showDestinations && destinations.length > 0 && (
-                <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
-                  {destinations.map((dest) => (
-                    <button
-                      key={dest.id}
-                      type="button"
-                      className="w-full px-4 py-2 text-left hover:bg-accent flex items-center gap-2"
-                      onClick={() => {
-                        setDestination(dest.name);
-                        setSelectedDestinationId(Number(dest.destinationId));
-                        setShowDestinations(false);
-                      }}
-                    >
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        <div className="font-medium text-sm">{dest.name}</div>
-                        {dest.countryName && (
-                          <div className="text-xs text-muted-foreground">
-                            {dest.countryName} {dest.resortCount ? `• ${dest.resortCount} resort` : ''}
-                          </div>
-                        )}
+              {showResults && searchResults.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-72 overflow-auto">
+                  {/* Destinasyonlar */}
+                  {searchResults.filter(r => r.type === 'destination').length > 0 && (
+                    <>
+                      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/50 border-b">
+                        📍 {t('destinations') || 'Destinations'}
                       </div>
-                    </button>
-                  ))}
+                      {searchResults.filter(r => r.type === 'destination').map((result) => (
+                        <button
+                          key={result.id}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-accent flex items-center gap-2"
+                          onClick={() => {
+                            setDestination(result.name);
+                            setSelectedDestinationId(Number(result.destinationId));
+                            setSelectedResortId(null);
+                            setSelectedHotelId(null);
+                            setSelectedType('destination');
+                            setShowResults(false);
+                          }}
+                        >
+                          <MapPin className="h-4 w-4 text-blue-500" />
+                          <div>
+                            <div className="font-medium text-sm">{result.name}</div>
+                            {result.countryName && (
+                              <div className="text-xs text-muted-foreground">
+                                {result.countryName} {result.resortCount ? `• ${result.resortCount} resort` : ''}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  
+                  {/* Resortlar */}
+                  {searchResults.filter(r => r.type === 'resort').length > 0 && (
+                    <>
+                      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-t">
+                        🏖️ {t('resorts') || 'Resorts'}
+                      </div>
+                      {searchResults.filter(r => r.type === 'resort').map((result) => (
+                        <button
+                          key={result.id}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-accent flex items-center gap-2"
+                          onClick={() => {
+                            setDestination(result.name);
+                            setSelectedResortId(result.resortId || null);
+                            setSelectedDestinationId(null);
+                            setSelectedHotelId(null);
+                            setSelectedType('resort');
+                            setShowResults(false);
+                          }}
+                        >
+                          <MapPin className="h-4 w-4 text-green-500" />
+                          <div>
+                            <div className="font-medium text-sm">{result.name}</div>
+                            {(result.destinationName || result.countryName) && (
+                              <div className="text-xs text-muted-foreground">
+                                {result.destinationName || result.countryName}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  
+                  {/* Oteller */}
+                  {searchResults.filter(r => r.type === 'hotel').length > 0 && (
+                    <>
+                      <div className="px-3 py-2 text-xs font-semibold text-muted-foreground bg-muted/50 border-b border-t">
+                        🏨 {t('hotels') || 'Hotels'}
+                      </div>
+                      {searchResults.filter(r => r.type === 'hotel').map((result) => (
+                        <button
+                          key={result.id}
+                          type="button"
+                          className="w-full px-4 py-2 text-left hover:bg-accent flex items-center gap-2"
+                          onClick={() => {
+                            setDestination(result.name);
+                            setSelectedHotelId(result.hotelId || null);
+                            setSelectedDestinationId(null);
+                            setSelectedResortId(null);
+                            setSelectedType('hotel');
+                            setShowResults(false);
+                          }}
+                        >
+                          <MapPin className="h-4 w-4 text-orange-500" />
+                          <div>
+                            <div className="font-medium text-sm">{result.name}</div>
+                            {(result.city || result.country) && (
+                              <div className="text-xs text-muted-foreground">
+                                {result.city && result.country ? `${result.city}, ${result.country}` : result.city || result.country}
+                                {result.stars && ` • ${'★'.repeat(result.stars)}`}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
-              {showDestinations && loadingDestinations && (
+              {showResults && loadingSearch && (
                 <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg p-4 text-center text-sm text-muted-foreground">
                   {t('searching')}
                 </div>

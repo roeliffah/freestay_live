@@ -135,7 +135,7 @@ export function LastMinuteDeals({ title, subtitle }: LastMinuteDealsProps) {
                     </div>
                   </div>
                   <Button asChild>
-                    <Link href={`/${locale}/hotel/${hotel.id}?checkIn=${checkInDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&checkOut=${checkOutDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&adults=1&children=0`}>
+                    <Link href={`/${locale}/hotel/${hotel.id}?checkIn=${checkInDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&checkOut=${checkOutDate || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}&adults=1&children=0${hotel.destinationId ? `&destinationId=${hotel.destinationId}` : ''}${hotel.resortId ? `&resortId=${hotel.resortId}` : ''}`}>
                       {t('viewButton')}
                     </Link>
                   </Button>

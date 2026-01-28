@@ -48,6 +48,7 @@ interface Hotel {
   category: number;
   stars?: number;
   resortName?: string;
+  resortId?: number;
   destinationId?: number;
   minPrice: number;
   currency?: string;
@@ -104,11 +105,32 @@ export function HotelCard({ hotel }: HotelCardProps) {
   };
   const dateLocale = localeMap[locale] || enUS;
 
+  // Validate hotelId
+  if (!hotel.hotelId) {
+    console.error('❌ HotelCard: Missing hotelId', hotel);
+    return null;
+  }
+
   // Build hotel detail URL with search parameters
   const checkIn = searchParams.get('checkIn') || getDefaultCheckIn();
   const checkOut = searchParams.get('checkOut') || getDefaultCheckOut();
   
-  const hotelUrl = `/${locale}/hotel/${hotel.hotelId}?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&children=${children}`;
+  const hotelUrlParams = new URLSearchParams({
+    checkIn,
+    checkOut,
+    adults: adults.toString(),
+    children: children.toString(),
+  });
+  
+  // Add optional parameters if available
+  if (hotel.destinationId) {
+    hotelUrlParams.set('destinationId', hotel.destinationId.toString());
+  }
+  if (hotel.resortId) {
+    hotelUrlParams.set('resortId', hotel.resortId.toString());
+  }
+  
+  const hotelUrl = `/${locale}/hotel/${hotel.hotelId}?${hotelUrlParams.toString()}`;
 
   // Gerçek feature verilerini kullan, yoksa boş array
   const displayFeatures = hotel.features || [];
@@ -243,7 +265,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
                   const Icon = FACILITY_ICONS[feature] || Coffee;
                   return (
                     <div
-                      key={idx}
+                      key={`${feature}-${idx}`}
                       className="flex items-center text-xs text-muted-foreground bg-muted px-2 py-1 rounded"
                     >
                       <Icon className="h-3 w-3 mr-1" />
@@ -258,7 +280,7 @@ export function HotelCard({ hotel }: HotelCardProps) {
           {/* Fiyat ve CTA */}
           <div className="mt-4 pt-4 border-t flex items-end justify-between">
             <div className="flex-1">
-              {hasPrice ? (
+              {hasPrice && hasDates ? (
                 <>
                   <p className="text-sm text-muted-foreground">{t('startingPrice')}</p>
                   <p className="text-3xl font-bold text-primary">
@@ -268,19 +290,23 @@ export function HotelCard({ hotel }: HotelCardProps) {
                 </>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">{t('priceNotAvailable')}</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowDatePicker(true);
-                    }}
-                    className="flex items-center gap-2"
-                  >
-                    <Calendar className="h-4 w-4" />
-                    {t('selectDates')}
-                  </Button>
+                  <p className="text-sm text-muted-foreground">
+                    {!hasDates ? t('selectDates') : t('priceNotAvailable')}
+                  </p>
+                  {!hasDates && (
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setShowDatePicker(true);
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Calendar className="h-4 w-4" />
+                      {t('selectDates')}
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

@@ -109,6 +109,11 @@ const getUserIdentifier = (): string => {
         return 'anonymous';
       }
     }
+    
+    // For anonymous users, use a browser fingerprint (simple version)
+    // In production, use a proper fingerprinting library or IP from backend
+    const fingerprint = `anon_${navigator.userAgent.substring(0, 50)}`;
+    return fingerprint;
   }
   return 'anonymous';
 };
@@ -196,8 +201,7 @@ class ApiClient {
         document.cookie = 'admin_token=; path=/; max-age=0';
         
         if (window.location.pathname.startsWith('/admin') && window.location.pathname !== '/admin/login') {
-          // Token süresi dolmuş mesajını göster
-          alert('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
+          // Silently redirect to login without showing alert
           window.location.href = '/admin/login';
           // Return a rejected promise to stop execution
           return Promise.reject(new Error('Token expired. Session ended.'));
@@ -602,8 +606,37 @@ export const adminAPI = {
     apiClient.get(`/admin/customers/${id}/bookings`, params),
 
   // Bookings
-  getBookings: (params?: { page?: number; pageSize?: number; status?: number; type?: number; fromDate?: string; toDate?: string }) =>
+  getBookings: (params?: { 
+    page?: number; 
+    pageSize?: number; 
+    status?: string; 
+    type?: string; 
+    fromDate?: string; 
+    toDate?: string;
+    search?: string;
+  }) =>
     apiClient.get('/admin/bookings', params),
+  
+  getBookingDetail: (id: string) =>
+    apiClient.get(`/admin/bookings/${id}`),
+  
+  getFailedConfirmations: (params?: { page?: number; pageSize?: number }) =>
+    apiClient.get('/admin/bookings/failed-confirmations', params),
+  
+  getBookingStats: () =>
+    apiClient.get('/admin/bookings/stats'),
+  
+  retrySunHotelsBooking: (id: string, data?: { customerCountry?: string; sendConfirmationEmail?: boolean }) =>
+    apiClient.post(`/admin/bookings/${id}/retry-sunhotels`, data || {}),
+  
+  refundBooking: (id: string, data?: { amount?: number; reason?: string; adminNote?: string; sendRefundEmail?: boolean; forceRefund?: boolean }) =>
+    apiClient.post(`/admin/bookings/${id}/refund`, data || {}),
+  
+  getRefundStatus: (id: string) =>
+    apiClient.get(`/admin/bookings/${id}/refund-status`),
+  
+  cancelSunHotelsBooking: (id: string, data?: { processRefund?: boolean }) =>
+    apiClient.post(`/admin/bookings/${id}/cancel-sunhotels`, data || {}),
   
   updateBookingStatus: (id: string, data: { status: number; notes?: string }) =>
     apiClient.patch(`/admin/bookings/${id}/status`, data),
@@ -736,6 +769,29 @@ export const adminAPI = {
   
   getSunHotelsJobStatus: () => apiClient.get('/admin/jobs/sunhotels/status'),
 
+  // Popular Destinations Warmup
+  schedulePopularDestinationsWarmup: (cronExpression: string, maxCount?: number) => {
+    const params = new URLSearchParams({ cron: cronExpression });
+    if (typeof maxCount === 'number') {
+      params.append('maxCount', String(maxCount));
+    }
+
+    // Send both query params (simple route) and body (Hangfire route compatibility)
+    return apiClient.post(`/admin/jobs/recurring/popular-destinations/schedule?${params.toString()}`, {
+      cronExpression,
+      maxCount,
+    });
+  },
+  
+  triggerPopularDestinationsWarmup: () =>
+    apiClient.post('/admin/jobs/recurring/popular-destinations-warmup/trigger'),
+  
+  getPopularDestinationsWarmupStatus: () =>
+    apiClient.get('/admin/jobs/sunhotels/status'),
+  
+  cleanupRecurringJobs: () =>
+    apiClient.delete('/admin/jobs/recurring/cleanup'),
+
   // Email Templates
   getEmailTemplates: (params?: { isActive?: boolean }) =>
     apiClient.get('/admin/email-templates', params),
@@ -803,12 +859,12 @@ export const adminAPI = {
   
   updateContactSettings: (data: any) => apiClient.put('/admin/settings/contact', data),
   
-  // Email/SMTP Settings (Backend: /smtp)
-  getEmailSettings: () => apiClient.get('/admin/settings/smtp'),
+  // Email/SMTP Settings (Backend: /email)
+  getEmailSettings: () => apiClient.get('/admin/settings/email'),
   
-  updateEmailSettings: (data: any) => apiClient.put('/admin/settings/smtp', data),
+  updateEmailSettings: (data: any) => apiClient.put('/admin/settings/email', data),
   
-  testEmail: (data: { toEmail: string }) => apiClient.post('/admin/settings/smtp/test-connection', data),
+  testEmail: (data: { toEmail: string }) => apiClient.post('/admin/settings/email/test-connection', data),
   
   // SEO Settings
   getSeoSettings: () => apiClient.get<SeoSettings>('/admin/settings/seo'),

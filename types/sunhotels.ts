@@ -126,9 +126,15 @@ export interface HotelResort {
   name: string;
 }
 
+export interface HotelDestination {
+  id: string;
+  name: string;
+}
+
 export interface HotelLocation {
   latitude: number;
   longitude: number;
+  destination?: HotelDestination;
   resort: HotelResort;
   giataCode: string;
 }
@@ -152,17 +158,15 @@ export interface HotelReviews {
 export interface HotelFeature {
   id: number;
   name: string;
-  icon: string;
 }
 
 export interface HotelTheme {
   id: number;
   name: string;
-  englishName: string;
 }
 
 export interface HotelDetail {
-  id: number;
+  hotelId: number;  // SunHotels hotel ID
   name: string;
   description: string;
   category: number;
@@ -216,6 +220,7 @@ export interface HotelRoom {
   roomTypeName: string;
   name: string;
   description: string;
+  images: string[];
   mealId: number;
   mealName: string;
   price: RoomPrice;

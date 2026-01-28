@@ -46,7 +46,17 @@ export function PopularDestinations({
     return date.toISOString().split('T')[0];
   };
 
+  // İki hafta sonrası tarihini hesapla (checkout)
+  const getTwoWeeksDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() + 14);
+    return date.toISOString().split('T')[0];
+  };
+
   const checkInDate = getNextWeekDate();
+  const checkOutDate = getTwoWeeksDate();
+  const defaultAdults = 2;
+  const defaultChildren = 0;
 
   useEffect(() => {
     setMounted(true);
@@ -150,7 +160,7 @@ export function PopularDestinations({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {/* Sol taraf - 1 büyük destinasyon */}
           <Link
-            href={`/${locale}/search?destinationId=${mainDestination.sunHotelsId || mainDestination.id}&checkInDate=${checkInDate}`}
+            href={`/${locale}/search?destinationId=${mainDestination.sunHotelsId || mainDestination.id}&checkIn=${checkInDate}&checkOut=${checkOutDate}&adults=${defaultAdults}&children=${defaultChildren}`}
             className="md:col-span-1 md:row-span-2"
           >
             <Card className="group overflow-hidden cursor-pointer hover:shadow-2xl transition-all h-full">
@@ -184,7 +194,7 @@ export function PopularDestinations({
             {smallDestinations.map((destination) => (
               <Link
                 key={destination.id}
-                href={`/${locale}/search?destinationId=${destination.sunHotelsId || destination.id}&checkInDate=${checkInDate}`}
+                href={`/${locale}/search?destinationId=${destination.sunHotelsId || destination.id}&checkIn=${checkInDate}&checkOut=${checkOutDate}&adults=${defaultAdults}&children=${defaultChildren}`}
               >
                 <Card className="group overflow-hidden cursor-pointer hover:shadow-xl transition-all h-full">
                   <div className="relative h-48">

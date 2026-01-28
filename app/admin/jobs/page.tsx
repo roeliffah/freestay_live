@@ -22,6 +22,7 @@ import {
   ClockCircleTwoTone,
 } from '@ant-design/icons';
 import { adminAPI } from '@/lib/api/client';
+import PopularDestinationsWarmup from '@/components/admin/PopularDestinationsWarmup';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -869,6 +870,11 @@ function JobsContent() {
               </div>
             ),
           },
+          {
+            key: 'warmup',
+            label: <Space><ThunderboltOutlined />Popular Destinations Warmup</Space>,
+            children: <PopularDestinationsWarmup />,
+          },
         ]}
       />
 
@@ -895,7 +901,7 @@ function JobsContent() {
             <Input placeholder="0 0 * * *" />
           </Form.Item>
           <Alert
-            message="Cron Expression Examples"
+            title="Cron Expression Examples"
             description={
               <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
                 <li>Every minute: * * * * *</li>

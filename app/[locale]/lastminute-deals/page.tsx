@@ -222,7 +222,7 @@ export default function LastMinuteDealsPage() {
                           </div>
                         </div>
                         <Button asChild>
-                          <Link href={`/${locale}/hotel/${hotel.id}?checkIn=${pageData.checkIn || getDefaultCheckIn()}&checkOut=${pageData.checkOut || getDefaultCheckOut()}&adults=1&children=0`}>
+                          <Link href={`/${locale}/hotel/${hotel.id}?checkIn=${pageData.checkIn || getDefaultCheckIn()}&checkOut=${pageData.checkOut || getDefaultCheckOut()}&adults=1&children=0&b2c=1${hotel.destinationId ? `&destinationId=${hotel.destinationId}` : ''}${hotel.resortId ? `&resortId=${hotel.resortId}` : ''}`}>
                             {t('viewDetails')}
                           </Link>
                         </Button>

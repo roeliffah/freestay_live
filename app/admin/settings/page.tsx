@@ -98,6 +98,7 @@ interface SiteSettings {
   profitMargin?: number;
   extraFee?: number;
   defaultVatRate?: number;
+  discountRate?: number;
   // Coupon Pricing
   oneTimeCouponPrice?: number;
   annualCouponPrice?: number;
@@ -229,6 +230,7 @@ function SettingsContent() {
           profitMargin: (settings as any).profitMargin,
           extraFee: (settings as any).extraFee,
           defaultVatRate: (settings as any).defaultVatRate,
+          discountRate: (settings as any).discountRate,
           oneTimeCouponPrice: (settings as any).oneTimeCouponPrice,
           annualCouponPrice: (settings as any).annualCouponPrice,
           maintenanceMode: settings.maintenanceMode,
@@ -288,7 +290,7 @@ function SettingsContent() {
           smtpHost: (settings as any).smtpHost,
           smtpPort: (settings as any).smtpPort,
           smtpUsername: (settings as any).smtpUsername,
-          smtpEnableSsl: (settings as any).smtpEnableSsl ?? true,
+          smtpEnableSsl: (settings as any).useSsl ?? (settings as any).smtpEnableSsl ?? true,
           smtpFromEmail: (settings as any).smtpFromEmail,
           smtpFromName: (settings as any).smtpFromName,
           emailProvider: (settings as any).emailProvider || 'smtp',
@@ -424,6 +426,7 @@ function SettingsContent() {
           profitMargin: values.profitMargin !== undefined && values.profitMargin !== '' ? parseFloat(values.profitMargin) : undefined,
           extraFee: values.extraFee !== undefined && values.extraFee !== '' ? parseFloat(values.extraFee) : undefined,
           defaultVatRate: values.defaultVatRate !== undefined && values.defaultVatRate !== '' ? parseFloat(values.defaultVatRate) : undefined,
+          discountRate: values.discountRate !== undefined && values.discountRate !== '' ? parseFloat(values.discountRate) : undefined,
           oneTimeCouponPrice: values.oneTimeCouponPrice !== undefined && values.oneTimeCouponPrice !== '' ? parseFloat(values.oneTimeCouponPrice) : undefined,
           annualCouponPrice: values.annualCouponPrice !== undefined && values.annualCouponPrice !== '' ? parseFloat(values.annualCouponPrice) : undefined,
           maintenanceMode: values.maintenanceMode || false,
@@ -485,16 +488,16 @@ function SettingsContent() {
       else if (formName === 'email') {
         const updateData = {
           smtpHost: values.smtpHost,
-          smtpPort: values.smtpPort,
+          smtpPort: values.smtpPort ? parseInt(values.smtpPort, 10) : 587,
           smtpUsername: values.smtpUsername,
           smtpPassword: values.smtpPassword,
-          smtpEnableSsl: values.smtpEnableSsl ?? true,
           smtpFromEmail: values.smtpFromEmail,
           smtpFromName: values.smtpFromName,
-          emailProvider: values.emailProvider || 'smtp',
+          useSsl: values.smtpEnableSsl ?? true,
+          isActive: true,
         };
         
-        console.log('📤 Sending to /admin/settings/smtp:', updateData);
+        console.log('📤 Sending to /admin/settings/email:', updateData);
         await adminAPI.updateEmailSettings(updateData);
       }
       else if (formName === 'affiliate') {
@@ -663,6 +666,25 @@ function SettingsContent() {
                   max={100}
                   suffix="%"
                   placeholder="e.g., 20.00" 
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Form.Item 
+                name="discountRate" 
+                label="Coupon Discount Rate (%)"
+                tooltip="Discount percentage applied when a coupon is used"
+                rules={[
+                  { type: 'number', min: 0, max: 100, message: 'Discount rate must be between 0 and 100' }
+                ]}
+              >
+                <InputNumber 
+                  style={{ width: '100%' }}
+                  step={0.01}
+                  min={0}
+                  max={100}
+                  suffix="%"
+                  placeholder="e.g., 10.00" 
                 />
               </Form.Item>
             </Col>

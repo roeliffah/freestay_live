@@ -1,509 +1,581 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { 
   User, 
-  Mail, 
-  Phone, 
-  CreditCard, 
-  Calendar,
-  MapPin,
-  Users,
-  AlertCircle,
+  Shield,
+  CreditCard,
+  Loader2,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { bookingsAPI, paymentsAPI } from '@/lib/api/client';
-import { CouponSelector } from '@/components/booking/CouponSelector';
-import { CouponType } from '@/types/coupon';
+import { loadStripe } from '@stripe/stripe-js';
+import type { BookingRequest, Guest, ChildGuest } from '@/lib/api/booking';
+
+interface GuestInfo extends Guest {
+  id: string;
+}
+
+interface ChildGuestInfo extends ChildGuest {
+  id: string;
+}
 
 interface BookingFormProps {
-  hotelId?: string;
+  hotelId: string;
+  roomId: string;
+  roomTypeId?: string;
+  mealId: number;
   hotelName: string;
   roomName: string;
   boardType: string;
   checkIn: string;
   checkOut: string;
-  guests: number;
+  adults: number;
+  children: number;
   totalPrice: number;
   currency: string;
-  locale?: string;
-  showSummary?: boolean;
+  locale: string;
+  stripePublicKey?: string;
+  onSubmit?: (bookingData: BookingRequest) => void;
+  hidePaymentNote?: boolean;
+  showSubmitButton?: boolean;
+  passPurchaseType?: 'one_time' | 'annual' | null;
+  passCodeValid?: boolean;
+  pricingDetails?: {
+    roomTotal: number;
+    bookingFee: number;
+    discountAmount: number;
+    passPrice: number;
+    finalTotal: number;
+    profitMargin: number;
+    vatRate: number;
+    discountRate: number;
+  };
 }
 
-export function BookingForm({
-  hotelId = '',
+// Inner form component
+function BookingFormInner({
+  hotelId,
+  roomId,
+  roomTypeId,
+  mealId,
   hotelName,
   roomName,
   boardType,
   checkIn,
   checkOut,
-  guests,
+  adults,
+  children,
   totalPrice,
   currency,
-  locale = 'tr',
-  showSummary = true,
+  locale = 'en',
+  stripePublicKey,
+  onSubmit,
+  hidePaymentNote = false,
+  showSubmitButton = true,
+  passPurchaseType,
+  passCodeValid,
+  pricingDetails,
 }: BookingFormProps) {
   const t = useTranslations('booking');
   const currentLocale = useLocale();
-  
-  // Format price safely without locale-dependent formatting on SSR
-  const formatPrice = (price: number) => {
-    return Math.round(price * 100) / 100;
-  };
-  
-  const [formData, setFormData] = useState({
-    // Misafir Bilgileri
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    country: 'Türkiye',
-    city: '',
-    
-    // Ödeme Bilgileri (UI only, not processed)
-    cardNumber: '',
-    cardName: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: '',
-    
-    // Özel İstekler
-    specialRequests: '',
-    
-    // Onaylar
-    termsAccepted: false,
-    marketingAccepted: false,
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCoupon, setSelectedCoupon] = useState<CouponType | null>(null);
   const router = useRouter();
+  
+  // Initialize guest arrays
+  const [adultGuests, setAdultGuests] = useState<GuestInfo[]>(
+    Array.from({ length: adults }, (_, i) => ({
+      id: `adult-${i}`,
+      firstName: '',
+      lastName: '',
+    }))
+  );
 
-  const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
+  const [childGuests, setChildGuests] = useState<ChildGuestInfo[]>(
+    Array.from({ length: children }, (_, i) => ({
+      id: `child-${i}`,
+      firstName: '',
+      lastName: '',
+      age: 0,
+    }))
+  );
+
+  // Ensure guest arrays match adults/children counts
+  useEffect(() => {
+    setAdultGuests(prev => {
+      const arr = [...prev];
+      if (arr.length < adults) {
+        for (let i = arr.length; i < adults; i++) {
+          arr.push({ id: `adult-${i}`, firstName: '', lastName: '' });
+        }
+      } else if (arr.length > adults) {
+        arr.length = adults;
+      }
+      return arr;
+    });
+
+    setChildGuests(prev => {
+      const arr = [...prev];
+      if (arr.length < children) {
+        for (let i = arr.length; i < children; i++) {
+          arr.push({ id: `child-${i}`, firstName: '', lastName: '', age: 0 });
+        }
+      } else if (arr.length > children) {
+        arr.length = children;
+      }
+      return arr;
+    });
+  }, [adults, children]);
+
+  // First guest info (used as billing)
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAdultGuestChange = (index: number, field: 'firstName' | 'lastName', value: string) => {
+    setAdultGuests(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
   };
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.firstName.trim()) newErrors.firstName = t('firstNameRequired');
-    if (!formData.lastName.trim()) newErrors.lastName = t('lastNameRequired');
-    if (!formData.email.trim()) {
-      newErrors.email = t('emailRequired');
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = t('emailInvalid');
-    }
-    if (!formData.phone.trim()) newErrors.phone = t('phoneRequired');
-    if (!formData.cardNumber.trim()) newErrors.cardNumber = t('cardNumberRequired');
-    if (!formData.cardName.trim()) newErrors.cardName = t('cardNameRequired');
-    if (!formData.expiryMonth) newErrors.expiryMonth = t('expiryMonthRequired');
-    if (!formData.expiryYear) newErrors.expiryYear = t('expiryYearRequired');
-    if (!formData.cvv.trim()) newErrors.cvv = t('cvvRequired');
-    if (!formData.termsAccepted) newErrors.termsAccepted = t('termsRequired');
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleChildGuestChange = (index: number, field: 'firstName' | 'lastName' | 'age', value: string | number) => {
+    setChildGuests(prev => {
+      const updated = [...prev];
+      updated[index] = { 
+        ...updated[index], 
+        [field]: field === 'age' ? parseInt(value.toString()) || 0 : value 
+      };
+      return updated;
+    });
   };
+
+  const isFormValid = useMemo(() => {
+    // First adult guest is required (billing info)
+    if (!adultGuests[0]?.firstName || !adultGuests[0]?.lastName) {
+      console.log('❌ Validation: Missing first adult guest name');
+      return false;
+    }
+    
+    // Email and phone required
+    if (!email || !phone) {
+      console.log('❌ Validation: Missing email or phone');
+      return false;
+    }
+
+    // All other guests need first and last name
+    for (let i = 1; i < adultGuests.length; i++) {
+      if (!adultGuests[i]?.firstName || !adultGuests[i]?.lastName) {
+        console.log(`❌ Validation: Missing adult guest ${i + 1} name`);
+        return false;
+      }
+    }
+
+    // All children need first name, last name, and age
+    for (const child of childGuests) {
+      if (!child.firstName || !child.lastName || child.age < 1 || child.age > 17) {
+        console.log('❌ Validation: Invalid child guest data');
+        return false;
+      }
+    }
+
+    console.log('✅ Validation: Form is valid');
+    return true;
+  }, [adultGuests, childGuests, email, phone]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateForm()) {
+    if (!isFormValid) {
+      alert(t('fillRequiredFields') || 'Please fill all required fields');
       return;
     }
 
     setIsSubmitting(true);
     
     try {
-      // Rezervasyon oluştur
-      const bookingData = {
-        hotelId: hotelId || '00000000-0000-0000-0000-000000000000',
-        roomTypeName: roomName,
-        checkIn,
-        checkOut,
-        adults: Math.floor(guests * 0.7), // Tahmini
-        children: Math.ceil(guests * 0.3),
-        guestName: `${formData.firstName} ${formData.lastName}`,
-        guestEmail: formData.email,
-        specialRequests: formData.specialRequests || undefined,
-        totalPrice,
-        couponCode: undefined,
+      // Get API URL from environment
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5240/api/v1';
+
+      // Get auth token
+      const token = typeof window !== 'undefined' 
+        ? localStorage.getItem('admin_token') || localStorage.getItem('token')
+        : null;
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
       };
 
-      const response = await bookingsAPI.createHotelBooking(bookingData) as any;
-      const bookingId = response.data?.id || response.id || response.bookingId;
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
 
-      // Stripe ödeme oturumu başlat
-      if (bookingId) {
+      // ==================== STEP 1: PREBOOK ====================
+      // PreBook ile fiyatı kilitle ve vergi bilgilerini al
+      // Bu adım SunHotels API'den güncel fiyatı alır ve 30 dakika kilitler
+      console.log('🔐 Step 1: Creating PreBook...');
+      
+      const preBookPayload = {
+        hotelId: parseInt(hotelId),
+        roomId: parseInt(roomId),
+        roomTypeId: parseInt(roomTypeId || roomId),
+        mealId: mealId || 1,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        rooms: 1,
+        adults,
+        children,
+        childrenAges: childGuests.map(c => c.age).join(',') || '',
+        guestName: `${adultGuests[0].firstName} ${adultGuests[0].lastName}`,
+        guestEmail: email,
+        guestPhone: phone,
+        searchPrice: totalPrice,
+        isSuperDeal: false,
+        specialRequests: specialRequests || '',
+        currency: currency || 'EUR',
+        language: currentLocale || 'en',
+        customerCountry: 'TR', // TODO: Detect from user location
+      };
+
+      console.log('📤 PreBook request:', preBookPayload);
+
+      const preBookResponse = await fetch(`${API_URL}/bookings/hotels/prebook`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(preBookPayload),
+      });
+
+      const preBookText = await preBookResponse.text();
+      console.log('📥 PreBook response:', preBookResponse.status, preBookText);
+
+      if (!preBookResponse.ok) {
+        let errorMessage = `PreBook failed: ${preBookResponse.status}`;
         try {
-          const payment = await paymentsAPI.initiate({
-            bookingId,
-            amount: totalPrice,
-            currency,
-            paymentMethod: 'stripe',
-          }) as any; // API response shape varies by provider
-
-          const redirectUrl = payment?.checkoutUrl || payment?.paymentUrl || payment?.url;
-          if (redirectUrl) {
-            window.location.href = redirectUrl;
+          const errorData = JSON.parse(preBookText);
+          errorMessage = errorData.message || errorData.error || errorMessage;
+          
+          // Fiyat değişikliği kontrolü
+          if (errorData.priceChanged) {
+            const priceChangeMsg = `Fiyat değişti! Eski: €${totalPrice.toFixed(2)}, Yeni: €${(errorData.totalPrice || 0).toFixed(2)}. Lütfen sayfayı yenileyip tekrar deneyin.`;
+            alert(priceChangeMsg);
+            window.location.reload();
             return;
           }
-        } catch (paymentError: any) {
-          console.error('Stripe ödeme başlatılamadı:', paymentError);
-          alert(paymentError?.response?.data?.message || 'Ödeme başlatılırken bir hata oluştu.');
+        } catch {
+          console.error('Failed to parse prebook error:', preBookText);
+        }
+        throw new Error(errorMessage);
+      }
+
+      const preBookData = JSON.parse(preBookText);
+      console.log('✅ PreBook successful:', preBookData);
+
+      // Fiyat değişikliği uyarısı
+      if (preBookData.priceChanged && preBookData.totalPrice !== totalPrice) {
+        const confirmPriceChange = confirm(
+          `Dikkat: Fiyat değişti!\n\nEski fiyat: €${totalPrice.toFixed(2)}\nYeni fiyat: €${preBookData.totalPrice.toFixed(2)}\n\nDevam etmek istiyor musunuz?`
+        );
+        if (!confirmPriceChange) {
+          setIsSubmitting(false);
+          window.location.reload();
+          return;
         }
       }
 
-      // Fallback: ödeme bilgisi yoksa başarı ekranına yönlendir
-      if (bookingId) {
-        router.push(`/${locale}/booking/success?bookingId=${bookingId}`);
+      // ==================== STEP 2: CHECKOUT SESSION ====================
+      // PreBook kodu ile Stripe Checkout Session oluştur
+      console.log('💳 Step 2: Creating Stripe Checkout Session...');
+
+      const checkoutPayload = {
+        hotelId: parseInt(hotelId),
+        roomId: parseInt(roomId),
+        roomTypeId: parseInt(roomTypeId || roomId),
+        mealId: mealId || 1,
+        checkInDate: checkIn,
+        checkOutDate: checkOut,
+        rooms: 1,
+        adults,
+        children,
+        childrenAges: childGuests.map(c => c.age).join(',') || '',
+        guestName: `${adultGuests[0].firstName} ${adultGuests[0].lastName}`,
+        guestEmail: email,
+        phone,
+        specialRequests: specialRequests || '',
+        searchPrice: preBookData.totalPrice || totalPrice, // PreBook'tan gelen fiyatı kullan
+        currency: currency || 'EUR',
+        isSuperDeal: false,
+        customerCountry: 'TR',
+        language: currentLocale || 'en',
+        // ✅ CRITICAL: PreBook kodunu gönder - bu olmadan rezervasyon yapılamaz
+        preBookCode: preBookData.preBookCode,
+        // Stripe Checkout URLs
+        successUrl: `${window.location.origin}/${currentLocale}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancelUrl: `${window.location.origin}/${currentLocale}/booking/cancel`,
+        // Pass/Kupon bilgileri
+        ...(passPurchaseType && { passPurchaseType }),
+        ...(passCodeValid && { passCodeValid }),
+      };
+
+      console.log('📤 Checkout request:', checkoutPayload);
+
+      const response = await fetch(`${API_URL}/bookings/hotels/checkout-session`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(checkoutPayload),
+      });
+
+      console.log('💳 Checkout response status:', response.status);
+
+      const responseText = await response.text();
+      console.log('💳 Checkout response:', responseText);
+
+      if (!response.ok) {
+        let errorMessage = `HTTP ${response.status}: ${responseText || 'No response body'}`;
+        
+        try {
+          if (responseText) {
+            const errorData = JSON.parse(responseText);
+            console.error('API error:', errorData);
+            errorMessage = errorData.message || errorData.error || errorMessage;
+          }
+        } catch {
+          console.error('Failed to parse error response');
+        }
+        
+        throw new Error(errorMessage);
       }
+
+      if (!responseText) {
+        throw new Error('Empty response from payment API');
+      }
+
+      const data = JSON.parse(responseText);
+      const { sessionId, bookingId } = data;
+      
+      if (!sessionId) {
+        console.error('Response data:', data);
+        throw new Error('No sessionId in response: ' + JSON.stringify(data));
+      }
+
+      console.log('✅ Checkout session created:', { sessionId, bookingId, preBookCode: preBookData.preBookCode });
+
+      // ==================== STEP 3: STRIPE REDIRECT ====================
+      // Kullanıcıyı Stripe ödeme sayfasına yönlendir
+      console.log('🔄 Step 3: Redirecting to Stripe Checkout...');
+      
+      // Stripe public key: prop'tan veya env variable'dan al
+      const stripeKey = stripePublicKey || process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
+      
+      if (!stripeKey) {
+        throw new Error('Stripe public key is not configured. Please contact support.');
+      }
+      
+      console.log('🔑 Loading Stripe with key:', stripeKey.substring(0, 20) + '...');
+      const stripe = await loadStripe(stripeKey);
+
+      if (!stripe) {
+        throw new Error('Stripe failed to load');
+      }
+      
+      const result = await stripe.redirectToCheckout({ sessionId });
+
+      if (result.error) {
+        console.error('❌ Stripe redirect error:', result.error);
+        throw new Error(result.error.message || 'Payment redirect failed');
+      }
+      
+      // ==================== STEP 4 (Backend): WEBHOOK ====================
+      // Ödeme başarılı olduğunda Stripe webhook tetiklenir
+      // Backend: /api/v1/webhooks/stripe endpoint'i
+      // → payment_intent.succeeded event'i alır
+      // → /api/v1/bookings/hotels/confirm çağırır (BookV3 ile SunHotels'e kayıt)
+      // → Email gönderir
+      // → Kupon oluşturur (eğer pass satın alındıysa)
+      
     } catch (error: any) {
-      console.error('Rezervasyon hatası:', error);
-      alert(error.response?.data?.message || 'Rezervasyon oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.');
+      console.error('❌ Checkout error:', error);
+      alert(error.message || 'Failed to process payment');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('tr-TR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    });
-  };
-
-  const nights = Math.ceil(
-    (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)
-  );
-
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {showSummary && (
-        <Card className="p-6 bg-primary/5 border-primary/20">
-          <h3 className="font-bold text-lg mb-4">{t('reservationSummary')}</h3>
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('hotel')}</span>
-              <span className="font-semibold">{hotelName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('roomType')}</span>
-              <span className="font-semibold">{roomName}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">{t('boardType')}</span>
-              <span className="font-semibold">{boardType}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-muted-foreground">
-                <Calendar className="h-4 w-4 mr-2" />
-                {t('checkIn')}
+      {/* Adult Guests */}
+      <Card className="p-6 rounded-2xl border-0 shadow-lg">
+        <h2 className="font-semibold text-lg mb-6 flex items-center gap-2">
+          <User className="w-5 h-5 text-primary" />
+          {t('guestDetails')}
+        </h2>
+        
+        {/* Adult Guests */}
+        <div className="space-y-6 mb-6">
+          {adultGuests.map((guest, index) => (
+            <div key={guest.id} className={index > 0 ? 'pb-6 border-b last:border-0' : ''}>
+              <h3 className="text-sm font-semibold mb-4 text-primary">
+                {t('adultGuest')} {index + 1} {index === 0 ? '('+t('billingInfo')+')' : ''}
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>{t('firstName')} *</Label>
+                  <Input 
+                    value={guest.firstName}
+                    onChange={(e) => handleAdultGuestChange(index, 'firstName', e.target.value)}
+                    placeholder={t('firstNamePlaceholder')}
+                    required
+                    className="h-10 rounded-lg mt-1"
+                  />
+                </div>
+                <div>
+                  <Label>{t('lastName')} *</Label>
+                  <Input 
+                    value={guest.lastName}
+                    onChange={(e) => handleAdultGuestChange(index, 'lastName', e.target.value)}
+                    placeholder={t('lastNamePlaceholder')}
+                    required
+                    className="h-10 rounded-lg mt-1"
+                  />
+                </div>
               </div>
-              <span className="font-semibold">{formatDate(checkIn)}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-muted-foreground">
-                <Calendar className="h-4 w-4 mr-2" />
-                {t('checkOut')}
+          ))}
+        </div>
+
+        {/* Child Guests */}
+        {childGuests.length > 0 && (
+          <div className="space-y-6 border-t pt-6">
+            <h3 className="text-base font-semibold text-primary">
+              {t('childGuest')} ({childGuests.length})
+            </h3>
+            {childGuests.map((guest, index) => (
+              <div key={guest.id} className={index < childGuests.length - 1 ? 'pb-6 border-b' : ''}>
+                <h4 className="text-sm font-semibold mb-4">{t('childGuest')} {index + 1}</h4>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <Label>{t('firstName')} *</Label>
+                    <Input 
+                      value={guest.firstName}
+                      onChange={(e) => handleChildGuestChange(index, 'firstName', e.target.value)}
+                      placeholder={t('firstNamePlaceholder')}
+                      required
+                      className="h-10 rounded-lg mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>{t('lastName')} *</Label>
+                    <Input 
+                      value={guest.lastName}
+                      onChange={(e) => handleChildGuestChange(index, 'lastName', e.target.value)}
+                      placeholder={t('lastNamePlaceholder')}
+                      required
+                      className="h-10 rounded-lg mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label>{t('childAge')} *</Label>
+                    <Input 
+                      type="number"
+                      min="1"
+                      max="17"
+                      value={guest.age}
+                      onChange={(e) => handleChildGuestChange(index, 'age', e.target.value)}
+                      placeholder={t('childAgePlaceholder')}
+                      required
+                      className="h-10 rounded-lg mt-1"
+                    />
+                  </div>
+                </div>
               </div>
-              <span className="font-semibold">{formatDate(checkOut)}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Contact Info */}
+        <div className="mt-6 pt-6 border-t">
+          <h3 className="text-sm font-semibold mb-4">{t('contactInformation')}</h3>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <Label>{t('email')} *</Label>
+              <Input 
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('emailPlaceholder')}
+                required
+                className="h-10 rounded-lg mt-1"
+              />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center text-muted-foreground">
-                <Users className="h-4 w-4 mr-2" />
-                {t('guests')}
-              </div>
-              <span className="font-semibold">{guests} {t('person')}</span>
+            <div>
+              <Label>{t('phone')} *</Label>
+              <Input 
+                type="tel"
+                value={phone}
+                onChange={(e) => {
+                  // Allow only digits and common phone chars: + - () space
+                  const cleaned = e.target.value.replace(/[^\d+\-() ]/g, '');
+                  setPhone(cleaned);
+                }}
+                placeholder={t('phonePlaceholder')}
+                required
+                className="h-10 rounded-lg mt-1"
+              />
             </div>
-            <div className="flex justify-between pt-3 border-t">
-              <span className="text-muted-foreground">{nights} {t('nights')}</span>
-              <span className="text-2xl font-bold text-primary">
-                {formatPrice(totalPrice).toFixed(2)} {currency}
-              </span>
+          </div>
+        </div>
+
+        {/* Special Requests */}
+        <div className="mt-6 pt-6 border-t">
+          <Label>{t('specialRequests')} ({t('optional')})</Label>
+          <Textarea 
+            value={specialRequests}
+            onChange={(e) => setSpecialRequests(e.target.value)}
+            placeholder={t('specialRequestsPlaceholder')}
+            className="mt-2 min-h-[80px] rounded-lg"
+          />
+        </div>
+      </Card>
+
+      {!hidePaymentNote && (
+        <Card className="p-4 rounded-lg border-0 bg-blue-50">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-900">{t('securePayment')}</p>
+              <p className="text-xs text-blue-700 mt-1">{t('paymentNote')}</p>
             </div>
           </div>
         </Card>
       )}
 
-      {/* Misafir Bilgileri */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <User className="h-5 w-5 mr-2 text-primary" />
-          <h3 className="font-bold text-lg">{t('guestInformation')}</h3>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">{t('firstName')} *</Label>
-            <Input
-              id="firstName"
-              value={formData.firstName}
-              onChange={(e) => handleInputChange('firstName', e.target.value)}
-              placeholder={t('firstNamePlaceholder')}
-              className={errors.firstName ? 'border-red-500' : ''}
-            />
-            {errors.firstName && (
-              <p className="text-sm text-red-500">{errors.firstName}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="lastName">{t('lastName')} *</Label>
-            <Input
-              id="lastName"
-              value={formData.lastName}
-              onChange={(e) => handleInputChange('lastName', e.target.value)}
-              placeholder={t('lastNamePlaceholder')}
-              className={errors.lastName ? 'border-red-500' : ''}
-            />
-            {errors.lastName && (
-              <p className="text-sm text-red-500">{errors.lastName}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">{t('email')} *</Label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder={t('emailPlaceholder')}
-                className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
-              />
-            </div>
-            {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">{t('phone')} *</Label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder={t('phonePlaceholder')}
-                className={`pl-10 ${errors.phone ? 'border-red-500' : ''}`}
-              />
-            </div>
-            {errors.phone && (
-              <p className="text-sm text-red-500">{errors.phone}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="country">{t('country')}</Label>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                id="country"
-                value={formData.country}
-                onChange={(e) => handleInputChange('country', e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="city">{t('city')}</Label>
-            <Input
-              id="city"
-              value={formData.city}
-              onChange={(e) => handleInputChange('city', e.target.value)}
-              placeholder={t('cityPlaceholder')}
-            />
-          </div>
-        </div>
-      </Card>
-
-      {/* Coupon Selector Section */}
-      <CouponSelector
-        roomPrice={totalPrice}
-        settings={{
-          oneTimeCouponPrice: 15,
-          annualCouponPrice: 125,
-          profitMargin: 15,
-          defaultVatRate: 0.18,
-          extraFee: 0,
-        }}
-        selectedCoupon={selectedCoupon}
-        onCouponSelect={setSelectedCoupon}
-        onPurchase={(couponType) => {
-          // TODO: Implement coupon purchase flow
-          console.log('Purchase coupon:', couponType);
-          setSelectedCoupon(couponType);
-        }}
-        requiresLogin={false}
-      />
-
-      {/* Ödeme Bilgileri */}
-      <Card className="p-6">
-        <div className="flex items-center mb-4">
-          <CreditCard className="h-5 w-5 mr-2 text-primary" />
-          <h3 className="font-bold text-lg">{t('paymentInformation')}</h3>
-        </div>
-
-        <Alert className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {t('paymentNote')}
-          </AlertDescription>
-        </Alert>
-
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="cardNumber">{t('cardNumber')} *</Label>
-            <Input
-              id="cardNumber"
-              value={formData.cardNumber}
-              onChange={(e) => handleInputChange('cardNumber', e.target.value)}
-              placeholder={t('cardNumberPlaceholder')}
-              maxLength={19}
-              className={errors.cardNumber ? 'border-red-500' : ''}
-            />
-            {errors.cardNumber && (
-              <p className="text-sm text-red-500">{errors.cardNumber}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="cardName">{t('cardName')} *</Label>
-            <Input
-              id="cardName"
-              value={formData.cardName}
-              onChange={(e) => handleInputChange('cardName', e.target.value)}
-              placeholder={t('cardNamePlaceholder')}
-              className={errors.cardName ? 'border-red-500' : ''}
-            />
-            {errors.cardName && (
-              <p className="text-sm text-red-500">{errors.cardName}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="expiryMonth">{t('expiryMonth')} *</Label>
-              <Input
-                id="expiryMonth"
-                value={formData.expiryMonth}
-                onChange={(e) => handleInputChange('expiryMonth', e.target.value)}
-                placeholder={t('expiryMonthPlaceholder')}
-                maxLength={2}
-                className={errors.expiryMonth ? 'border-red-500' : ''}
-              />
-              {errors.expiryMonth && (
-                <p className="text-sm text-red-500">{errors.expiryMonth}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="expiryYear">{t('expiryYear')} *</Label>
-              <Input
-                id="expiryYear"
-                value={formData.expiryYear}
-                onChange={(e) => handleInputChange('expiryYear', e.target.value)}
-                placeholder={t('expiryYearPlaceholder')}
-                maxLength={2}
-                className={errors.expiryYear ? 'border-red-500' : ''}
-              />
-              {errors.expiryYear && (
-                <p className="text-sm text-red-500">{errors.expiryYear}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cvv">{t('cvv')} *</Label>
-              <Input
-                id="cvv"
-                type="password"
-                value={formData.cvv}
-                onChange={(e) => handleInputChange('cvv', e.target.value)}
-                placeholder={t('cvvPlaceholder')}
-                maxLength={3}
-                className={errors.cvv ? 'border-red-500' : ''}
-              />
-              {errors.cvv && (
-                <p className="text-sm text-red-500">{errors.cvv}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      {/* Özel İstekler */}
-      <Card className="p-6">
-        <h3 className="font-bold text-lg mb-4">{t('specialRequests')}</h3>
-        <textarea
-          value={formData.specialRequests}
-          onChange={(e) => handleInputChange('specialRequests', e.target.value)}
-          placeholder={t('specialRequestsPlaceholder')}
-          className="w-full min-h-[100px] p-3 border rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-primary"
-        />
-      </Card>
-
-      {/* Onaylar */}
-      <Card className="p-6">
-        <div className="space-y-3">
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="terms"
-              checked={formData.termsAccepted}
-              onChange={(e) => handleInputChange('termsAccepted', e.target.checked)}
-              className="mt-1"
-            />
-            <label htmlFor="terms" className="text-sm">
-              <span className={errors.termsAccepted ? 'text-red-500' : ''}>
-                {t('termsAccept')} *
-              </span>
-            </label>
-          </div>
-
-          <div className="flex items-start space-x-3">
-            <input
-              type="checkbox"
-              id="marketing"
-              checked={formData.marketingAccepted}
-              onChange={(e) => handleInputChange('marketingAccepted', e.target.checked)}
-              className="mt-1"
-            />
-            <label htmlFor="marketing" className="text-sm text-muted-foreground">
-              {t('marketingAccept')}
-            </label>
-          </div>
-        </div>
-      </Card>
-
-      {/* Submit Button */}
-      <div className="flex justify-end">
+      {showSubmitButton && (
         <Button 
           type="submit" 
           size="lg" 
-          className="w-full md:w-auto min-w-[250px]"
-          disabled={isSubmitting}
+          className="w-full rounded-full h-12 text-base font-semibold shadow-lg"
+          disabled={isSubmitting || !isFormValid}
         >
-          {isSubmitting ? t('processing') : t('completeReservation')}
+          {isSubmitting ? (
+            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          ) : (
+            <CreditCard className="w-5 h-5 mr-2" />
+          )}
+          {isSubmitting ? t('processing') : `${t('payNow')} €${totalPrice.toFixed(2)}`}
         </Button>
-      </div>
+      )}
     </form>
   );
+}
+
+// Export the form directly (no Elements wrapper needed for Checkout)
+export function BookingForm(props: BookingFormProps) {
+  return <BookingFormInner {...props} />;
 }

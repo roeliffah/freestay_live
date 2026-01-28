@@ -21,6 +21,17 @@ import {
   Divider,
   Spin,
   App,
+  Badge,
+  Alert,
+  Statistic,
+  Row,
+  Col,
+  Tooltip,
+  InputNumber,
+  Form,
+  Radio,
+  Popconfirm,
+  Checkbox,
 } from 'antd';
 import type { MenuProps, TabsProps } from 'antd';
 import {
@@ -41,6 +52,9 @@ import {
   CloseCircleOutlined,
   ExclamationCircleOutlined,
   ReloadOutlined,
+  UndoOutlined,
+  WarningOutlined,
+  StopOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { adminAPI } from '@/lib/api/client';
@@ -48,145 +62,205 @@ import { adminAPI } from '@/lib/api/client';
 const { Title, Text, Paragraph } = Typography;
 const { RangePicker } = DatePicker;
 
-interface Booking {
-  id: string;
-  type: 'hotel' | 'flight' | 'car';
-  customer: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-  };
-  status: 'confirmed' | 'pending' | 'cancelled' | 'completed';
-  // Hotel specific
-  hotelName?: string;
-  roomType?: string;
-  checkIn?: string;
-  checkOut?: string;
-  guests?: number;
-  // Flight specific
-  flightNumber?: string;
-  departure?: string;
-  arrival?: string;
-  departureDate?: string;
-  passengers?: number;
-  // Car specific
-  carType?: string;
-  pickupLocation?: string;
-  dropoffLocation?: string;
-  pickupDate?: string;
-  dropoffDate?: string;
-  // Common
-  amount: number;
-  commission: number;
-  couponCode?: string;
-  couponDiscount?: number;
-  externalBookingId?: string;
-  createdAt: string;
+interface Customer {
+  id?: string;
+  name?: string;
+  email?: string;
+  phone?: string;
 }
 
-// Mock data
-const mockBookings: Booking[] = [
-  {
-    id: 'BK-001234',
-    type: 'hotel',
-    customer: { id: '1', name: 'Ahmet Yılmaz', email: 'ahmet@gmail.com', phone: '+90 532 111 2233' },
-    status: 'confirmed',
-    hotelName: 'Grand Hotel Antalya',
-    roomType: 'Deluxe Sea View',
-    checkIn: '2025-12-15',
-    checkOut: '2025-12-20',
-    guests: 2,
-    amount: 2450,
-    commission: 367.50,
-    externalBookingId: 'SH-789456',
-    createdAt: '2025-12-05 14:30',
-  },
-  {
-    id: 'BK-001235',
-    type: 'flight',
-    customer: { id: '2', name: 'Mehmet Demir', email: 'mehmet@gmail.com', phone: '+90 533 222 3344' },
-    status: 'pending',
-    flightNumber: 'TK2234',
-    departure: 'İstanbul (IST)',
-    arrival: 'Antalya (AYT)',
-    departureDate: '2025-12-18 08:30',
-    passengers: 3,
-    amount: 890,
-    commission: 89,
-    couponCode: 'WINTER10',
-    couponDiscount: 89,
-    createdAt: '2025-12-05 10:15',
-  },
-  {
-    id: 'BK-001236',
-    type: 'car',
-    customer: { id: '3', name: 'Ayşe Kaya', email: 'ayse@gmail.com', phone: '+90 534 333 4455' },
-    status: 'confirmed',
-    carType: 'Ekonomik - Fiat Egea',
-    pickupLocation: 'Antalya Havalimanı',
-    dropoffLocation: 'Antalya Havalimanı',
-    pickupDate: '2025-12-15 10:00',
-    dropoffDate: '2025-12-18 10:00',
-    amount: 450,
-    commission: 67.50,
-    createdAt: '2025-12-04 16:45',
-  },
-  {
-    id: 'BK-001237',
-    type: 'hotel',
-    customer: { id: '4', name: 'Fatma Şahin', email: 'fatma@gmail.com', phone: '+90 535 444 5566' },
-    status: 'cancelled',
-    hotelName: 'Lara Beach Resort',
-    roomType: 'Standard Room',
-    checkIn: '2025-12-10',
-    checkOut: '2025-12-14',
-    guests: 4,
-    amount: 3200,
-    commission: 480,
-    externalBookingId: 'SH-789123',
-    createdAt: '2025-12-04 09:20',
-  },
-  {
-    id: 'BK-001238',
-    type: 'hotel',
-    customer: { id: '5', name: 'Ali Öztürk', email: 'ali@gmail.com', phone: '+90 536 555 6677' },
-    status: 'completed',
-    hotelName: 'Bodrum Palace',
-    roomType: 'Suite',
-    checkIn: '2025-11-20',
-    checkOut: '2025-11-25',
-    guests: 2,
-    amount: 1890,
-    commission: 283.50,
-    externalBookingId: 'SH-788999',
-    createdAt: '2025-11-15 11:00',
-  },
-];
+interface HotelBooking {
+  id?: string;
+  hotelId?: string;
+  externalHotelId?: number;
+  hotelName?: string;
+  roomId?: number;
+  roomTypeId?: string;
+  roomTypeName?: string;
+  boardTypeId?: string;
+  boardTypeName?: string;
+  mealId?: number;
+  mealName?: string; // Alternative to boardTypeName
+  checkIn?: string;
+  checkOut?: string;
+  adults?: number;
+  children?: number;
+  rooms?: number; // Number of rooms
+  guestFirstName?: string;
+  guestLastName?: string;
+  guestName?: string; // Combined guest name
+  guestEmail?: string;
+  guestPhone?: string;
+  specialRequests?: string;
+  preBookCode?: string;
+  externalBookingCode?: string;
+  sunhotelsBookingCode?: string; // SunHotels booking reference
+  confirmationCode?: string;
+  hotelConfirmationNumber?: string;
+  voucher?: string;
+  invoiceRef?: string;
+  hotelAddress?: string;
+  hotelPhone?: string;
+  hotelNotes?: string;
+  isSuperDeal?: boolean;
+  sunHotelsBookingDate?: string;
+  confirmationEmailSent?: boolean;
+  confirmationEmailSentAt?: string;
+  // Price details
+  totalPrice?: number;
+  taxAmount?: number;
+  currency?: string;
+  // Cancellation policy fields
+  isRefundable?: boolean;
+  freeCancellationDeadline?: string;
+  cancellationPercentage?: number;
+  maxRefundableAmount?: number;
+  cancellationPolicyText?: string;
+  cancellationPolicies?: string;
+}
+
+interface Payment {
+  id?: string;
+  stripeSessionId?: string;
+  stripePaymentIntentId?: string;
+  stripePaymentId?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  paidAt?: string;
+  failureReason?: string;
+}
+
+// Failed confirmation item from API
+interface FailedConfirmation {
+  bookingId: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  externalHotelId: number;
+  roomId: number;
+  roomTypeName: string;
+  mealId: number;
+  checkIn: string;
+  checkOut: string;
+  adults: number;
+  children: number;
+  preBookCode?: string;
+  isSuperDeal: boolean;
+  specialRequests?: string;
+  totalPrice: number;
+  currency: string;
+  paymentAmount: number;
+  paymentStatus: string;
+  stripePaymentIntentId?: string;
+  paidAt?: string;
+  notes?: string;
+  createdAt: string;
+  canRetry: boolean;
+  canRefund: boolean;
+  // Cancellation policy fields
+  isRefundable: boolean;
+  freeCancellationDeadline?: string;
+  cancellationPercentage: number;
+  maxRefundableAmount: number;
+  cancellationPolicyText?: string;
+}
+
+interface Booking {
+  id: string;
+  userId?: string;
+  type: string; // 'Hotel' | 'Flight' | 'Car'
+  status: string; // 'Confirmed' | 'Pending' | 'Cancelled' | 'Completed'
+  totalPrice: number;
+  commission: number;
+  currency?: string;
+  couponDiscount?: number;
+  notes?: string;
+  createdAt: string;
+  // Nested objects from API
+  hotelBooking?: HotelBooking | null;
+  flightBooking?: any | null;
+  carRental?: any | null;
+  payment?: Payment | null;
+  // Legacy customer field (for backwards compatibility)
+  customer?: Customer;
+  // Legacy fields
+  amount?: number;
+  couponCode?: string;
+  externalBookingId?: string;
+}
 
 const typeIcons: Record<string, React.ReactNode> = {
   hotel: <HomeOutlined />,
+  Hotel: <HomeOutlined />,
   flight: <RocketOutlined />,
+  Flight: <RocketOutlined />,
   car: <CarOutlined />,
+  Car: <CarOutlined />,
 };
 
 const typeColors: Record<string, string> = {
   hotel: 'blue',
+  Hotel: 'blue',
   flight: 'purple',
+  Flight: 'purple',
   car: 'cyan',
+  Car: 'cyan',
 };
 
 const typeLabels: Record<string, string> = {
   hotel: 'Hotel',
+  Hotel: 'Hotel',
   flight: 'Flight',
+  Flight: 'Flight',
   car: 'Car',
+  Car: 'Car',
 };
 
 const statusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   confirmed: { color: 'green', icon: <CheckCircleOutlined />, label: 'Confirmed' },
+  Confirmed: { color: 'green', icon: <CheckCircleOutlined />, label: 'Confirmed' },
   pending: { color: 'orange', icon: <ClockCircleOutlined />, label: 'Pending' },
+  Pending: { color: 'orange', icon: <ClockCircleOutlined />, label: 'Pending' },
   cancelled: { color: 'red', icon: <CloseCircleOutlined />, label: 'Cancelled' },
+  Cancelled: { color: 'red', icon: <CloseCircleOutlined />, label: 'Cancelled' },
   completed: { color: 'blue', icon: <CheckCircleOutlined />, label: 'Completed' },
+  Completed: { color: 'blue', icon: <CheckCircleOutlined />, label: 'Completed' },
+  failed: { color: 'red', icon: <CloseCircleOutlined />, label: 'Failed' },
+  Failed: { color: 'red', icon: <CloseCircleOutlined />, label: 'Failed' },
+  refunded: { color: 'purple', icon: <DollarOutlined />, label: 'Refunded' },
+  Refunded: { color: 'purple', icon: <DollarOutlined />, label: 'Refunded' },
+  confirmationfailed: { color: 'volcano', icon: <ExclamationCircleOutlined />, label: 'Confirmation Failed' },
+  ConfirmationFailed: { color: 'volcano', icon: <ExclamationCircleOutlined />, label: 'Confirmation Failed' },
+};
+
+// Helper functions to get customer info from booking
+const getCustomerName = (record: Booking): string => {
+  if (record.customer?.name) return record.customer.name;
+  if (record.hotelBooking) {
+    // Check for combined guestName first
+    if (record.hotelBooking.guestName) return record.hotelBooking.guestName;
+    const firstName = record.hotelBooking.guestFirstName || '';
+    const lastName = record.hotelBooking.guestLastName || '';
+    if (firstName || lastName) return `${firstName} ${lastName}`.trim();
+  }
+  return 'N/A';
+};
+
+const getCustomerEmail = (record: Booking): string => {
+  if (record.customer?.email) return record.customer.email;
+  if (record.hotelBooking?.guestEmail) return record.hotelBooking.guestEmail;
+  return 'N/A';
+};
+
+const getCustomerPhone = (record: Booking): string => {
+  if (record.customer?.phone) return record.customer.phone;
+  if (record.hotelBooking?.guestPhone) return record.hotelBooking.guestPhone;
+  return 'N/A';
+};
+
+const getBookingAmount = (record: Booking): number => {
+  return record.totalPrice ?? record.amount ?? 0;
 };
 
 export default function BookingsPage() {
@@ -198,7 +272,7 @@ export default function BookingsPage() {
 }
 
 function BookingsContent() {
-  const { message: messageApi } = App.useApp();
+  const { message: messageApi, modal } = App.useApp();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [searchText, setSearchText] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
@@ -209,91 +283,253 @@ function BookingsContent() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+  
+  // New state for stats and failed confirmations
+  const [stats, setStats] = useState<any>(null);
+  const [failedConfirmations, setFailedConfirmations] = useState<any[]>([]);
+  const [showFailedOnly, setShowFailedOnly] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [refundModalOpen, setRefundModalOpen] = useState(false);
+  const [refundForm] = Form.useForm();
 
   useEffect(() => {
     fetchBookings();
-  }, [currentPage, pageSize]);
+    fetchStats();
+  }, [currentPage, pageSize, showFailedOnly, statusFilter, searchText]);
 
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const data = await adminAPI.getBookings({ page: currentPage, pageSize });
-      // Backend might return { items: [...] } or { data: [...] } or just [...]
-      const bookingsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
-      setBookings(bookingsArray);
-      setTotalCount((data as any)?.totalCount || bookingsArray.length);
+      if (showFailedOnly) {
+        const data = await adminAPI.getFailedConfirmations({ page: currentPage, pageSize });
+        const bookingsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
+        setFailedConfirmations(bookingsArray);
+        setBookings(bookingsArray);
+        setTotalCount((data as any)?.total || (data as any)?.totalCount || bookingsArray.length);
+      } else {
+        const params: any = { page: currentPage, pageSize };
+        if (statusFilter) params.status = statusFilter;
+        if (searchText) params.search = searchText;
+        
+        const data = await adminAPI.getBookings(params);
+        const bookingsArray = Array.isArray(data) ? data : ((data as any)?.items || (data as any)?.data || []);
+        setBookings(bookingsArray);
+        setTotalCount((data as any)?.total || (data as any)?.totalCount || bookingsArray.length);
+      }
     } catch (error: any) {
       console.error('Failed to load bookings:', error);
       messageApi.error(error.message || 'Failed to load bookings');
-      setBookings([]); // Set empty array on error
+      setBookings([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const showBookingDetail = (booking: Booking) => {
-    setSelectedBooking(booking);
+  const fetchStats = async () => {
+    try {
+      const data = await adminAPI.getBookingStats();
+      setStats(data);
+    } catch (error) {
+      console.error('Failed to load stats:', error);
+    }
+  };
+
+  const handleRetrySunHotels = async (bookingId: string) => {
+    setActionLoading(bookingId);
+    try {
+      const result = await adminAPI.retrySunHotelsBooking(bookingId, {
+        customerCountry: 'TR',
+        sendConfirmationEmail: true,
+      });
+      
+      if ((result as any).success) {
+        messageApi.success(`SunHotels booking confirmed! Code: ${(result as any).confirmationCode}`);
+        fetchBookings();
+        fetchStats();
+      } else {
+        messageApi.error((result as any).message || 'Retry failed');
+      }
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to retry SunHotels booking');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleRefund = async (bookingId: string, values: any) => {
+    setActionLoading(bookingId);
+    try {
+      const result = await adminAPI.refundBooking(bookingId, {
+        amount: values.amount || undefined,
+        reason: values.reason || 'requested_by_customer',
+        adminNote: values.adminNote,
+        sendRefundEmail: values.sendRefundEmail ?? true,
+        forceRefund: values.forceRefund ?? false,
+      });
+      
+      if ((result as any).success) {
+        // Check for policy warnings
+        if ((result as any).policyInfo?.warning) {
+          messageApi.warning((result as any).policyInfo.warning, 8);
+        }
+        messageApi.success(`Refund processed! Amount: €${(result as any).refundAmount}`);
+        setRefundModalOpen(false);
+        refundForm.resetFields();
+        fetchBookings();
+        fetchStats();
+      } else {
+        // Handle non-refundable warning
+        if ((result as any).warning) {
+          modal.warning({
+            title: 'Non-Refundable Booking',
+            content: (
+              <div>
+                <p>{(result as any).warning}</p>
+                <p style={{ marginTop: 8 }}>
+                  <strong>Cancellation Policy:</strong> {(result as any).cancellationPolicy}
+                </p>
+                <p style={{ marginTop: 8 }}>
+                  <strong>Recommended Refund:</strong> €{(result as any).recommendedRefundAmount}
+                </p>
+              </div>
+            ),
+            okText: 'Understood',
+          });
+        } else {
+          messageApi.error((result as any).message || 'Refund failed');
+        }
+      }
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to process refund');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCancelSunHotels = async (bookingId: string, processRefund: boolean) => {
+    setActionLoading(bookingId);
+    try {
+      const result = await adminAPI.cancelSunHotelsBooking(bookingId, { processRefund });
+      
+      if ((result as any).success) {
+        messageApi.success('SunHotels booking cancelled successfully');
+        if ((result as any).cancellationFee > 0) {
+          messageApi.info(`Cancellation fee: €${(result as any).cancellationFee}`);
+        }
+        fetchBookings();
+        fetchStats();
+      } else {
+        messageApi.error((result as any).message || 'Cancellation failed');
+      }
+    } catch (error: any) {
+      messageApi.error(error.message || 'Failed to cancel SunHotels booking');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const showBookingDetail = async (booking: Booking) => {
+    try {
+      // Fetch full booking details
+      const detail = await adminAPI.getBookingDetail(booking.id);
+      setSelectedBooking(detail as any);
+    } catch (error) {
+      setSelectedBooking(booking);
+    }
     setDrawerOpen(true);
   };
 
   const cancelBooking = async (booking: Booking) => {
-    Modal.confirm({
-      title: 'Cancel Booking',
-      icon: <ExclamationCircleOutlined />,
-      content: (
-        <div>
-          <p>Are you sure you want to cancel booking <strong>{booking.id}</strong>?</p>
-          <p>Customer: {booking.customer.name}</p>
-          <p>Amount: €{booking.amount}</p>
-        </div>
-      ),
-      okText: 'Cancel Booking',
-      okType: 'danger',
-      cancelText: 'Go Back',
-      onOk: async () => {
-        try {
-          await adminAPI.updateBookingStatus(booking.id, { status: 3, notes: 'Cancelled by admin' });
-          messageApi.success('Booking cancelled successfully');
-          setDrawerOpen(false);
-          fetchBookings();
-        } catch (error: any) {
-          console.error('Failed to cancel booking:', error);
-          messageApi.error(error.message || 'Failed to cancel booking');
-        }
-      },
-    });
+    try {
+      await adminAPI.updateBookingStatus(booking.id, { status: 3, notes: 'Cancelled by admin' });
+      messageApi.success('Booking cancelled successfully');
+      setDrawerOpen(false);
+      fetchBookings();
+    } catch (error: any) {
+      console.error('Failed to cancel booking:', error);
+      messageApi.error(error.message || 'Failed to cancel booking');
+    }
   };
 
-  const getActionItems = (record: Booking): MenuProps['items'] => [
-    {
-      key: 'view',
-      icon: <EyeOutlined />,
-      label: 'View Details',
-      onClick: () => showBookingDetail(record),
-    },
-    {
-      key: 'print',
-      icon: <PrinterOutlined />,
-      label: 'Print Invoice',
-      onClick: () => messageApi.info('Printing invoice...'),
-    },
-    {
-      key: 'email',
-      icon: <MailOutlined />,
-      label: 'Send Email',
-      onClick: () => messageApi.info('Sending email...'),
-    },
-    ...(record.status === 'confirmed' || record.status === 'pending' ? [
-      { type: 'divider' as const },
+  const getActionItems = (record: Booking): MenuProps['items'] => {
+    const isConfirmationFailed = record.status === 'ConfirmationFailed' || record.status === 'confirmationfailed';
+    const canRetry = isConfirmationFailed && (record as any).canRetry !== false;
+    const canRefund = (record as any).canRefund !== false && (record as any).payment?.stripePaymentIntentId;
+    
+    return [
       {
-        key: 'cancel',
-        icon: <CloseOutlined />,
-        label: 'Cancel',
-        danger: true,
-        onClick: () => cancelBooking(record),
+        key: 'view',
+        icon: <EyeOutlined />,
+        label: 'View Details',
+        onClick: () => showBookingDetail(record),
       },
-    ] : []),
-  ];
+      {
+        key: 'print',
+        icon: <PrinterOutlined />,
+        label: 'Print Invoice',
+        onClick: () => messageApi.info('Printing invoice...'),
+      },
+      {
+        key: 'email',
+        icon: <MailOutlined />,
+        label: 'Send Email',
+        onClick: () => messageApi.info('Sending email...'),
+      },
+      // Retry SunHotels for ConfirmationFailed
+      ...(canRetry ? [
+        { type: 'divider' as const },
+        {
+          key: 'retry',
+          icon: <ReloadOutlined />,
+          label: 'Retry SunHotels',
+          onClick: () => {
+            // Open drawer for confirmation via Popconfirm
+            showBookingDetail(record);
+          },
+        },
+      ] : []),
+      // Refund option
+      ...(canRefund ? [
+        {
+          key: 'refund',
+          icon: <UndoOutlined />,
+          label: 'Process Refund',
+          onClick: () => {
+            setSelectedBooking(record);
+            setRefundModalOpen(true);
+          },
+        },
+      ] : []),
+      // Cancel SunHotels booking
+      ...(record.status === 'Confirmed' || record.status === 'confirmed' ? [
+        { type: 'divider' as const },
+        {
+          key: 'cancel-sunhotels',
+          icon: <StopOutlined />,
+          label: 'Cancel SunHotels Booking',
+          danger: true,
+          onClick: () => {
+            // Open drawer for confirmation via Popconfirm
+            showBookingDetail(record);
+          },
+        },
+      ] : []),
+      // Legacy cancel for pending
+      ...(record.status === 'pending' || record.status === 'Pending' ? [
+        { type: 'divider' as const },
+        {
+          key: 'cancel',
+          icon: <CloseOutlined />,
+          label: 'Cancel Booking',
+          danger: true,
+          onClick: () => {
+            // Open drawer for confirmation via Popconfirm
+            showBookingDetail(record);
+          },
+        },
+      ] : []),
+    ];
+  };
 
   const columns = [
     {
@@ -317,9 +553,9 @@ function BookingsContent() {
       key: 'customer',
       render: (_: any, record: Booking) => (
         <div>
-          <Text>{record.customer.name}</Text>
+          <Text>{getCustomerName(record)}</Text>
           <br />
-          <Text type="secondary" style={{ fontSize: 12 }}>{record.customer.email}</Text>
+          <Text type="secondary" style={{ fontSize: 12 }}>{getCustomerEmail(record)}</Text>
         </div>
       ),
     },
@@ -327,34 +563,46 @@ function BookingsContent() {
       title: 'Details',
       key: 'detail',
       render: (_: any, record: Booking) => {
-        if (record.type === 'hotel') {
+        const type = record.type?.toLowerCase();
+        if (type === 'hotel') {
+          const hotelName = record.hotelBooking?.hotelName || 'N/A';
+          const checkIn = record.hotelBooking?.checkIn?.split('T')[0] || 'N/A';
+          const checkOut = record.hotelBooking?.checkOut?.split('T')[0] || 'N/A';
           return (
             <div>
-              <Text>{record.hotelName}</Text>
+              <Text>{hotelName}</Text>
               <br />
               <Text type="secondary" style={{ fontSize: 12 }}>
-                {record.checkIn} → {record.checkOut}
+                {checkIn} → {checkOut}
               </Text>
             </div>
           );
-        } else if (record.type === 'flight') {
+        } else if (type === 'flight') {
+          const departure = record.flightBooking?.departure || 'N/A';
+          const arrival = record.flightBooking?.arrival || 'N/A';
+          const date = record.flightBooking?.departureDate || 'N/A';
           return (
             <div>
-              <Text>{record.departure} → {record.arrival}</Text>
+              <Text>{departure} → {arrival}</Text>
               <br />
-              <Text type="secondary" style={{ fontSize: 12 }}>{record.departureDate}</Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>{date}</Text>
+            </div>
+          );
+        } else if (type === 'car') {
+          const carType = record.carRental?.carType || 'N/A';
+          const pickupDate = record.carRental?.pickupDate?.split('T')[0] || 'N/A';
+          const dropoffDate = record.carRental?.dropoffDate?.split('T')[0] || 'N/A';
+          return (
+            <div>
+              <Text>{carType}</Text>
+              <br />
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {pickupDate} → {dropoffDate}
+              </Text>
             </div>
           );
         } else {
-          return (
-            <div>
-              <Text>{record.carType}</Text>
-              <br />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                {record.pickupDate?.split(' ')[0]} → {record.dropoffDate?.split(' ')[0]}
-              </Text>
-            </div>
-          );
+          return <Text type="secondary">-</Text>;
         }
       },
     },
@@ -363,21 +611,21 @@ function BookingsContent() {
       key: 'amount',
       render: (_: any, record: Booking) => (
         <div>
-          <Text strong>€{record.amount.toLocaleString()}</Text>
+          <Text strong>{record.currency || '€'}{getBookingAmount(record).toLocaleString()}</Text>
           <br />
           <Text type="success" style={{ fontSize: 12 }}>
-            +€{record.commission} commission
+            +{record.currency || '€'}{(record.commission || 0).toLocaleString()} commission
           </Text>
         </div>
       ),
-      sorter: (a: Booking, b: Booking) => a.amount - b.amount,
+      sorter: (a: Booking, b: Booking) => getBookingAmount(a) - getBookingAmount(b),
     },
     {
       title: 'Status',
       dataIndex: 'status',
       key: 'status',
-      render: (status: keyof typeof statusConfig) => {
-        const config = statusConfig[status];
+      render: (status: string) => {
+        const config = statusConfig[status] || { color: 'default', icon: null, label: status };
         return (
           <Tag color={config.color} icon={config.icon}>
             {config.label}
@@ -398,13 +646,20 @@ function BookingsContent() {
   ];
 
   const filteredBookings = Array.isArray(bookings) ? bookings.filter(booking => {
-    const matchesSearch = 
-      booking.id.toLowerCase().includes(searchText.toLowerCase()) ||
-      booking.customer.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      booking.customer.email.toLowerCase().includes(searchText.toLowerCase());
+    const customerName = getCustomerName(booking).toLowerCase();
+    const customerEmail = getCustomerEmail(booking).toLowerCase();
+    const searchLower = searchText.toLowerCase();
     
-    const matchesType = typeFilter === 'all' || booking.type === typeFilter;
-    const matchesStatus = !statusFilter || booking.status === statusFilter;
+    const matchesSearch = 
+      booking.id.toLowerCase().includes(searchLower) ||
+      customerName.includes(searchLower) ||
+      customerEmail.includes(searchLower);
+    
+    const bookingType = booking.type?.toLowerCase();
+    const matchesType = typeFilter === 'all' || bookingType === typeFilter.toLowerCase();
+    
+    const bookingStatus = booking.status?.toLowerCase();
+    const matchesStatus = !statusFilter || bookingStatus === statusFilter.toLowerCase();
     
     return matchesSearch && matchesType && matchesStatus;
   }) : [];
@@ -412,37 +667,73 @@ function BookingsContent() {
   const renderBookingDetails = () => {
     if (!selectedBooking) return null;
 
-    if (selectedBooking.type === 'hotel') {
+    const type = selectedBooking.type?.toLowerCase();
+    
+    if (type === 'hotel') {
+      const hb = selectedBooking.hotelBooking;
       return (
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Hotel">{selectedBooking.hotelName}</Descriptions.Item>
-          <Descriptions.Item label="Room Type">{selectedBooking.roomType}</Descriptions.Item>
-          <Descriptions.Item label="Check-in Date">{selectedBooking.checkIn}</Descriptions.Item>
-          <Descriptions.Item label="Check-out Date">{selectedBooking.checkOut}</Descriptions.Item>
-          <Descriptions.Item label="Number of Guests">{selectedBooking.guests}</Descriptions.Item>
-          <Descriptions.Item label="External Booking ID">{selectedBooking.externalBookingId || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Hotel">{hb?.hotelName || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Room Type">{hb?.roomTypeName || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Board Type">{hb?.boardTypeName || hb?.mealName || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Number of Rooms">{hb?.rooms || 1}</Descriptions.Item>
+          <Descriptions.Item label="Check-in Date">{hb?.checkIn?.split('T')[0] || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Check-out Date">{hb?.checkOut?.split('T')[0] || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Adults">{hb?.adults || 0}</Descriptions.Item>
+          <Descriptions.Item label="Children">{hb?.children || 0}</Descriptions.Item>
+          <Descriptions.Item label="Guest Name">
+            {hb?.guestName || (hb?.guestFirstName && hb?.guestLastName ? `${hb.guestFirstName} ${hb.guestLastName}` : 'N/A')}
+          </Descriptions.Item>
+          <Descriptions.Item label="Guest Email">{hb?.guestEmail || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Guest Phone">{hb?.guestPhone || '-'}</Descriptions.Item>
+          <Descriptions.Item label="Special Requests">{hb?.specialRequests || '-'}</Descriptions.Item>
+          <Descriptions.Item label="SunHotels Booking Code">
+            <Text copyable={!!hb?.sunhotelsBookingCode}>
+              {hb?.sunhotelsBookingCode || hb?.externalBookingCode || '-'}
+            </Text>
+          </Descriptions.Item>
+          {hb?.hotelConfirmationNumber && (
+            <Descriptions.Item label="Hotel Confirmation #">
+              <Text copyable>{hb.hotelConfirmationNumber}</Text>
+            </Descriptions.Item>
+          )}
+          {hb?.totalPrice && (
+            <Descriptions.Item label="Room Price">
+              {hb.currency || '€'}{hb.totalPrice.toLocaleString()}
+              {hb.taxAmount && ` (Tax: ${hb.currency || '€'}${hb.taxAmount.toLocaleString()})`}
+            </Descriptions.Item>
+          )}
+          {hb?.voucher && (
+            <Descriptions.Item label="Voucher">
+              <a href={hb.voucher} target="_blank" rel="noopener noreferrer">View Voucher</a>
+            </Descriptions.Item>
+          )}
         </Descriptions>
       );
-    } else if (selectedBooking.type === 'flight') {
+    } else if (type === 'flight') {
+      const fb = selectedBooking.flightBooking;
       return (
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Flight No">{selectedBooking.flightNumber}</Descriptions.Item>
-          <Descriptions.Item label="Departure">{selectedBooking.departure}</Descriptions.Item>
-          <Descriptions.Item label="Arrival">{selectedBooking.arrival}</Descriptions.Item>
-          <Descriptions.Item label="Date">{selectedBooking.departureDate}</Descriptions.Item>
-          <Descriptions.Item label="Number of Passengers">{selectedBooking.passengers}</Descriptions.Item>
+          <Descriptions.Item label="Flight No">{fb?.flightNumber || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Departure">{fb?.departure || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Arrival">{fb?.arrival || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Date">{fb?.departureDate || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Number of Passengers">{fb?.passengers || 0}</Descriptions.Item>
+        </Descriptions>
+      );
+    } else if (type === 'car') {
+      const cr = selectedBooking.carRental;
+      return (
+        <Descriptions column={1} bordered size="small">
+          <Descriptions.Item label="Vehicle">{cr?.carType || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Pick-up Location">{cr?.pickupLocation || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Drop-off Location">{cr?.dropoffLocation || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="Start Date">{cr?.pickupDate?.split('T')[0] || 'N/A'}</Descriptions.Item>
+          <Descriptions.Item label="End Date">{cr?.dropoffDate?.split('T')[0] || 'N/A'}</Descriptions.Item>
         </Descriptions>
       );
     } else {
-      return (
-        <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Vehicle">{selectedBooking.carType}</Descriptions.Item>
-          <Descriptions.Item label="Pick-up Location">{selectedBooking.pickupLocation}</Descriptions.Item>
-          <Descriptions.Item label="Drop-off Location">{selectedBooking.dropoffLocation}</Descriptions.Item>
-          <Descriptions.Item label="Start Date">{selectedBooking.pickupDate}</Descriptions.Item>
-          <Descriptions.Item label="End Date">{selectedBooking.dropoffDate}</Descriptions.Item>
-        </Descriptions>
-      );
+      return <Text type="secondary">No details available</Text>;
     }
   };
 
@@ -457,9 +748,9 @@ function BookingsContent() {
       label: 'Customer Information',
       children: selectedBooking && (
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Full Name">{selectedBooking.customer.name}</Descriptions.Item>
-          <Descriptions.Item label="Email">{selectedBooking.customer.email}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{selectedBooking.customer.phone}</Descriptions.Item>
+          <Descriptions.Item label="Full Name">{getCustomerName(selectedBooking)}</Descriptions.Item>
+          <Descriptions.Item label="Email">{getCustomerEmail(selectedBooking)}</Descriptions.Item>
+          <Descriptions.Item label="Phone">{getCustomerPhone(selectedBooking)}</Descriptions.Item>
         </Descriptions>
       ),
     },
@@ -468,19 +759,28 @@ function BookingsContent() {
       label: 'Payment Information',
       children: selectedBooking && (
         <Descriptions column={1} bordered size="small">
-          <Descriptions.Item label="Amount">€{selectedBooking.amount.toLocaleString()}</Descriptions.Item>
-          <Descriptions.Item label="Commission">€{selectedBooking.commission.toLocaleString()}</Descriptions.Item>
-          {selectedBooking.couponCode && (
-            <>
-              <Descriptions.Item label="Coupon Code">{selectedBooking.couponCode}</Descriptions.Item>
-              <Descriptions.Item label="Coupon Discount">-€{selectedBooking.couponDiscount}</Descriptions.Item>
-            </>
+          <Descriptions.Item label="Amount">{selectedBooking.currency || '€'}{getBookingAmount(selectedBooking).toLocaleString()}</Descriptions.Item>
+          <Descriptions.Item label="Commission">{selectedBooking.currency || '€'}{(selectedBooking.commission || 0).toLocaleString()}</Descriptions.Item>
+          {(selectedBooking.couponDiscount && selectedBooking.couponDiscount > 0) && (
+            <Descriptions.Item label="Coupon Discount">-{selectedBooking.currency || '€'}{selectedBooking.couponDiscount}</Descriptions.Item>
           )}
           <Descriptions.Item label="Net Amount">
             <Text strong>
-              €{(selectedBooking.amount - (selectedBooking.couponDiscount || 0)).toLocaleString()}
+              {selectedBooking.currency || '€'}{(getBookingAmount(selectedBooking) - (selectedBooking.couponDiscount || 0)).toLocaleString()}
             </Text>
           </Descriptions.Item>
+          {selectedBooking.payment && (
+            <>
+              <Descriptions.Item label="Payment Status">
+                <Tag color={selectedBooking.payment.status === 'Paid' ? 'green' : 'orange'}>
+                  {selectedBooking.payment.status || 'Unknown'}
+                </Tag>
+              </Descriptions.Item>
+              {selectedBooking.payment.paidAt && (
+                <Descriptions.Item label="Paid At">{selectedBooking.payment.paidAt}</Descriptions.Item>
+              )}
+            </>
+          )}
         </Descriptions>
       ),
     },
@@ -492,7 +792,7 @@ function BookingsContent() {
           items={[
             {
               color: 'green',
-              children: (
+              content: (
                 <>
                   <Text strong>Booking created</Text>
                   <br />
@@ -502,7 +802,7 @@ function BookingsContent() {
             },
             {
               color: 'blue',
-              children: (
+              content: (
                 <>
                   <Text strong>Payment received</Text>
                   <br />
@@ -512,7 +812,7 @@ function BookingsContent() {
             },
             {
               color: 'green',
-              children: (
+              content: (
                 <>
                   <Text strong>Confirmation email sent</Text>
                   <br />
@@ -524,6 +824,75 @@ function BookingsContent() {
         />
       ),
     },
+    // Cancellation Policy Tab (only for hotel bookings)
+    ...(selectedBooking?.type?.toLowerCase() === 'hotel' && selectedBooking.hotelBooking ? [{
+      key: 'policy',
+      label: (
+        <Space>
+          <span>Cancellation Policy</span>
+          {selectedBooking.hotelBooking.isRefundable === false && (
+            <Tag color="red" style={{ marginLeft: 4 }}>Non-Refundable</Tag>
+          )}
+        </Space>
+      ),
+      children: (
+        <div>
+          {selectedBooking.hotelBooking.isRefundable === false ? (
+            <Alert
+              title="Non-Refundable Booking"
+              description="This booking cannot be refunded. If you process a refund, the company will absorb 100% of the cost as SunHotels will charge full cancellation fee."
+              type="error"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          ) : selectedBooking.hotelBooking.freeCancellationDeadline ? (
+            <Alert
+              title={
+                new Date(selectedBooking.hotelBooking.freeCancellationDeadline) > new Date()
+                  ? `Free Cancellation until ${dayjs(selectedBooking.hotelBooking.freeCancellationDeadline).format('DD MMM YYYY HH:mm')}`
+                  : `Free Cancellation Period Ended on ${dayjs(selectedBooking.hotelBooking.freeCancellationDeadline).format('DD MMM YYYY')}`
+              }
+              type={new Date(selectedBooking.hotelBooking.freeCancellationDeadline) > new Date() ? 'success' : 'warning'}
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          ) : null}
+          
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="Refundable">
+              <Tag color={selectedBooking.hotelBooking.isRefundable !== false ? 'green' : 'red'}>
+                {selectedBooking.hotelBooking.isRefundable !== false ? 'Yes' : 'No (Non-Refundable)'}
+              </Tag>
+            </Descriptions.Item>
+            {selectedBooking.hotelBooking.freeCancellationDeadline && (
+              <Descriptions.Item label="Free Cancellation Until">
+                {dayjs(selectedBooking.hotelBooking.freeCancellationDeadline).format('DD MMM YYYY HH:mm')}
+                {new Date(selectedBooking.hotelBooking.freeCancellationDeadline) < new Date() && (
+                  <Tag color="orange" style={{ marginLeft: 8 }}>Expired</Tag>
+                )}
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="Current Cancellation Fee">
+              <Text type={(selectedBooking.hotelBooking.cancellationPercentage ?? 0) > 0 ? 'danger' : 'success'}>
+                {selectedBooking.hotelBooking.cancellationPercentage ?? 0}%
+              </Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Max Refundable Amount">
+              <Text strong style={{ color: (selectedBooking.hotelBooking.maxRefundableAmount ?? 0) > 0 ? '#52c41a' : '#ff4d4f' }}>
+                €{(selectedBooking.hotelBooking.maxRefundableAmount ?? 0).toLocaleString()}
+              </Text>
+            </Descriptions.Item>
+            {selectedBooking.hotelBooking.cancellationPolicyText && (
+              <Descriptions.Item label="Policy Details">
+                <Text type="secondary" style={{ whiteSpace: 'pre-wrap' }}>
+                  {selectedBooking.hotelBooking.cancellationPolicyText}
+                </Text>
+              </Descriptions.Item>
+            )}
+          </Descriptions>
+        </div>
+      ),
+    }] : []),
   ];
 
   if (loading) {
@@ -538,13 +907,89 @@ function BookingsContent() {
     <div className="bookings-page">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
         <Title level={2} style={{ margin: 0 }}>Bookings</Title>
-        <Button icon={<ReloadOutlined />} onClick={fetchBookings}>
-          Refresh
-        </Button>
+        <Space>
+          <Button icon={<ReloadOutlined />} onClick={() => { fetchBookings(); fetchStats(); }}>
+            Refresh
+          </Button>
+        </Space>
       </div>
 
+      {/* Stats Cards */}
+      {stats && (
+        <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Col xs={12} sm={6}>
+            <Card size="small">
+              <Statistic
+                title="Total Revenue"
+                value={stats.totalRevenue || 0}
+                prefix="€"
+                precision={2}
+                styles={{ content: { color: '#3f8600' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card size="small">
+              <Statistic
+                title="Total Refunded"
+                value={stats.totalRefunded || 0}
+                prefix="€"
+                precision={2}
+                styles={{ content: { color: '#cf1322' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card size="small">
+              <Statistic
+                title="Confirmed"
+                value={stats.byStatus?.find((s: any) => s.status === 'Confirmed')?.count || 0}
+                styles={{ content: { color: '#52c41a' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={12} sm={6}>
+            <Card size="small">
+              <Badge count={stats.needsAttention || 0} offset={[10, 0]}>
+                <Statistic
+                  title="Needs Attention"
+                  value={stats.failedConfirmations || 0}
+                  styles={{ content: { color: stats.failedConfirmations > 0 ? '#fa541c' : undefined } }}
+                />
+              </Badge>
+            </Card>
+          </Col>
+        </Row>
+      )}
+
+      {/* Failed Confirmations Alert */}
+      {stats?.failedConfirmations > 0 && (
+        <Alert
+          title={
+            <Space>
+              <WarningOutlined />
+              <span>
+                <strong>{stats.failedConfirmations}</strong> booking(s) need attention - Payment received but SunHotels confirmation failed
+              </span>
+            </Space>
+          }
+          type="warning"
+          showIcon={false}
+          action={
+            <Button 
+              size="small" 
+              type={showFailedOnly ? 'primary' : 'default'}
+              onClick={() => setShowFailedOnly(!showFailedOnly)}
+            >
+              {showFailedOnly ? 'Show All' : 'View Failed'}
+            </Button>
+          }
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
       <Card>
-        <Space style={{ marginBottom: 16, width: '100%' }} wrap direction="vertical" size="middle">
+        <Space style={{ marginBottom: 16, width: '100%' }} wrap orientation="vertical" size="middle">
           <Input
             placeholder="Search booking or customer..."
             prefix={<SearchOutlined />}
@@ -574,10 +1019,13 @@ function BookingsContent() {
               style={{ width: 150, minWidth: 120 }}
               allowClear
               options={[
-                { label: 'Confirmed', value: 'confirmed' },
-                { label: 'Pending', value: 'pending' },
-                { label: 'Cancelled', value: 'cancelled' },
-                { label: 'Completed', value: 'completed' },
+                { label: 'Confirmed', value: 'Confirmed' },
+                { label: 'Pending', value: 'Pending' },
+                { label: 'Cancelled', value: 'Cancelled' },
+                { label: 'Completed', value: 'Completed' },
+                { label: 'Failed', value: 'Failed' },
+                { label: 'Refunded', value: 'Refunded' },
+                { label: '⚠️ Confirmation Failed', value: 'ConfirmationFailed' },
               ]}
             />
 
@@ -637,12 +1085,67 @@ function BookingsContent() {
         open={drawerOpen}
         size="large"
         extra={
-          <Space>
+          <Space wrap>
             <Button icon={<PrinterOutlined />}>Print</Button>
-            {(selectedBooking?.status === 'confirmed' || selectedBooking?.status === 'pending') && (
-              <Button danger icon={<CloseOutlined />} onClick={() => selectedBooking && cancelBooking(selectedBooking)}>
-                Cancel
+            {/* Retry button for ConfirmationFailed */}
+            {(selectedBooking?.status === 'ConfirmationFailed' || selectedBooking?.status === 'confirmationfailed') && (
+              <Popconfirm
+                title="Retry SunHotels Booking"
+                description="This will attempt to send the booking to SunHotels again."
+                onConfirm={() => selectedBooking && handleRetrySunHotels(selectedBooking.id)}
+                okText="Retry Now"
+                cancelText="Cancel"
+              >
+                <Button 
+                  type="primary"
+                  icon={<ReloadOutlined />} 
+                  loading={actionLoading === selectedBooking?.id}
+                >
+                  Retry
+                </Button>
+              </Popconfirm>
+            )}
+            {/* Refund button */}
+            {(selectedBooking as any)?.payment?.stripePaymentIntentId && (
+              <Button 
+                icon={<UndoOutlined />} 
+                onClick={() => setRefundModalOpen(true)}
+              >
+                Refund
               </Button>
+            )}
+            {/* Cancel SunHotels for confirmed bookings */}
+            {(selectedBooking?.status === 'Confirmed' || selectedBooking?.status === 'confirmed') && (
+              <Popconfirm
+                title="Cancel SunHotels Booking"
+                description="This will cancel the SunHotels reservation and process a refund. Cancellation fees may apply."
+                onConfirm={() => selectedBooking && handleCancelSunHotels(selectedBooking.id, true)}
+                okText="Cancel & Refund"
+                okType="danger"
+                cancelText="Go Back"
+              >
+                <Button 
+                  danger 
+                  icon={<StopOutlined />}
+                >
+                  Cancel Booking
+                </Button>
+              </Popconfirm>
+            )}
+            {/* Legacy cancel for pending */}
+            {(selectedBooking?.status === 'pending' || selectedBooking?.status === 'Pending') && (
+              <Popconfirm
+                title="Cancel Booking"
+                description="Are you sure you want to cancel this booking?"
+                onConfirm={() => selectedBooking && cancelBooking(selectedBooking)}
+                okText="Yes, Cancel"
+                okType="danger"
+                cancelText="No"
+              >
+                <Button danger icon={<CloseOutlined />}>
+                  Cancel
+                </Button>
+              </Popconfirm>
             )}
           </Space>
         }
@@ -651,18 +1154,199 @@ function BookingsContent() {
           <>
             <div style={{ marginBottom: 16, textAlign: 'center' }}>
               <Tag 
-                color={statusConfig[selectedBooking.status].color} 
-                icon={statusConfig[selectedBooking.status].icon}
+                color={statusConfig[selectedBooking.status]?.color || 'default'} 
+                icon={statusConfig[selectedBooking.status]?.icon}
                 style={{ fontSize: 14, padding: '4px 12px' }}
               >
-                {statusConfig[selectedBooking.status].label}
+                {statusConfig[selectedBooking.status]?.label || selectedBooking.status}
               </Tag>
             </div>
+            
+            {/* Show warning for ConfirmationFailed */}
+            {(selectedBooking.status === 'ConfirmationFailed' || selectedBooking.status === 'confirmationfailed') && (
+              <Alert
+                title="Payment Received - Confirmation Failed"
+                description="The payment was successful but the SunHotels booking failed. You can retry the booking or process a refund."
+                type="warning"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )}
             
             <Tabs items={tabItems} />
           </>
         )}
       </Drawer>
+
+      {/* Refund Modal */}
+      <Modal
+        title="Process Refund"
+        open={refundModalOpen}
+        onCancel={() => {
+          setRefundModalOpen(false);
+          refundForm.resetFields();
+        }}
+        footer={null}
+        destroyOnHidden
+      >
+        <Form
+          form={refundForm}
+          layout="vertical"
+          onFinish={(values) => selectedBooking && handleRefund(selectedBooking.id, values)}
+        >
+          <Alert
+            title={`Original Amount: €${getBookingAmount(selectedBooking || {} as Booking).toLocaleString()}`}
+            type="info"
+            style={{ marginBottom: 16 }}
+          />
+          
+          {/* Non-Refundable Warning */}
+          {selectedBooking?.hotelBooking?.isRefundable === false && (
+            <Alert
+              title="⚠️ NON-REFUNDABLE BOOKING"
+              description={
+                <div>
+                  <p>This booking is non-refundable. If you process a refund, the company will absorb 100% of the cost.</p>
+                  <p style={{ marginTop: 8 }}>
+                    <strong>Policy:</strong> {selectedBooking.hotelBooking.cancellationPolicyText || 'Non-refundable: 100% cancellation fee applies'}
+                  </p>
+                  <p><strong>Recommended Refund:</strong> €{selectedBooking.hotelBooking.maxRefundableAmount ?? 0}</p>
+                </div>
+              }
+              type="error"
+              showIcon
+              icon={<ExclamationCircleOutlined />}
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
+          {/* Free Cancellation Deadline Warning */}
+          {selectedBooking?.hotelBooking?.isRefundable !== false && 
+           selectedBooking?.hotelBooking?.freeCancellationDeadline && 
+           new Date(selectedBooking.hotelBooking.freeCancellationDeadline) < new Date() && (
+            <Alert
+              title="⚠️ Free Cancellation Period Ended"
+              description={
+                <div>
+                  <p>
+                    Free cancellation deadline was {dayjs(selectedBooking.hotelBooking.freeCancellationDeadline).format('DD MMM YYYY HH:mm')}.
+                  </p>
+                  <p style={{ marginTop: 8 }}>
+                    <strong>Cancellation Fee:</strong> {selectedBooking.hotelBooking.cancellationPercentage}% = 
+                    €{((getBookingAmount(selectedBooking) * (selectedBooking.hotelBooking.cancellationPercentage || 0)) / 100).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Recommended Refund:</strong> €{(selectedBooking.hotelBooking.maxRefundableAmount ?? 0).toLocaleString()}
+                  </p>
+                </div>
+              }
+              type="warning"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+
+          {/* Free Cancellation Still Available */}
+          {selectedBooking?.hotelBooking?.isRefundable !== false && 
+           selectedBooking?.hotelBooking?.freeCancellationDeadline && 
+           new Date(selectedBooking.hotelBooking.freeCancellationDeadline) > new Date() && (
+            <Alert
+              title="✅ Free Cancellation Available"
+              description={`Full refund available until ${dayjs(selectedBooking.hotelBooking.freeCancellationDeadline).format('DD MMM YYYY HH:mm')}`}
+              type="success"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          
+          <Form.Item
+            name="amount"
+            label={
+              <Space>
+                <span>Refund Amount</span>
+                {selectedBooking?.hotelBooking?.maxRefundableAmount !== undefined && (
+                  <Tooltip title="Recommended amount based on cancellation policy">
+                    <Tag color="blue">Recommended: €{selectedBooking.hotelBooking.maxRefundableAmount}</Tag>
+                  </Tooltip>
+                )}
+              </Space>
+            }
+            extra="Leave empty for full refund"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              placeholder={`Full refund (€${getBookingAmount(selectedBooking || {} as Booking).toLocaleString()})`}
+              min={0}
+              max={getBookingAmount(selectedBooking || {} as Booking)}
+              prefix="€"
+              precision={2}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="reason"
+            label="Reason"
+            initialValue="requested_by_customer"
+          >
+            <Radio.Group>
+              <Radio value="requested_by_customer">Customer Request</Radio>
+              <Radio value="duplicate">Duplicate</Radio>
+              <Radio value="fraudulent">Fraudulent</Radio>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item
+            name="adminNote"
+            label="Admin Note (optional)"
+          >
+            <Input.TextArea rows={3} placeholder="Internal note about this refund..." />
+          </Form.Item>
+
+          <Form.Item
+            name="sendRefundEmail"
+            valuePropName="checked"
+            initialValue={true}
+          >
+            <Checkbox defaultChecked>
+              Send refund confirmation email to customer
+            </Checkbox>
+          </Form.Item>
+
+          {/* Force Refund for Non-Refundable */}
+          {selectedBooking?.hotelBooking?.isRefundable === false && (
+            <Form.Item
+              name="forceRefund"
+              valuePropName="checked"
+              initialValue={false}
+            >
+              <div style={{ backgroundColor: '#fff2f0', padding: '12px', borderRadius: 8, border: '1px solid #ffccc7' }}>
+                <Checkbox>
+                  <Text type="danger" strong>
+                    I understand this is a non-refundable booking and the company will absorb the loss
+                  </Text>
+                </Checkbox>
+              </div>
+            </Form.Item>
+          )}
+
+          <Form.Item>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => setRefundModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                type="primary" 
+                danger 
+                htmlType="submit"
+                loading={actionLoading === selectedBooking?.id}
+                disabled={selectedBooking?.hotelBooking?.isRefundable === false && !refundForm.getFieldValue('forceRefund')}
+              >
+                {selectedBooking?.hotelBooking?.isRefundable === false ? '⚠️ Force Refund' : 'Process Refund'}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 }

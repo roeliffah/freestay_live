@@ -26,12 +26,17 @@ export function LanguageSwitcher() {
     // Save user's preference in cookie
     document.cookie = `NEXT_LOCALE=${newLocale}; max-age=${60 * 60 * 24 * 365}; path=/`;
     
-    // Remove current locale from pathname
+    // Remove current locale from pathname and preserve querystring
     const segments = pathname.split('/');
     segments[1] = newLocale;
     const newPathname = segments.join('/');
     
-    router.push(newPathname);
+    // Get current search params and preserve them
+    const searchParams = new URLSearchParams(window.location.search);
+    const queryString = searchParams.toString();
+    const finalUrl = queryString ? `${newPathname}?${queryString}` : newPathname;
+    
+    router.push(finalUrl);
   };
 
   // Prevent hydration mismatch by only rendering after mount

@@ -12,16 +12,28 @@ interface ImageSliderProps {
 }
 
 export function ImageSlider({ images, hotelName }: ImageSliderProps) {
+  // Filter out empty strings from images
+  const validImages = images.filter((img): img is string => Boolean(img && img.trim()));
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Return empty state if no valid images
+  if (!validImages.length) {
+    return (
+      <div className="bg-black w-full aspect-video rounded-lg overflow-hidden flex items-center justify-center">
+        <div className="text-gray-400">No images available</div>
+      </div>
+    );
+  }
+
   const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => (prev + 1) % validImages.length);
   };
 
   const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => (prev - 1 + validImages.length) % validImages.length);
   };
 
   const handleImageClick = (index: number) => {
@@ -40,7 +52,7 @@ export function ImageSlider({ images, hotelName }: ImageSliderProps) {
             onClick={() => handleImageClick(currentIndex)}
           >
             <Image
-              src={images[currentIndex]}
+              src={validImages[currentIndex]}
               alt={`${hotelName} - ${currentIndex + 1}`}
               fill
               className="object-cover"
@@ -49,7 +61,7 @@ export function ImageSlider({ images, hotelName }: ImageSliderProps) {
           </div>
 
           {/* Navigation Buttons */}
-          {images.length > 1 && (
+          {validImages.length > 1 && (
             <>
               <Button
                 variant="ghost"
@@ -72,14 +84,14 @@ export function ImageSlider({ images, hotelName }: ImageSliderProps) {
 
           {/* Image Counter */}
           <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
-            {currentIndex + 1} / {images.length}
+            {currentIndex + 1} / {validImages.length}
           </div>
         </div>
 
         {/* Thumbnail Strip */}
-        {images.length > 1 && (
+        {validImages.length > 1 && (
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-            {images.map((image, index) => (
+            {validImages.map((image, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
@@ -103,7 +115,7 @@ export function ImageSlider({ images, hotelName }: ImageSliderProps) {
 
       {/* Lightbox Gallery (for viewing all images) */}
       <ImageGallery 
-        images={images} 
+        images={validImages} 
         hotelName={hotelName}
         isOpen={lightboxOpen}
         onOpenChange={setLightboxOpen}
